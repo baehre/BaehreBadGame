@@ -1,16 +1,18 @@
-//game.js
 var canvas;
 var context;
 var keys;
+var socket;
+var localPlayer;
+var projectiles;
 var backgroundSprites;
 var tileSize = 16;
 var backgroundTileSize = 48;
 var scale = 3;
 //keep track of mouse x and y
-//var prevMouseX;
-//var prevMouseY;
+var prevMouseX;
+var prevMouseY;
 //see if mouse has been clicked or not
-//var mouseClicked = false;
+var mouseClicked = false;
 //level data. saying which tiles to use.
 var levelData = [
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11],
@@ -43,6 +45,14 @@ function init(){
   canvas.width = 900;
   canvas.height = 504;
 
+  //keys.js
+  keys = new Keys();
+  //player.js
+  localPlayer = new Player(canvas, 100, 100, levelData);
+  projectiles = [];
+  intersectionEntities = [];
+  IntersectionEntity playerEntity = new IntersectionEntity(localPlayer.getX(), localPlayer.getY(), tileSize*scale);
+  intersectionEntities.push
   //sets all the event handlers
   setEventHandlers();
 }
@@ -54,15 +64,15 @@ function setEventHandlers(){
 }
 
 function keyDown(e){
-  /**if(localPlayer){
+  if(localPlayer){
     keys.onKeyDown(e);
-  }*/
+  }
 }
 
 function keyUp(e){
-  /**if(localPlayer){
+  if(localPlayer){
     keys.onKeyUp(e);
-  }*/
+  }
 }
 
 function gameLoop(){
@@ -73,7 +83,23 @@ function gameLoop(){
 }
 
 function update(){
+  updatePlayer();
+  updateProjectiles();
+}
 
+function updatePlayer(){
+  if(localPlayer.update(keys)){
+    localPlayer.setX(localPlayer.getX());
+    localPlayer.setY(localPlayer.getY());
+
+  }
+}
+
+function updateProjectiles(){
+  for(var i = 0; i < projectiles.length; i++){
+    var tempProjectile = projectiles[i];
+    tempProjectile.update();
+  }
 }
 
 function draw(){
@@ -81,10 +107,10 @@ function draw(){
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.save();
   //shifts the canvas based around where the player is
-  //context.translate(Math.round(canvas.width/2 - localPlayer.getX()), Math.round(canvas.height/2 - localPlayer.getY()));
+  context.translate(Math.round(canvas.width/2 - localPlayer.getX()), Math.round(canvas.height/2 - localPlayer.getY()));
   drawBackground();
-  //drawPlayer();
-  //drawProjectiles();
+  drawPlayer();
+  drawProjectiles();
   context.restore();
 }
 
@@ -102,7 +128,7 @@ function drawBackground(){
         context.drawImage(backgroundSprites, grassSprite.x, grassSprite.y, backgroundTileSize, backgroundTileSize, Math.round(x*backgroundTileSize), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
       }
       else if(tileNum == 11){
-        context.drawImage(backgroundSprites, rockSprite.x, rockSprite.y, backgroundTileSize, backgroundTileSize, Math.round(x*backgroundTileSize), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
+        context.drawImage(backgroundSprites, rockSprite.x, rockSprite.y, backgroun dTileSize, backgroundTileSize, Math.round(x*backgroundTileSize), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
       }
       else if(tileNum == 2){
         context.drawImage(backgroundSprites, flowerSprite.x, flowerSprite.y, backgroundTileSize, backgroundTileSize, Math.round(x*tileSize*scale), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
@@ -115,12 +141,12 @@ function drawBackground(){
 }
 
 function drawPlayer(){
-  //localPlayer.draw(context);
+  localPlayer.draw(context);
 }
 
 function drawProjectiles(){
   //get the players projectiles and add them to the overall list
-  /**projectiles = localPlayer.getProjectiles();
+  projectiles = localPlayer.getProjectiles();
   for(var i = 0; i < projectiles.length; i++){
     var tempProjectile = projectiles[i];
     if(tempProjectile.getToRemove()){
@@ -131,5 +157,5 @@ function drawProjectiles(){
       tempProjectile.draw(context);
     }
   }
-  localPlayer.setProjectiles(projectiles);*/
+  localPlayer.setProjectiles(projectiles);
 }
