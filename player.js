@@ -31,8 +31,6 @@ var Player = function(can, startX, startY, level, intersectionEntities) {
 	var startingProjectileFireRate = 20;
 	//this is the value used to say when they can fire by subtracting then resetting the value
 	var projectileFireRate = startingProjectileFireRate;
-	var prevX = 0;
-	var prevY = 0;
 	var mouseClicked = false;
 	//holds all the players projectiles
 	var projectiles = [];
@@ -96,13 +94,13 @@ var Player = function(can, startX, startY, level, intersectionEntities) {
 		}
 		//sets which way the character is facing
 		if (keys.up) {
-			if(!intersection(x, y, "up")){
+			if(!upIntersection(x, y)){
 				y -= moveAmount;
 			}
 			facing = playerImageUp;
 		}
 		if (keys.down) {
-			if(!intersection(x, y, "down")){
+			if(!downIntersection(x, y)){
 				y += moveAmount;
 			}
 			facing = playerImageDown;
@@ -110,13 +108,13 @@ var Player = function(can, startX, startY, level, intersectionEntities) {
 		//since right and left are below up and down if they are combined (diagonal movement)
 		//then the sprite will face left or right
 		if (keys.left) {
-			if(!intersection(x, y, "left")){
+			if(!leftIntersection(x, y)){
 				x -= moveAmount;
 			}
 			facing = playerImageLeft;
 		}
 		if (keys.right) {
-			if(!intersection(x, y, "right")){
+			if(!rightIntersection(x, y)){
 				x += moveAmount;
 			}
 			facing = playerImageRight;
@@ -164,51 +162,54 @@ var Player = function(can, startX, startY, level, intersectionEntities) {
 		projectiles = a;
 	};
 
-	//check if player would intersect with a box.
-	var intersection = function(playerX, playerY, direction){
-		//get the players current tile based on direction for collision purposes
-		var playerTileCoord = getPlayerTile(playerX, playerY, direction);
-		var playerTileX = playerTileCoord.x;
-		var playerTileY = playerTileCoord.y;
-		if(direction == "right"){
-			var checkTile = levelData[playerTileY][playerTileX+1];
-		}
-		else if(direction == "left"){
-			var checkTile = levelData[playerTileY][playerTileX-1];
-		}
-		else if(direction == "up"){
-			var checkTile = levelData[playerTileY-1][playerTileX];
-		}
-		else if(direction == "down"){
-			var checkTile = levelData[playerTileY+1][playerTileX];
-		}
-		if(checkTile > 10){
+	var upIntersection = function(playerX, playerY){
+		//this chooses the middle pixel at the top of the character
+		var checkPixelX = (playerX + 48 + playerX)/2;
+		var checkPixelY = playerY;
+		//get that pixels tile
+		var checkTileUp = getTile(checkPixelX, checkPixelY);
+		return intersection(checkTileUp);
+	}
+	var downIntersection = function(playerX, playerY){
+		var checkPixelX = (playerX + 48 + playerX)/2;
+		var checkPixelY = playerY + 48;
+		//get that pixels tile
+		var checkTileDown = getTile(checkPixelX, checkPixelY);
+		return intersection(checkTileDown);
+	}
+
+	var leftIntersection = function(playerX, playerY){
+		var checkPixelX = playerX;
+		var checkPixelY = (playerY + 48 + playerY)/2;
+		//get that pixels tile
+		var checkTileLeft = getTile(checkPixelX, checkPixelY);
+		return intersection(checkTileLeft);
+	}
+
+	var rightIntersection = function(playerX, playerY){
+		var checkPixelX = playerX + 48;
+		var checkPixelY = (playerY + 48 + playerY)/2;
+		//get that pixels tile
+		var checkTileRight = getTile(checkPixelX, checkPixelY);
+		return intersection(checkTileRight);
+	}
+
+	var intersection = function(checkTile){
+		if(levelData[checkTile.y][checkTile.x] > 10){
 			return true;
 		}
 		else{
 			return false;
 		}
-	};
+	}
 
-	var getPlayerTile = function(playerX, playerY, direction){
-		if(direction == "left"){
-			var tileX = Math.floor((playerX+48)/48.0)-1;
-			var tileY = Math.floor((playerY+24)/48.0)-1;
-		}
-		else if(direction == "right"){
-			var tileX = Math.floor(playerX/48.0)-1;
-			var tileY = Math.floor((playerY+24)/48.0)-1;
-		}
-		else if(direction == "up"){
-			var tileX = Math.floor((playerX+24)/48.0)-1;
-			var tileY = Math.floor((playerY+48)/48.0)-1;
-		}
-		else if(direction == "down"){
-			var tileX = Math.floor((playerX+24)/48.0)-1;
-			var tileY = Math.floor(playerY/48.0)-1;
-		}
+	var getTile = function(x0, y0){
+		//minus one to handle the start at 0 thing
+		var tileX = Math.floor(x0/48.0)-1;
+		var tileY = Math.floor(y0/48.0)-1;
 		return {x: tileX, y: tileY};
 	};
+
 	// Define which variables and methods can be accessed
 	return {
 		getProjectiles: getProjectiles,

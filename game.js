@@ -1,18 +1,12 @@
 var canvas;
 var context;
 var keys;
-var socket;
 var localPlayer;
 var projectiles;
 var backgroundSprites;
 var tileSize = 16;
 var backgroundTileSize = 48;
 var scale = 3;
-//keep track of mouse x and y
-var prevMouseX;
-var prevMouseY;
-//see if mouse has been clicked or not
-var mouseClicked = false;
 //level data. saying which tiles to use.
 var levelData = [
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11],
@@ -32,7 +26,6 @@ var levelData = [
 [11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11]];
 
-var intersectionEntities;
 
 function init(){
   //set globals
@@ -50,9 +43,6 @@ function init(){
   //player.js
   localPlayer = new Player(canvas, 100, 100, levelData);
   projectiles = [];
-  intersectionEntities = [];
-  IntersectionEntity playerEntity = new IntersectionEntity(localPlayer.getX(), localPlayer.getY(), tileSize*scale);
-  intersectionEntities.push
   //sets all the event handlers
   setEventHandlers();
 }
@@ -91,7 +81,6 @@ function updatePlayer(){
   if(localPlayer.update(keys)){
     localPlayer.setX(localPlayer.getX());
     localPlayer.setY(localPlayer.getY());
-
   }
 }
 
@@ -128,7 +117,7 @@ function drawBackground(){
         context.drawImage(backgroundSprites, grassSprite.x, grassSprite.y, backgroundTileSize, backgroundTileSize, Math.round(x*backgroundTileSize), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
       }
       else if(tileNum == 11){
-        context.drawImage(backgroundSprites, rockSprite.x, rockSprite.y, backgroun dTileSize, backgroundTileSize, Math.round(x*backgroundTileSize), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
+        context.drawImage(backgroundSprites, rockSprite.x, rockSprite.y, backgroundTileSize, backgroundTileSize, Math.round(x*backgroundTileSize), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
       }
       else if(tileNum == 2){
         context.drawImage(backgroundSprites, flowerSprite.x, flowerSprite.y, backgroundTileSize, backgroundTileSize, Math.round(x*tileSize*scale), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
@@ -147,6 +136,7 @@ function drawPlayer(){
 function drawProjectiles(){
   //get the players projectiles and add them to the overall list
   projectiles = localPlayer.getProjectiles();
+  // NOTE: for later concat the array here
   for(var i = 0; i < projectiles.length; i++){
     var tempProjectile = projectiles[i];
     if(tempProjectile.getToRemove()){
@@ -157,5 +147,6 @@ function drawProjectiles(){
       tempProjectile.draw(context);
     }
   }
+  // NOTE: this needs to be changed when we have shooting enemies
   localPlayer.setProjectiles(projectiles);
 }
