@@ -1,6 +1,7 @@
 /**************************************************
 ** GAME PLAYER CLASS
 **************************************************/
+//the player x and y are actually the lower right hand corner of image...
 var Player = function(can, startX, startY, level, intersectionEntities) {
 	var canvas = can;
 	var moving = false;
@@ -26,6 +27,7 @@ var Player = function(can, startX, startY, level, intersectionEntities) {
 	var tileSize = 16;
 	//scale the person to 48 (16*3) pixels with this
 	var scale = 3;
+	var size = tileSize * scale;
 	//for shooting
 	//higher is slower. lower is faster
 	var startingProjectileFireRate = 20;
@@ -37,7 +39,6 @@ var Player = function(can, startX, startY, level, intersectionEntities) {
 
 	var x = startX;
 	var y = startY;
-	var id;
 	var moveAmount = 2.5;
 
 	canvas.addEventListener("mousedown", mouseDown);
@@ -52,7 +53,7 @@ var Player = function(can, startX, startY, level, intersectionEntities) {
 		  var dx = (tempX - canvas.width/2) + 20;
 		  var dy = (tempY - canvas.height/2) + 20;
 		  var direction = Math.atan2(dy,dx);
-		  var tempProjectile = new Projectile(this, x, y, direction, canvas);
+		  var tempProjectile = new Projectile("player", x, y, direction, canvas, levelData);
 		  projectiles.push(tempProjectile);
 			projectileFireRate = startingProjectileFireRate;
 		}
@@ -163,35 +164,37 @@ var Player = function(can, startX, startY, level, intersectionEntities) {
 	};
 
 	var upIntersection = function(playerX, playerY){
-		//this chooses the middle pixel at the top of the character
-		var checkPixelX = (playerX + 48 + playerX)/2;
-		var checkPixelY = playerY;
+		//this chooses three pixels at the top of the character
+		var checkPixelX1 = playerX - size;
+		var checkPixelX2 = playerX - (size / 2);
+		var checkPixelX3 = playerX;
+		var checkPixelY = playerY - size;
 		//get that pixels tile
-		var checkTileUp = getTile(checkPixelX, checkPixelY);
-		return intersection(checkTileUp);
+		return (intersection(getTile(checkPixelX1, checkPixelY)) || intersection(getTile(checkPixelX2, checkPixelY)));
 	}
 	var downIntersection = function(playerX, playerY){
-		var checkPixelX = (playerX + 48 + playerX)/2;
-		var checkPixelY = playerY + 48;
+		var checkPixelX1 = playerX - size;
+		var checkPixelX2 = playerX - (size / 2);
+		var checkPixelX3 = playerX;
+		var checkPixelY = playerY;
 		//get that pixels tile
-		var checkTileDown = getTile(checkPixelX, checkPixelY);
-		return intersection(checkTileDown);
+		return (intersection(getTile(checkPixelX1, checkPixelY)) || intersection(getTile(checkPixelX2, checkPixelY)));
 	}
 
 	var leftIntersection = function(playerX, playerY){
-		var checkPixelX = playerX;
-		var checkPixelY = (playerY + 48 + playerY)/2;
+		var checkPixelX = playerX - size;
+		var checkPixelY1 = playerY - (size / 3);
+		var checkPixelY2 = playerY - (2 * size / 3);
 		//get that pixels tile
-		var checkTileLeft = getTile(checkPixelX, checkPixelY);
-		return intersection(checkTileLeft);
+		return (intersection(getTile(checkPixelX, checkPixelY1)) || intersection(getTile(checkPixelX, checkPixelY2)));
 	}
 
 	var rightIntersection = function(playerX, playerY){
-		var checkPixelX = playerX + 48;
-		var checkPixelY = (playerY + 48 + playerY)/2;
+		var checkPixelX = playerX;
+		var checkPixelY1 = playerY - (size / 3);
+		var checkPixelY2 = playerY - (2 * size / 3);
 		//get that pixels tile
-		var checkTileRight = getTile(checkPixelX, checkPixelY);
-		return intersection(checkTileRight);
+		return (intersection(getTile(checkPixelX, checkPixelY1)) || intersection(getTile(checkPixelX, checkPixelY2)));
 	}
 
 	var intersection = function(checkTile){
@@ -204,9 +207,8 @@ var Player = function(can, startX, startY, level, intersectionEntities) {
 	}
 
 	var getTile = function(x0, y0){
-		//minus one to handle the start at 0 thing
-		var tileX = Math.floor(x0/48.0)-1;
-		var tileY = Math.floor(y0/48.0)-1;
+		var tileX = Math.floor(x0/48.0);
+		var tileY = Math.floor(y0/48.0);
 		return {x: tileX, y: tileY};
 	};
 

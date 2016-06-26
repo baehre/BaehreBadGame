@@ -2,26 +2,27 @@ var canvas;
 var context;
 var keys;
 var localPlayer;
+var chaser;
 var projectiles;
 var backgroundSprites;
 var tileSize = 16;
-var backgroundTileSize = 48;
 var scale = 3;
+var backgroundTileSize = tileSize * scale;
 //level data. saying which tiles to use.
 var levelData = [
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11],
 [11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
 [11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,2,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,2,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,0,11,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
 [11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
 [11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11]];
@@ -41,7 +42,8 @@ function init(){
   //keys.js
   keys = new Keys();
   //player.js
-  localPlayer = new Player(canvas, 100, 100, levelData);
+  localPlayer = new Player(canvas, 100, 100, levelData, null);
+  chaser = new Chaser(200, 200, levelData, localPlayer);
   projectiles = [];
   //sets all the event handlers
   setEventHandlers();
@@ -74,6 +76,7 @@ function gameLoop(){
 
 function update(){
   updatePlayer();
+  updateChasers();
   updateProjectiles();
 }
 
@@ -91,6 +94,13 @@ function updateProjectiles(){
   }
 }
 
+function updateChasers(){
+  if(chaser.update()){
+    chaser.setX(chaser.getX());
+    chaser.setY(chaser.getY());
+  }
+}
+
 function draw(){
   //wipe it
   context.clearRect(0, 0, canvas.width, canvas.height);
@@ -98,6 +108,7 @@ function draw(){
   //shifts the canvas based around where the player is
   context.translate(Math.round(canvas.width/2 - localPlayer.getX()), Math.round(canvas.height/2 - localPlayer.getY()));
   drawBackground();
+  drawEnemies();
   drawPlayer();
   drawProjectiles();
   context.restore();
@@ -131,6 +142,10 @@ function drawBackground(){
 
 function drawPlayer(){
   localPlayer.draw(context);
+}
+
+function drawEnemies(){
+  chaser.draw(context);
 }
 
 function drawProjectiles(){
