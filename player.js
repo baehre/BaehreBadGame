@@ -164,18 +164,16 @@ var Player = function(can, startX, startY, level, intersectionEntities) {
 	};
 
 	var upIntersection = function(playerX, playerY){
-		//this chooses three pixels at the top of the character
-		var checkPixelX1 = playerX - size;
-		var checkPixelX2 = playerX - (size / 2);
-		var checkPixelX3 = playerX;
+		//this chooses two pixels at the top of the character
+		var checkPixelX1 = playerX - (size / 3);
+		var checkPixelX2 = playerX - (2 * size / 3);
 		var checkPixelY = playerY - size;
 		//get that pixels tile
 		return (intersection(getTile(checkPixelX1, checkPixelY)) || intersection(getTile(checkPixelX2, checkPixelY)));
 	}
 	var downIntersection = function(playerX, playerY){
-		var checkPixelX1 = playerX - size;
-		var checkPixelX2 = playerX - (size / 2);
-		var checkPixelX3 = playerX;
+		var checkPixelX1 = playerX - (size / 3);
+		var checkPixelX2 = playerX - (2 * size / 3);
 		var checkPixelY = playerY;
 		//get that pixels tile
 		return (intersection(getTile(checkPixelX1, checkPixelY)) || intersection(getTile(checkPixelX2, checkPixelY)));

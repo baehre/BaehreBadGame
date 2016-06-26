@@ -5,7 +5,6 @@
 //the chaser x and y are actually the lower right hand corner of image...
 var Chaser = function(startX, startY, level, player) {
 	var moving = false;
-	var levelData = level;
 	var chaserImage = new Image();
 	chaserImage.src = "SpriteSheets/PlayerSprites/sumoWrestlerSprite.png";
 	var chaserImageUp = [{x:16,y:1},{x:16,y:18},{x:16,y:35}];
@@ -70,9 +69,10 @@ var Chaser = function(startX, startY, level, player) {
     var playerY = player.getY();
     if(distance(playerX, playerY) < 250){
 	    //don't want path to update super quick. may need to even make this slower
-	    /*if(time % 3 == 0){
-	    	path = getPath(playerX, playerY);
-	    }*/
+	    if(time % 3 == 0){
+				//may need to take out the - 24's hoping that it'll make the tile it returns a little more accurate
+	    	path = getPath(level, getTile(getX() - 24, getY() - 24), getTile(playerX - 24, playerY - 24));
+	    }
     }
 
 		if(prevX == x && prevY == y){
@@ -83,13 +83,17 @@ var Chaser = function(startX, startY, level, player) {
 		}
 		return (prevX != x || prevY != y) ? true : false;
 	};
+	//used in checking if player is in range and astar
+	//calculates the euclidean distance between chaser and the x and y provided
+	var distance = function(x1, y1){
+      var dist =
+          Math.sqrt(Math.abs((x1 - x) * (x1 - x) + (y1 - y)
+              * (y1 - y)));
+      return dist;
+  };
 
-    var distance = function(x1, y1){
-        var dist =
-            Math.sqrt(Math.abs((x1 - x) * (x1 - x) + (y1 - y)
-                * (y1 - y)));
-        return dist;
-    };
+	var getPath = function(levelData, start, end){
+	}
 
 	// Draw chaser
 	var draw = function(ctx) {
