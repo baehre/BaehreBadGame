@@ -167,11 +167,12 @@ var Chaser = function(startX, startY, level, player) {
 					continue;
 				}
 				//extra check for the diagonals
-				/*if(i === 0 || i === 2 || i === 6 || i === 8){
-					if(!walkable(current, currentTile)){
+				if(i === 0 || i === 2 || i === 6 || i === 8){
+					if(!walkable(current, {"x": tempX, "y": tempY})){
+						console.log("NOT WALKABLE");
 						continue;
 					}
-				}*/
+				}
 				var gCost = current.gCost + distance(current.x, current.y, tempX, tempY);
 				var hCost = distance(tempX, tempY, end.x, end.y);
 				var tempNode = node(tempX, tempY, current, gCost, hCost);
@@ -282,7 +283,7 @@ var Chaser = function(startX, startY, level, player) {
 		var start = getPixel(point1);
 		var end = getPixel(point2);
 		//doing vector stuff here
-		var vec = {"x": start.x - end.x, "y": start.y - end.y};
+		var vec = {"x": end.x - start.x, "y": end.y - start.y};
 		var vecLength = Math.sqrt((vec.x * vec.x) + (vec.y * vec.y));
 		var uX = vec.x / vecLength;
 		var uY = vec.y / vecLength;
@@ -304,14 +305,10 @@ var Chaser = function(startX, startY, level, player) {
 			var middle = getTile(checkPixelX, checkPixelY);
 			//if any of those intersect don't take the line
 			if(intersection(topLeft) || intersection(topRight) || intersection(bottomLeft) || intersection(bottomRight) || intersection(middle)){
-				console.log("SOMETHING HIT");
 				return false;
 			}
-			else{
-				console.log("NOT HIT");
-			}
 			//checking every 10 pixels along the line
-			dist = dist + 24;
+			dist = dist + 10;
 		}
 		//the whole line was tested. we gucci
 		return true;
