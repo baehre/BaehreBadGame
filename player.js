@@ -146,12 +146,12 @@ var Player = function(can, startX, startY, level, intersectionEntities) {
 			//so. the image to draw, from startingX startingY through the width and height
 			//then desination x and y and the width and height you want. so scaling to *3
 			//get the proper animation.
-			ctx.drawImage(playerImage, tempX, tempY, tileSize, tileSize, Math.round(x-(tileSize*scale)), Math.round(y-(tileSize*scale)), tileSize*scale, tileSize*scale);
+			ctx.drawImage(playerImage, tempX, tempY, tileSize, tileSize, Math.round(x-((tileSize*scale)/2)), Math.round(y-((tileSize*scale)/2)), tileSize*scale, tileSize*scale);
 		}
 		else{
 			//if the player is not moving then make sure it is in the stand still frame
 			//by setting it to facing[0]
-			ctx.drawImage(playerImage, facing[0].x, facing[0].y, tileSize, tileSize, Math.round(x-(tileSize*scale)), Math.round(y-(tileSize*scale)), tileSize*scale, tileSize*scale);
+			ctx.drawImage(playerImage, facing[0].x, facing[0].y, tileSize, tileSize, Math.round(x-((tileSize*scale)/2)), Math.round(y-((tileSize*scale)/2)), tileSize*scale, tileSize*scale);
 		}
 	};
 
@@ -165,32 +165,32 @@ var Player = function(can, startX, startY, level, intersectionEntities) {
 
 	var upIntersection = function(playerX, playerY){
 		//this chooses two pixels at the top of the character
-		var checkPixelX1 = playerX - (size / 3);
-		var checkPixelX2 = playerX - (2 * size / 3);
-		var checkPixelY = playerY - size;
+		var checkPixelX1 = playerX + (size / 6);
+		var checkPixelX2 = playerX - (size / 6);
+		var checkPixelY = playerY - (size / 2);
 		//get that pixels tile
 		return (intersection(getTile(checkPixelX1, checkPixelY)) || intersection(getTile(checkPixelX2, checkPixelY)));
 	}
 	var downIntersection = function(playerX, playerY){
-		var checkPixelX1 = playerX - (size / 3);
-		var checkPixelX2 = playerX - (2 * size / 3);
-		var checkPixelY = playerY;
+		var checkPixelX1 = playerX + (size / 6);
+		var checkPixelX2 = playerX - (size / 6);
+		var checkPixelY = playerY + (size / 2);
 		//get that pixels tile
 		return (intersection(getTile(checkPixelX1, checkPixelY)) || intersection(getTile(checkPixelX2, checkPixelY)));
 	}
 
 	var leftIntersection = function(playerX, playerY){
-		var checkPixelX = playerX - size;
-		var checkPixelY1 = playerY - (size / 3);
-		var checkPixelY2 = playerY - (2 * size / 3);
+		var checkPixelX = playerX - (size / 2);
+		var checkPixelY1 = playerY - (size / 6);
+		var checkPixelY2 = playerY + (size / 6);
 		//get that pixels tile
 		return (intersection(getTile(checkPixelX, checkPixelY1)) || intersection(getTile(checkPixelX, checkPixelY2)));
 	}
 
 	var rightIntersection = function(playerX, playerY){
-		var checkPixelX = playerX;
-		var checkPixelY1 = playerY - (size / 3);
-		var checkPixelY2 = playerY - (2 * size / 3);
+		var checkPixelX = playerX + (size / 2);
+		var checkPixelY1 = playerY - (size / 6);
+		var checkPixelY2 = playerY + (size / 6);
 		//get that pixels tile
 		return (intersection(getTile(checkPixelX, checkPixelY1)) || intersection(getTile(checkPixelX, checkPixelY2)));
 	}

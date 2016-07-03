@@ -9,8 +9,8 @@ var Projectile = function(entity, xP, yP, direction, can, level) {
     var scale = 1;
     var size = tileSize * scale;
     //subtractions are to adjust for where it is firing on the sprite.
-    var x = xP - 18;
-    var y = yP - 18;
+    var x = xP;
+    var y = yP;
     var xOrigin = x;
     var yOrigin = y;
     var angle = direction;
@@ -55,25 +55,24 @@ var Projectile = function(entity, xP, yP, direction, can, level) {
       var left = false;
       var right = false;
       if(newX > 0){
-        var pixelX = projX;
-        var pixelY = (projY - size + projY)/2;
+        var pixelX = projX + (size / 2);
+        var pixelY = projY;
         right = checkTile(getTile(pixelX, pixelY));
       }
       else if(newX < 0){
-        var pixelX = projX - size;
-        var pixelY = (projY - size + projY)/2;
+        var pixelX = projX - (size  / 2);
+        var pixelY = projY;
         left = checkTile(getTile(pixelX, pixelY));
       }
       if(newY > 0){
-        var pixelX = (projX - size + projX)/2;
-        var pixelY = projY;
+        var pixelX = projX;
+        var pixelY = projY + (size / 2);
         down = checkTile(getTile(pixelX, pixelY));
       }
       else if(newY < 0){
-        var pixelX = (projX - size + projX)/2;
-        var pixelY = projY - size;
+        var pixelX = projX;
+        var pixelY = (projY - size / 2);
         var temp = getTile(pixelX, pixelY);
-        console.log("TILEUP: (" + temp.x + "," + temp.y + ")");
         up = checkTile(getTile(pixelX, pixelY));
       }
       //console.log("UP: " + up);
@@ -104,7 +103,7 @@ var Projectile = function(entity, xP, yP, direction, can, level) {
     };
 
     var draw = function(projectileContext){
-      projectileContext.drawImage(projectileImage, 0, 0, tileSize, tileSize, Math.round(x-tileSize), Math.round(y-tileSize), tileSize, tileSize);
+      projectileContext.drawImage(projectileImage, 0, 0, tileSize, tileSize, Math.round(x - (tileSize / 2)), Math.round(y - (tileSize / 2)), tileSize, tileSize);
     };
 
     var getPlayer = function(){

@@ -6,17 +6,10 @@
 var Chaser = function(startX, startY, level, player) {
 	var moving = false;
 	var chaserImage = new Image();
-	chaserImage.src = "SpriteSheets/PlayerSprites/sumoWrestlerSprite.png";
-	var chaserImageUp = [{x:16,y:1},{x:16,y:18},{x:16,y:35}];
+	chaserImage.src = "SpriteSheets/PlayerSprites/gentlemanSprite.png";
 	var chaserImageDown = [{x:0,y:1},{x:0,y:18},{x:0,y:35}];
-	var chaserImageRight = [{x:32,y:1},{x:32,y:18},{x:32,y:35}];
-	var chaserImageLeft = [{x:48,y:1},{x:48,y:18},{x:48,y:35}];
 	//default to the chaser looking down
  	var facing = chaserImageDown;
-	//for choosing the animation
-	var frame = 0;
-	//for adjusting how fast animations go
-	var rate = 5;
 	//separate time for update to go with rate
 	var time = 0;
 	//for the frames
@@ -30,9 +23,7 @@ var Chaser = function(startX, startY, level, player) {
 
 	var x = startX;
 	var y = startY;
-	var moveAmount = 2.5;
-
-    var path = [];
+	var moveAmount = 5;
 
 	// Getters and setters
 	var getX = function() {
@@ -56,23 +47,56 @@ var Chaser = function(startX, startY, level, player) {
 		// Previous position
 		var prevX = x;
 		var	prevY = y;
-		//frame for animating chaser
-		if(frame < 7500){
-			frame = frame + 1;
-		}
-		//if it gets too large then reset it. big numbers bad
-		else{
-			frame = 0;
-		}
         //like an a-star algo
-		var playerX = player.getX();
-    var playerY = player.getY();
-    if(distance(playerX, playerY) < 250){
+    if(distance(player.getX(), player.getY(), x, y) < 900){
 	    //don't want path to update super quick. may need to even make this slower
-	    if(time % 3 == 0){
+			var smoothPath;
+	    if(time % 5 == 0){
 				//may need to take out the - 24's hoping that it'll make the tile it returns a little more accurate
-	    	path = getPath(level, getTile(getX() - 24, getY() - 24), getTile(playerX - 24, playerY - 24));
-	    }
+	    	//path = getPath(getTile(getX() - 24, getY() - 24), getTile(playerX - 24, playerY - 24));
+				//path = smooth(getPath(getTile(x, y), getTile(player.getX(), player.getY())));
+				var path = getPath(getTile(x, y), getTile(player.getX(), player.getY()));
+				if(path.length > 1){
+					smoothPath = smooth(path);
+				}
+				else{
+					smoothPath = path;
+				}
+			}
+			if(smoothPath !== null && smoothPath !== undefined){
+				if(smoothPath.length > 0){
+					var tempX = smoothPath[smoothPath.length - 1].x;
+					var tempY = smoothPath[smoothPath.length - 1].y;
+					var tile = getTile(x, y);
+					if(tile.x < tempX){
+						x += moveAmount;
+					}
+					if(tile.x > tempX){
+						x -= moveAmount;
+					}
+					if(tile.y < tempY){
+						y += moveAmount;
+					}
+					if(tile.y > tempY){
+						y -= moveAmount;
+					}
+				}
+				//they are both on the same tile now adjust to try and get perfect matching
+				else {
+					if(x < player.getX()){
+						x += moveAmount;
+					}
+					if(x > player.getX()){
+						x -= moveAmount;
+					}
+					if(y < player.getY()){
+						y += moveAmount;
+					}
+					if(y > player.getY()){
+						y -= moveAmount;
+					}
+				}
+			}
     }
 
 		if(prevX == x && prevY == y){
@@ -85,15 +109,118 @@ var Chaser = function(startX, startY, level, player) {
 	};
 	//used in checking if player is in range and astar
 	//calculates the euclidean distance between chaser and the x and y provided
-	var distance = function(x1, y1){
+	var distance = function(x1, y1, x2, y2){
       var dist =
-          Math.sqrt(Math.abs((x1 - x) * (x1 - x) + (y1 - y)
-              * (y1 - y)));
+          Math.sqrt(Math.abs((x2 - x1) * (x2 - x1) + (y2 - y1)
+              * (y2 - y1)));
       return dist;
   };
 
-	var getPath = function(levelData, start, end){
-	}
+	var getPath = function(start, end){
+		//open moves
+		var openList = [];
+		//can't go back here
+		var closedList = [];
+		//final steps
+		var result = [];
+		//starting point
+		var current = node(start.x, start.y, null, 0, distance(start.x, start.y, end.x, end.y))
+		//obviously we can start here
+		openList.push(current);
+		//if there are open moves keep trying to get places
+		while(openList.length > 0){
+			//sorts the open list based on the fcost.
+			openList.sort(compareFunc);
+			current = openList[0];
+			//if we are here then stop
+			if(current.x === end.x && current.y === end.y){
+				while(current.parent != null){
+					result.push(current);
+					current = current.parent;
+				}
+				openList = [];
+				closedList = [];
+				return result;
+			}
+			//removes the current element.
+			openList.shift();
+			//add it to closed list so is not revisited
+			closedList.push(current);
+
+			for(var i = 0; i < 9; i++){
+				if(i === 4){
+					// dont' care about the middle tile
+					continue;
+				}
+				//basically returns -1, 0 or 1 depending on the value of i basically | grabs the tile aroudn current.x, current.y
+				var xi = (i % 3) - 1;
+				var yi = Math.floor(i / 3) - 1;
+				var tempX = current.x + xi;
+				var tempY = current.y + yi;
+				var currentTile = getLevelTile(tempX, tempY);
+				//if not in level
+				if(currentTile === null || currentTile === undefined){
+					continue;
+				}
+				//is solid
+				if(currentTile > 10){
+					continue;
+				}
+				//extra check for the diagonals
+				/*if(i === 0 || i === 2 || i === 6 || i === 8){
+					if(!walkable(current, currentTile)){
+						continue;
+					}
+				}*/
+				var gCost = current.gCost + distance(current.x, current.y, tempX, tempY);
+				var hCost = distance(tempX, tempY, end.x, end.y);
+				var tempNode = node(tempX, tempY, current, gCost, hCost);
+				//ignore optimizations for now
+				//if(contains(closedList, tempNode) && tempNode.gCost >= current.gCost){
+				if(contains(closedList, tempNode)){
+					continue;
+				}
+				//if(!contains(openList, tempNode) || tempNode.gCost < current.gCost){
+				if(!contains(openList, tempNode)){
+					openList.push(tempNode);
+				}
+			}
+		}
+		//has failed
+		return null;
+	};
+
+	var contains = function(arr, obj){
+		for(var j = 0; j < arr.length; j++){
+			if(arr[j].x === obj.x && arr[j].y === obj.y){
+				return true;
+			}
+		}
+		return false;
+	};
+
+	var compareFunc = function(first, second){
+		if(second.fCost < first.fCost){
+			return 1;
+		}
+		if(second.fCost > first.fCost){
+			return -1;
+		}
+		return 0;
+	};
+
+	var node = function(tileX, tileY, parent, gCost, hCost)
+	{
+		var temp = {
+			"x": tileX,
+			"y": tileY,
+			"parent": parent,
+			"gCost": gCost,
+			"hCost": hCost,
+			"fCost": gCost + hCost,
+		};
+		return temp;
+	};
 
 	// Draw chaser
 	var draw = function(ctx) {
@@ -101,71 +228,108 @@ var Chaser = function(startX, startY, level, player) {
 		//called. otherwise it goes through supppperr quick. which is bad.
 		//so only change the frame every rate times per draw called.
 		time = time + 1
-		if(time%rate == 0){
-			tempX = facing[frame%facing.length].x;
-			tempY = facing[frame%facing.length].y;
-		}
 		if(time > 7500){
 			time = 0;
 		}
-		if(moving){
-			//so. the image to draw, from startingX startingY through the width and height
-			//then desination x and y and the width and height you want. so scaling to *3
-			//get the proper animation.
-			ctx.drawImage(chaserImage, tempX, tempY, tileSize, tileSize, Math.round(x-(tileSize*scale)), Math.round(y-(tileSize*scale)), tileSize*scale, tileSize*scale);
-		}
-		else{
-			//if the chaser is not moving then make sure it is in the stand still frame
-			//by setting it to facing[0]
-			ctx.drawImage(chaserImage, facing[0].x, facing[0].y, tileSize, tileSize, Math.round(x-(tileSize*scale)), Math.round(y-(tileSize*scale)), tileSize*scale, tileSize*scale);
-		}
+		ctx.drawImage(chaserImage, facing[0].x, facing[0].y, tileSize, tileSize, Math.round(x - ((tileSize*scale) / 2)), Math.round(y - ((tileSize*scale) / 2)), tileSize*scale, tileSize*scale);
 	};
 
-	var upIntersection = function(chaserX, chaserY){
-		//this chooses two pixels at the top of the character
-		var checkPixelX1 = chaserX - (size / 3);
-		var checkPixelX2 = chaserX - (2 * size / 3);
-		var checkPixelY = chaserY - size;
-		//get that pixels tile
-		return (intersection(getTile(checkPixelX1, checkPixelY)) || intersection(getTile(checkPixelX2, checkPixelY)));
-	}
-	var downIntersection = function(chaserX, chaserY){
-		var checkPixelX1 = chaserX - (size / 3);
-		var checkPixelX2 = chaserX - (2 * size / 3);
-		var checkPixelY = chaserY;
-		//get that pixels tile
-		return (intersection(getTile(checkPixelX1, checkPixelY)) || intersection(getTile(checkPixelX2, checkPixelY)));
-	}
+	var getTile = function(x0, y0){
+		var tileX = Math.floor(x0/48.0);
+		var tileY = Math.floor(y0/48.0);
+		if(tileX < 0 || tileX > level[0].length || tileY < 0 || tileY > level.length){
+			return null;
+		}
+		return {x: tileX, y: tileY};
+	};
 
-	var leftIntersection = function(chaserX, chaserY){
-		var checkPixelX = chaserX - size;
-		var checkPixelY1 = chaserY - (size / 3);
-		var checkPixelY2 = chaserY - (2 * size / 3);
-		//get that pixels tile
-		return (intersection(getTile(checkPixelX, checkPixelY1)) || intersection(getTile(checkPixelX, checkPixelY2)));
-	}
+	var getLevelTile = function(x0, y0){
+		if(x0 < 0 || x0 > level[0].length || y0 < 0 || y0 > level.length){
+			return null;
+		}
+		return level[y0][x0];
+	};
 
-	var rightIntersection = function(chaserX, chaserY){
-		var checkPixelX = chaserX;
-		var checkPixelY1 = chaserY - (size / 3);
-		var checkPixelY2 = chaserY - (2 * size / 3);
-		//get that pixels tile
-		return (intersection(getTile(checkPixelX, checkPixelY1)) || intersection(getTile(checkPixelX, checkPixelY2)));
-	}
+	//smooth out the turns for the astar
+	//add old so the whole line isnt checked every time
+	var smooth = function(arr){
+		//initial check
+		var checkPoint = arr[0];
+		//the point to see if can be removed
+		var i = 1;
+		var currentPoint = arr[i];
+		//while we don't go past the array
+		while(arr[i+1] !== null && arr[i+1] !== undefined){
+			//checks the vector between the points
+			if(walkable(checkPoint, currentPoint)){
+				//keep checking along the line
+				currentPoint = arr[i+1];
+				//get rid of the old point
+				arr.splice(i, 1);
+			}
+			else{
+				//otherwise that's the best we can smooth that section. next section now
+				checkPoint = currentPoint;
+				currentPoint = arr[i+1];
+			}
+			i = i + 1;
+		}
+		return arr;
+	};
+
+	var walkable = function(point1, point2){
+		//get the middle of the tile
+		var start = getPixel(point1);
+		var end = getPixel(point2);
+		//doing vector stuff here
+		var vec = {"x": start.x - end.x, "y": start.y - end.y};
+		var vecLength = Math.sqrt((vec.x * vec.x) + (vec.y * vec.y));
+		var uX = vec.x / vecLength;
+		var uY = vec.y / vecLength;
+		var dist = 0;
+		while(dist < vecLength){
+			var checkPixelX = start.x + (dist * uX);
+			var checkPixelY = start.y + (dist * uY);
+			//console.log("CHECKPIXEL: (" + checkPixelX + ", " + checkPixelY + ")");
+			//get the hypothetical corners
+			var leftX = checkPixelX - 24;
+			var rightX = checkPixelX + 24;
+			var upY = checkPixelY - 24;
+			var downY = checkPixelY + 24;
+			//get the tiles for the corners and the middle
+			var topLeft = getTile(leftX, upY);
+			var topRight = getTile(rightX, upY);
+			var bottomLeft = getTile(leftX, downY);
+			var bottomRight = getTile(rightX, downY);
+			var middle = getTile(checkPixelX, checkPixelY);
+			//if any of those intersect don't take the line
+			if(intersection(topLeft) || intersection(topRight) || intersection(bottomLeft) || intersection(bottomRight) || intersection(middle)){
+				console.log("SOMETHING HIT");
+				return false;
+			}
+			else{
+				console.log("NOT HIT");
+			}
+			//checking every 10 pixels along the line
+			dist = dist + 24;
+		}
+		//the whole line was tested. we gucci
+		return true;
+	};
+
+	var getPixel = function(tile){
+		var tempX = (tile.x * 48) + 24;
+		var tempY = (tile.y * 48) + 24;
+		return {"x": tempX, "y": tempY};
+	};
 
 	var intersection = function(checkTile){
-		if(levelData[checkTile.y][checkTile.x] > 10){
+		if(level[checkTile.y][checkTile.x] > 10){
 			return true;
 		}
 		else{
 			return false;
 		}
-	}
-
-	var getTile = function(x0, y0){
-		var tileX = Math.floor(x0/48.0);
-		var tileY = Math.floor(y0/48.0);
-		return {x: tileX, y: tileY};
 	};
 
 	// Define which variables and methods can be accessed

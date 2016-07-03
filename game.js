@@ -13,16 +13,16 @@ var levelData = [
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11],
 [11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
 [11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,2,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,2,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,11,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,11,0,2,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,2,0,11,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,2,11,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,0,11,0,2,0,0,0,11,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,11],
+[11,0,0,0,0,0,0,0,0,11,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,11],
 [11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
 [11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11]];
@@ -42,8 +42,8 @@ function init(){
   //keys.js
   keys = new Keys();
   //player.js
-  localPlayer = new Player(canvas, 100, 100, levelData, null);
-  chaser = new Chaser(200, 200, levelData, localPlayer);
+  localPlayer = new Player(canvas, 100, 300, levelData, null);
+  chaser = new Chaser(550, 300, levelData, localPlayer);
   projectiles = [];
   //sets all the event handlers
   setEventHandlers();
@@ -124,13 +124,13 @@ function drawBackground(){
       var tileNum = levelData[y][x];
       //so. draw the appropriate sprite. at an x and y coordinate * 48 since that's how
       //many pixels we want each sprite to take up
-      if(tileNum == 0){
+      if(tileNum % 10 === 0){
         context.drawImage(backgroundSprites, grassSprite.x, grassSprite.y, backgroundTileSize, backgroundTileSize, Math.round(x*backgroundTileSize), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
       }
-      else if(tileNum == 11){
+      else if(tileNum % 10 === 1){
         context.drawImage(backgroundSprites, rockSprite.x, rockSprite.y, backgroundTileSize, backgroundTileSize, Math.round(x*backgroundTileSize), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
       }
-      else if(tileNum == 2){
+      else if(tileNum % 10 === 2){
         context.drawImage(backgroundSprites, flowerSprite.x, flowerSprite.y, backgroundTileSize, backgroundTileSize, Math.round(x*tileSize*scale), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
       }
       else{
