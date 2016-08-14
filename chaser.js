@@ -166,13 +166,6 @@ var Chaser = function(startX, startY, level, player) {
 				if(currentTile > 10){
 					continue;
 				}
-				//extra check for the diagonals
-				if(i === 0 || i === 2 || i === 6 || i === 8){
-					if(!walkable(current, {"x": tempX, "y": tempY})){
-						console.log("NOT WALKABLE");
-						continue;
-					}
-				}
 				var gCost = current.gCost + distance(current.x, current.y, tempX, tempY);
 				var hCost = distance(tempX, tempY, end.x, end.y);
 				var tempNode = node(tempX, tempY, current, gCost, hCost);
