@@ -47,13 +47,17 @@ var Chaser = function(startX, startY, level, player) {
 		// Previous position
 		var prevX = x;
 		var	prevY = y;
-        //like an a-star algo
-    if(distance(player.getX(), player.getY(), x, y) < 900){
-	    //don't want path to update super quick. may need to even make this slower
+		//like an a-star algo
+		if(distance(player.getX(), player.getY(), x, y) < 900){
+			//the path the guy walks
 			var smoothPath;
-	    if(time % 5 == 0){
+			//don't want path to update super quick. may need to even make this slower
+			//basically the way this sets up this is also how often the path is updated
+			// but also how quickly he moves. Change to a big number if you don't believe me
+			if(time % 5 === 0){
 				var path = getPath(getTile(x, y), getTile(player.getX(), player.getY()));
 				if(path !== null){
+					//now it will be a minimum of 1
 					if(path.length > 1){
 						smoothPath = smooth(path);
 					}
@@ -66,23 +70,9 @@ var Chaser = function(startX, startY, level, player) {
 				}
 			}
 			if(smoothPath !== null && smoothPath !== undefined){
-				if(smoothPath.length > 0){
-					// var tempX = smoothPath[smoothPath.length - 1].x;
-					// var tempY = smoothPath[smoothPath.length - 1].y;
-					var tempTile = getPixel(smoothPath[smoothPath.length - 1]);
-					/*var tile = getTile(x, y);
-					if(tile.x < tempX){
-						x += moveAmount;
-					}
-					if(tile.x > tempX){
-						x -= moveAmount;
-					}
-					if(tile.y < tempY){
-						y += moveAmount;
-					}
-					if(tile.y > tempY){
-						y -= moveAmount;
-					}*/
+				var len = smoothPath.length - 1;
+				if(len > 0){
+					var tempTile = getPixel(smoothPath[len]);
 					if(x < tempTile.x) {
 						x += moveAmount;
 					}
@@ -95,9 +85,8 @@ var Chaser = function(startX, startY, level, player) {
 					if(y > tempTile.y) {
 						y -= moveAmount;
 					}
-				}
-				//they are both on the same tile now adjust to try and get perfect matching
-				else {
+					// now on same tile adjust for pixel perfect.
+				} else {
 					if(x < player.getX()){
 						x += moveAmount;
 					}
@@ -112,15 +101,14 @@ var Chaser = function(startX, startY, level, player) {
 					}
 				}
 			}
-    }
-
-		if(prevX == x && prevY == y){
+		}
+		if(prevX === x && prevY === y){
 			moving = false;
 		}
 		else{
 			moving = true;
 		}
-		return (prevX != x || prevY != y) ? true : false;
+		return moving;
 	};
 	//used in checking if player is in range and astar
 	//calculates the euclidean distance between chaser and the x and y provided
@@ -163,7 +151,7 @@ var Chaser = function(startX, startY, level, player) {
 			closedList.push(current);
 
 			for(var i = 0; i < 9; i++){
-				if(i === 4){
+				if(i === 4 || i === 0 || i === 2 || i === 6 || i === 8){
 					// dont' care about the middle tile
 					continue;
 				}
@@ -178,7 +166,7 @@ var Chaser = function(startX, startY, level, player) {
 				if(currentTile === null || currentTile === undefined || currentTile > 10){
 					continue;
 				}
-				
+
 				var gCost = current.gCost + distance(current.x, current.y, tempX, tempY);
 				var hCost = distance(tempX, tempY, end.x, end.y);
 				var tempNode = node(tempX, tempY, current, gCost, hCost);
@@ -244,7 +232,7 @@ var Chaser = function(startX, startY, level, player) {
 		if(tileX < 0 || tileX > level[0].length || tileY < 0 || tileY > level.length){
 			return null;
 		}
-		return {x: tileX, y: tileY};
+		return {"x": tileX, "y": tileY};
 	};
 
 	var getLevelTile = function(x0, y0){
@@ -275,8 +263,8 @@ var Chaser = function(startX, startY, level, player) {
 				//otherwise that's the best we can smooth that section. next section now
 				checkPoint = currentPoint;
 				currentPoint = arr[i+1];
+				i = i + 1;
 			}
-			i = i + 1;
 		}
 		return arr;
 	};
@@ -310,7 +298,7 @@ var Chaser = function(startX, startY, level, player) {
 			intersection(middle)){
 				return false;
 			}
-			//checking every 10 pixels along the line
+			//checking every 8 pixels along the line
 			dist = dist + 8;
 		}
 		//the whole line was tested. we gucci
