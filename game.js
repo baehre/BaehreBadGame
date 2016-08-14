@@ -42,9 +42,11 @@ function init(){
   //keys.js
   keys = new Keys();
   //player.js
-  localPlayer = new Player(canvas, 100, 100, levelData, null);
-  chaser = new Chaser(200, 200, levelData, localPlayer);
+  //localPlayer = new Player(canvas, 100, 100, levelData, null);
+  //chaser = new Chaser(200, 200, levelData, localPlayer);
 
+  localPlayer = new Player(canvas, 100, 300, levelData, null);
+  chaser = new Chaser(300, 100, levelData, localPlayer);
   projectiles = [];
   //sets all the event handlers
   setEventHandlers();

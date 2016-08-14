@@ -52,22 +52,25 @@ var Chaser = function(startX, startY, level, player) {
 	    //don't want path to update super quick. may need to even make this slower
 			var smoothPath;
 	    if(time % 5 == 0){
-				//may need to take out the - 24's hoping that it'll make the tile it returns a little more accurate
-	    	//path = getPath(getTile(getX() - 24, getY() - 24), getTile(playerX - 24, playerY - 24));
-				//path = smooth(getPath(getTile(x, y), getTile(player.getX(), player.getY())));
 				var path = getPath(getTile(x, y), getTile(player.getX(), player.getY()));
-				if(path.length > 1){
-					smoothPath = smooth(path);
+				if(path !== null){
+					if(path.length > 1){
+						smoothPath = smooth(path);
+					}
+					else{
+						smoothPath = path;
+					}
 				}
 				else{
-					smoothPath = path;
+					smoothPath = null;
 				}
 			}
 			if(smoothPath !== null && smoothPath !== undefined){
 				if(smoothPath.length > 0){
-					var tempX = smoothPath[smoothPath.length - 1].x;
-					var tempY = smoothPath[smoothPath.length - 1].y;
-					var tile = getTile(x, y);
+					// var tempX = smoothPath[smoothPath.length - 1].x;
+					// var tempY = smoothPath[smoothPath.length - 1].y;
+					var tempTile = getPixel(smoothPath[smoothPath.length - 1]);
+					/*var tile = getTile(x, y);
 					if(tile.x < tempX){
 						x += moveAmount;
 					}
@@ -78,6 +81,18 @@ var Chaser = function(startX, startY, level, player) {
 						y += moveAmount;
 					}
 					if(tile.y > tempY){
+						y -= moveAmount;
+					}*/
+					if(x < tempTile.x) {
+						x += moveAmount;
+					}
+					if(x > tempTile.x) {
+						x -= moveAmount;
+					}
+					if(y < tempTile.y) {
+						y += moveAmount;
+					}
+					if(y > tempTile.y) {
 						y -= moveAmount;
 					}
 				}
@@ -124,7 +139,7 @@ var Chaser = function(startX, startY, level, player) {
 		//final steps
 		var result = [];
 		//starting point
-		var current = node(start.x, start.y, null, 0, distance(start.x, start.y, end.x, end.y))
+		var current = node(start.x, start.y, null, 0, distance(start.x, start.y, end.x, end.y));
 		//obviously we can start here
 		openList.push(current);
 		//if there are open moves keep trying to get places
@@ -158,24 +173,19 @@ var Chaser = function(startX, startY, level, player) {
 				var tempX = current.x + xi;
 				var tempY = current.y + yi;
 				var currentTile = getLevelTile(tempX, tempY);
-				//if not in level
-				if(currentTile === null || currentTile === undefined){
+
+				//if not in level / cant walk on
+				if(currentTile === null || currentTile === undefined || currentTile > 10){
 					continue;
 				}
-				//is solid
-				if(currentTile > 10){
-					continue;
-				}
+				
 				var gCost = current.gCost + distance(current.x, current.y, tempX, tempY);
 				var hCost = distance(tempX, tempY, end.x, end.y);
 				var tempNode = node(tempX, tempY, current, gCost, hCost);
-				//ignore optimizations for now
-				//if(contains(closedList, tempNode) && tempNode.gCost >= current.gCost){
 				if(contains(closedList, tempNode)){
 					continue;
 				}
-				//if(!contains(openList, tempNode) || tempNode.gCost < current.gCost){
-				if(!contains(openList, tempNode)){
+				if(!contains(openList, tempNode) && walkable){
 					openList.push(tempNode);
 				}
 			}
@@ -284,24 +294,24 @@ var Chaser = function(startX, startY, level, player) {
 		while(dist < vecLength){
 			var checkPixelX = start.x + (dist * uX);
 			var checkPixelY = start.y + (dist * uY);
-			//console.log("CHECKPIXEL: (" + checkPixelX + ", " + checkPixelY + ")");
-			//get the hypothetical corners
-			var leftX = checkPixelX - 24;
-			var rightX = checkPixelX + 24;
-			var upY = checkPixelY - 24;
-			var downY = checkPixelY + 24;
+			//get the corners
+			var topY = checkPixelY - (size / 2);
+			var bottomY = checkPixelY + (size / 2);
+			var leftX = checkPixelX - (size / 2);
+			var rightX = checkPixelX + (size / 2);
 			//get the tiles for the corners and the middle
-			var topLeft = getTile(leftX, upY);
-			var topRight = getTile(rightX, upY);
-			var bottomLeft = getTile(leftX, downY);
-			var bottomRight = getTile(rightX, downY);
+			var topLeft = getTile(leftX, topY);
+			var topRight = getTile(rightX, topY);
+			var bottomLeft = getTile(leftX, bottomY);
+			var bottomRight = getTile(rightX, bottomY);
 			var middle = getTile(checkPixelX, checkPixelY);
 			//if any of those intersect don't take the line
-			if(intersection(topLeft) || intersection(topRight) || intersection(bottomLeft) || intersection(bottomRight) || intersection(middle)){
+			if(intersection(topLeft) || intersection(topRight) || intersection(bottomLeft) || intersection(bottomRight) ||
+			intersection(middle)){
 				return false;
 			}
 			//checking every 10 pixels along the line
-			dist = dist + 10;
+			dist = dist + 8;
 		}
 		//the whole line was tested. we gucci
 		return true;
