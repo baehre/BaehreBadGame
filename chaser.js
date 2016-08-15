@@ -2,16 +2,16 @@
 /**************************************************
 ** GAME chaser CLASS
 **************************************************/
-//the chaser x and y are actually the lower right hand corner of image...
 var Chaser = function(startX, startY, level, player) {
 	var moving = false;
 	var chaserImage = new Image();
 	chaserImage.src = "SpriteSheets/PlayerSprites/gentlemanSprite.png";
-	var chaserImageDown = [{x:0,y:1},{x:0,y:18},{x:0,y:35}];
+	var chaserImageDown = [{"x":0,"y":1},{"x":0,"y":18},{"x":0,y:35}];
 	//default to the chaser looking down
  	var facing = chaserImageDown;
 	//separate time for update to go with rate
 	var time = 0;
+	var rate = 5;
 	//for the frames
 	var tempX = 0;
 	var tempY = 0;
@@ -23,6 +23,7 @@ var Chaser = function(startX, startY, level, player) {
 
 	var x = startX;
 	var y = startY;
+	// no idea why this is this high. Slows down a lot otherwise though
 	var moveAmount = 5;
 
 	// Getters and setters
@@ -44,6 +45,10 @@ var Chaser = function(startX, startY, level, player) {
 
 	// Update chaser position
 	var update = function() {
+		time = time + 1;
+		if (time > 7500) {
+			time = 0;
+		}
 		// Previous position
 		var prevX = x;
 		var	prevY = y;
@@ -152,7 +157,7 @@ var Chaser = function(startX, startY, level, player) {
 
 			for(var i = 0; i < 9; i++){
 				if(i === 4 || i === 0 || i === 2 || i === 6 || i === 8){
-					// dont' care about the middle tile
+					// dont' care about the middle tile or corners
 					continue;
 				}
 				//basically returns -1, 0 or 1 depending on the value of i basically | grabs the tile aroudn current.x, current.y
@@ -219,11 +224,7 @@ var Chaser = function(startX, startY, level, player) {
 		//so the way this works. we only want to change the frame every 5th time draw is
 		//called. otherwise it goes through supppperr quick. which is bad.
 		//so only change the frame every rate times per draw called.
-		time = time + 1
-		if(time > 7500){
-			time = 0;
-		}
-		ctx.drawImage(chaserImage, facing[0].x, facing[0].y, tileSize, tileSize, Math.round(x - ((tileSize*scale) / 2)), Math.round(y - ((tileSize*scale) / 2)), tileSize*scale, tileSize*scale);
+		ctx.drawImage(chaserImage, 0, 1, tileSize, tileSize, Math.round(x-((tileSize*scale)/2)), Math.round(y-((tileSize*scale)/2)), tileSize*scale, tileSize*scale);
 	};
 
 	var getTile = function(x0, y0){

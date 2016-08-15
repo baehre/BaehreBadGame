@@ -84,10 +84,7 @@ function update(){
 }
 
 function updatePlayer(){
-  if(localPlayer.update(keys)){
-    localPlayer.setX(localPlayer.getX());
-    localPlayer.setY(localPlayer.getY());
-  }
+  localPlayer.update(keys);
 }
 
 function updateProjectiles(){
@@ -98,10 +95,7 @@ function updateProjectiles(){
 }
 
 function updateChasers(){
-  if(chaser.update()){
-    chaser.setX(chaser.getX());
-    chaser.setY(chaser.getY());
-  }
+  chaser.update();
 }
 
 function draw(){
