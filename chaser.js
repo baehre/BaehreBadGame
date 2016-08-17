@@ -54,8 +54,6 @@ var Chaser = function(startX, startY, level, player) {
 		var	prevY = y;
 		//like an a-star algo
 		if(distance(player.getX(), player.getY(), x, y) < 900){
-			//the path the guy walks
-			var smoothPath;
 			//don't want path to update super quick. may need to even make this slower
 			//basically the way this sets up this is also how often the path is updated
 			// but also how quickly he moves. Change to a big number if you don't believe me
@@ -64,30 +62,30 @@ var Chaser = function(startX, startY, level, player) {
 				if(path !== null){
 					//now it will be a minimum of 1
 					if(path.length > 1){
-						smoothPath = smooth(path);
+						var smoothPath = smooth(path);
 					}
 					else{
-						smoothPath = path;
+						var smoothPath = path;
 					}
 				}
 				else{
-					smoothPath = null;
+					var smoothPath = null;
 				}
 			}
 			if(smoothPath !== null && smoothPath !== undefined){
 				var len = smoothPath.length - 1;
 				if(len > 0){
 					var tempTile = getPixel(smoothPath[len]);
-					if(x < tempTile.x) {
+					if (x < tempTile.x) {
 						x += moveAmount;
 					}
-					if(x > tempTile.x) {
+					if (x > tempTile.x) {
 						x -= moveAmount;
 					}
-					if(y < tempTile.y) {
+					if (y < tempTile.y) {
 						y += moveAmount;
 					}
-					if(y > tempTile.y) {
+					if (y > tempTile.y) {
 						y -= moveAmount;
 					}
 					// now on same tile adjust for pixel perfect.
@@ -118,11 +116,13 @@ var Chaser = function(startX, startY, level, player) {
 	//used in checking if player is in range and astar
 	//calculates the euclidean distance between chaser and the x and y provided
 	var distance = function(x1, y1, x2, y2){
-      var dist =
-          Math.sqrt(Math.abs((x2 - x1) * (x2 - x1) + (y2 - y1)
-              * (y2 - y1)));
-      return dist;
-  };
+		return Math.sqrt(Math.abs((x2 - x1) * (x2 - x1) + (y2 - y1)
+			* (y2 - y1)));	
+	};
+
+	var manDistance = function(x1, y1, x2, y2) {
+		return Math.abs(x2 - x1) + Math.abs(y2 - y1);
+	}
 
 	var getPath = function(start, end){
 		//open moves
@@ -132,7 +132,7 @@ var Chaser = function(startX, startY, level, player) {
 		//final steps
 		var result = [];
 		//starting point
-		var current = node(start.x, start.y, null, 0, distance(start.x, start.y, end.x, end.y));
+		var current = node(start.x, start.y, null, 0, manDistance(start.x, start.y, end.x, end.y));
 		//obviously we can start here
 		openList.push(current);
 		//if there are open moves keep trying to get places
@@ -172,8 +172,8 @@ var Chaser = function(startX, startY, level, player) {
 					continue;
 				}
 
-				var gCost = current.gCost + distance(current.x, current.y, tempX, tempY);
-				var hCost = distance(tempX, tempY, end.x, end.y);
+				var gCost = current.gCost + manDistance(current.x, current.y, tempX, tempY);
+				var hCost = manDistance(tempX, tempY, end.x, end.y);
 				var tempNode = node(tempX, tempY, current, gCost, hCost);
 				if(contains(closedList, tempNode)){
 					continue;
@@ -267,7 +267,8 @@ var Chaser = function(startX, startY, level, player) {
 				i = i + 1;
 			}
 		}
-		return arr;
+		// maybe this? double check values.
+		return arr[0];
 	};
 
 	var walkable = function(point1, point2){
