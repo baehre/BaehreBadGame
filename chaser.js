@@ -45,9 +45,10 @@ var Chaser = function(startX, startY, level, player) {
 
 	// Update chaser position
 	var update = function() {
-		time = time + 1;
 		if (time > 7500) {
 			time = 0;
+		} else {
+			time = time + 1;
 		}
 		// Previous position
 		var prevX = x;
@@ -57,18 +58,17 @@ var Chaser = function(startX, startY, level, player) {
 			//don't want path to update super quick. may need to even make this slower
 			//basically the way this sets up this is also how often the path is updated
 			// but also how quickly he moves. Change to a big number if you don't believe me
-			if(time % 5 === 0){
+			if(time % 5 == 0){
 				var path = getPath(getTile(x, y), getTile(player.getX(), player.getY()));
 				if(path !== null){
-					//now it will be a minimum of 1
-					if(path.length > 1){
-						var smoothPath = smooth(path);
+					if (path.length > 0) {
+						var smoothPath = smooth(path, getTile(x, y));
 					}
-					else{
+					else {
 						var smoothPath = path;
 					}
 				}
-				else{
+				else {
 					var smoothPath = null;
 				}
 			}
@@ -117,7 +117,7 @@ var Chaser = function(startX, startY, level, player) {
 	//calculates the euclidean distance between chaser and the x and y provided
 	var distance = function(x1, y1, x2, y2){
 		return Math.sqrt(Math.abs((x2 - x1) * (x2 - x1) + (y2 - y1)
-			* (y2 - y1)));	
+			* (y2 - y1)));
 	};
 
 	var manDistance = function(x1, y1, x2, y2) {
@@ -141,7 +141,7 @@ var Chaser = function(startX, startY, level, player) {
 			openList.sort(compareFunc);
 			current = openList[0];
 			//if we are here then stop
-			if(current.x === end.x && current.y === end.y){
+			if(current.x === end.x && current.y === end.y) {
 				while(current.parent != null){
 					result.push(current);
 					current = current.parent;
@@ -154,37 +154,120 @@ var Chaser = function(startX, startY, level, player) {
 			openList.shift();
 			//add it to closed list so is not revisited
 			closedList.push(current);
-
-			for(var i = 0; i < 9; i++){
-				if(i === 4 || i === 0 || i === 2 || i === 6 || i === 8){
-					// dont' care about the middle tile or corners
+			var neighbors = getNeighbors(current);
+			for(var i = 0; i < neighbors.length; i++) {
+				var neighbor = neighbors[i];
+				// Try to find a node to jump to:
+				var jumpNode = jump(neighbor.x, neighbor.y, current.x, current.y, end);
+				if (jumpNode === null || jumpNode === undefined) {
 					continue;
 				}
-				//basically returns -1, 0 or 1 depending on the value of i basically | grabs the tile aroudn current.x, current.y
-				var xi = (i % 3) - 1;
-				var yi = Math.floor(i / 3) - 1;
-				var tempX = current.x + xi;
-				var tempY = current.y + yi;
-				var currentTile = getLevelTile(tempX, tempY);
-
-				//if not in level / cant walk on
-				if(currentTile === null || currentTile === undefined || currentTile > 10){
-					continue;
-				}
-
-				var gCost = current.gCost + manDistance(current.x, current.y, tempX, tempY);
-				var hCost = manDistance(tempX, tempY, end.x, end.y);
-				var tempNode = node(tempX, tempY, current, gCost, hCost);
+				var gCost = current.gCost + manDistance(current.x, current.y, jumpNode.x, jumpNode.y);
+				var hCost = manDistance(jumpNode.x, jumpNode.y, end.x, end.y);
+				var tempNode = node(jumpNode.x, jumpNode.y, current, gCost, hCost);
 				if(contains(closedList, tempNode)){
 					continue;
 				}
-				if(!contains(openList, tempNode) && walkable){
+				var jumpNodeGCost = manDistance(start.x, start.y, jumpNode.x, jumpNode.y);
+				//if (!contains(openList, tempNode) || gCost < jumpNodeGCost) {
+				if (!contains(openList, tempNode)) {
 					openList.push(tempNode);
 				}
 			}
 		}
 		//has failed
 		return null;
+	};
+
+	var getNeighbors = function(current) {
+		var neighbors = [];
+		// directed pruning: can ignore most neighbors, unless forced.
+    if (current.parent) {
+        var px = current.parent.x;
+        var py = current.parent.y;
+        // get the normalized direction of travel
+        var dx = (current.x - px) / Math.max(Math.abs(current.x - px), 1);
+        var dy = (current.y - py) / Math.max(Math.abs(current.y - py), 1);
+
+        if (dx !== 0) {
+            if (!isBlocked(current.x, current.y - 1)) {
+              neighbors.push({"x": current.x, "y": current.y - 1});
+            }
+            if (!isBlocked(current.x, current.y + 1)) {
+							neighbors.push({"x": current.x, "y": current.y + 1});
+            }
+            if (!isBlocked(current.x + dx, current.y)) {
+							neighbors.push({"x": current.x + dx, "y": current.y});
+            }
+        }
+        else if (dy !== 0) {
+					if (!isBlocked(current.x - 1, current.y)) {
+						neighbors.push({"x": current.x - 1, "y": current.y});
+					}
+					if (!isBlocked(current.x + 1, current.y)) {
+						neighbors.push({"x": current.x + 1, "y": current.y});
+					}
+					if (!isBlocked(current.x, current.y + dy)) {
+						neighbors.push({"x": current.x, "y": current.y + dy});
+					}
+        }
+    }
+    // return all neighbors
+    else {
+			var neighborX = current.x - 1;
+			var neighborY = current.y;
+			if(!isBlocked(neighborX, neighborY)) {
+				neighbors.push({"x": neighborX, "y": neighborY});
+			}
+			neighborX = current.x + 1;
+			neighborY = current.y;
+			if(!isBlocked(neighborX, neighborY)) {
+				neighbors.push({"x": neighborX, "y": neighborY});
+			}
+			neighborX = current.x ;
+			neighborY = current.y - 1;
+			if(!isBlocked(neighborX, neighborY)) {
+				neighbors.push({"x": neighborX, "y": neighborY});
+			}
+			neighborX = current.x;
+			neighborY = current.y + 1;
+			if(!isBlocked(neighborX, neighborY)) {
+				neighbors.push({"x": neighborX, "y": neighborY});
+			}
+    }
+		return neighbors;
+	};
+
+	var jump = function(currentX, currentY, parentX, parentY, end) {
+		var directionX = currentX - parentX;
+		var directionY = currentY - parentY;
+		if(isBlocked(currentX, currentY)) {
+			return null;
+		}
+		if (currentX === end.x && currentY === end.y) {
+			return {"x": currentX, "y": currentY};
+		}
+
+		if (directionX !== 0) {
+				if ((!isBlocked(currentX, currentY - 1) &&
+						 isBlocked(currentX - directionX, currentY - 1)) ||
+						(!isBlocked(currentX, currentY + 1) &&
+						 isBlocked(currentX - directionX, currentY + 1))) {
+							 return {"x": currentX, "y": currentY};
+				}
+		}
+		else if (directionY !== 0){
+			if ((!isBlocked(currentX - 1, currentY) &&
+					 isBlocked(currentX - 1, currentY - directionY)) ||
+					(!isBlocked(currentX + 1, currentY) &&
+					 isBlocked(currentX + 1, currentY - directionY))) {
+						  return {"x": currentX, "y": currentY};
+			}
+			if(jump(currentX + 1, currentY, currentX, currentY, end) !== null || jump(currentX - 1, currentY, currentX, currentY, end) !== null) {
+				return {"x": currentX, "y": currentY};
+			}
+		}
+		return jump(currentX + directionX, currentY + directionY, currentX, currentY, end);
 	};
 
 	var contains = function(arr, obj){
@@ -245,11 +328,11 @@ var Chaser = function(startX, startY, level, player) {
 
 	//smooth out the turns for the astar
 	//add old so the whole line isnt checked every time
-	var smooth = function(arr){
+	var smooth = function(arr, start){
 		//initial check
-		var checkPoint = arr[0];
+		var checkPoint = start;
 		//the point to see if can be removed
-		var i = 1;
+		var i = 0;
 		var currentPoint = arr[i];
 		//while we don't go past the array
 		while(arr[i+1] !== null && arr[i+1] !== undefined){
@@ -267,8 +350,7 @@ var Chaser = function(startX, startY, level, player) {
 				i = i + 1;
 			}
 		}
-		// maybe this? double check values.
-		return arr[0];
+		return arr;
 	};
 
 	var walkable = function(point1, point2){
@@ -315,6 +397,17 @@ var Chaser = function(startX, startY, level, player) {
 
 	var intersection = function(checkTile){
 		if(level[checkTile.y][checkTile.x] > 10){
+			return true;
+		}
+		else{
+			return false;
+		}
+	};
+	var isBlocked = function(checkX, checkY) {
+		if(checkX < 0 || checkX > level[0].length || checkY < 0 || checkY > level.length){
+			return true;
+		}
+		if(level[checkY][checkX] > 10){
 			return true;
 		}
 		else{
