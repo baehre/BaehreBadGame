@@ -42,8 +42,11 @@ function init(){
   //keys.js
   keys = new Keys();
   //player.js
+  //localPlayer = new Player(canvas, 100, 100, levelData, null);
+  //chaser = new Chaser(200, 200, levelData, localPlayer);
+
   localPlayer = new Player(canvas, 100, 300, levelData, null);
-  chaser = new Chaser(550, 300, levelData, localPlayer);
+  chaser = new Chaser(300, 100, levelData, localPlayer);
   projectiles = [];
   //sets all the event handlers
   setEventHandlers();
@@ -81,10 +84,7 @@ function update(){
 }
 
 function updatePlayer(){
-  if(localPlayer.update(keys)){
-    localPlayer.setX(localPlayer.getX());
-    localPlayer.setY(localPlayer.getY());
-  }
+  localPlayer.update(keys);
 }
 
 function updateProjectiles(){
@@ -95,10 +95,7 @@ function updateProjectiles(){
 }
 
 function updateChasers(){
-  if(chaser.update()){
-    chaser.setX(chaser.getX());
-    chaser.setY(chaser.getY());
-  }
+  chaser.update();
 }
 
 function draw(){

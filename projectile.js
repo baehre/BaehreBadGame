@@ -8,7 +8,6 @@ var Projectile = function(entity, xP, yP, direction, can, level) {
     var tileSize = 16;
     var scale = 1;
     var size = tileSize * scale;
-    //subtractions are to adjust for where it is firing on the sprite.
     var x = xP;
     var y = yP;
     var xOrigin = x;
@@ -75,10 +74,6 @@ var Projectile = function(entity, xP, yP, direction, can, level) {
         var temp = getTile(pixelX, pixelY);
         up = checkTile(getTile(pixelX, pixelY));
       }
-      //console.log("UP: " + up);
-      //console.log("DOWN: " + down);
-      //console.log("RIGHT: " + right);
-      //console.log("LEFT: " + left);
       return up || down || left || right;
     };
 
