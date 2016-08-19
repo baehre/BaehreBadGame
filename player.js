@@ -14,8 +14,6 @@ var Player = function(can, startX, startY, level, intersectionEntities) {
 	var playerImageLeft = [{x:48,y:1},{x:48,y:18},{x:48,y:35}];
 	//default to the player looking down
  	var facing = playerImageDown;
-	//for choosing the animation
-	var frame = 0;
 	//for adjusting how fast animations go
 	var rate = 5;
 	//separate time for update to go with rate
@@ -45,16 +43,16 @@ var Player = function(can, startX, startY, level, intersectionEntities) {
 
 	function mouseDown(e){
 		var rect = canvas.getBoundingClientRect();
-	  var tempX = e.clientX - rect.left;
-	  var tempY = e.clientY - rect.top;
-	  //PREVX AND PREVY - THE TRANSLATE GIVES YOU PLAYER X AND Y
+		var tempX = e.clientX - rect.left;
+		var tempY = e.clientY - rect.top;
+		//PREVX AND PREVY - THE TRANSLATE GIVES YOU PLAYER X AND Y
 		//+ 20 for some reason. may need to tinker with taht number
 		if(projectileFireRate <= 0){
-		  var dx = (tempX - canvas.width/2) + 20;
-		  var dy = (tempY - canvas.height/2) + 20;
-		  var direction = Math.atan2(dy,dx);
-		  var tempProjectile = new Projectile("player", x, y, direction, canvas, levelData);
-		  projectiles.push(tempProjectile);
+			var dx = (tempX - canvas.width/2) + 20;
+			var dy = (tempY - canvas.height/2) + 20;
+			var direction = Math.atan2(dy,dx);
+			var tempProjectile = new Projectile("player", x, y, direction, canvas, levelData);
+			projectiles.push(tempProjectile);
 			projectileFireRate = startingProjectileFireRate;
 		}
 	};
@@ -81,14 +79,6 @@ var Player = function(can, startX, startY, level, intersectionEntities) {
 		// Previous position
 		var prevX = x;
 		var	prevY = y;
-		//frame for animating player
-		if(frame < 7500){
-			frame = frame + 1;
-		}
-		//if it gets too large then reset it. big numbers bad
-		else{
-			frame = 0;
-		}
 		//if they can fire then update projectileFireRate
 		if(startingProjectileFireRate > 0){
 			projectileFireRate = projectileFireRate - 1;
@@ -135,9 +125,9 @@ var Player = function(can, startX, startY, level, intersectionEntities) {
 		//called. otherwise it goes through supppperr quick. which is bad.
 		//so only change the frame every rate times per draw called.
 		time = time + 1
-		if(time%rate == 0){
-			tempX = facing[frame%facing.length].x;
-			tempY = facing[frame%facing.length].y;
+		if(time%rate === 0){
+			tempX = facing[time%facing.length].x;
+			tempY = facing[time%facing.length].y;
 		}
 		if(time > 7500){
 			time = 0;
