@@ -6,13 +6,17 @@ var Chaser = function(startX, startY, level, player) {
 	var moving = false;
 	var chaserImage = new Image();
 	chaserImage.src = "SpriteSheets/PlayerSprites/gentlemanSprite.png";
-	var chaserImageDown = [{"x":0,"y":1},{"x":0,"y":18},{"x":0,y:35}];
+	var chaserImageUp = [{x:16,y:1},{x:16,y:18},{x:16,y:35}];
+	var chaserImageDown = [{x:0,y:1},{x:0,y:18},{x:0,y:35}];
+	var chaserImageRight = [{x:32,y:1},{x:32,y:18},{x:32,y:35}];
+	var chaserImageLeft = [{x:48,y:1},{x:48,y:18},{x:48,y:35}];
 	//default to the chaser looking down
  	var facing = chaserImageDown;
 	//separate time for update to go with rate
 	var time = 0;
-	var rate = 5;
+	var rate = 8;
 	//for the frames
+	var frame = 0;
 	var tempX = 0;
 	var tempY = 0;
 	//the size of the sprite
@@ -58,7 +62,7 @@ var Chaser = function(startX, startY, level, player) {
 			//don't want path to update super quick. may need to even make this slower
 			//basically the way this sets up this is also how often the path is updated
 			// but also how quickly he moves. Change to a big number if you don't believe me
-			if(time % 5 == 0){
+			if(time % 5 === 0) {
 				var path = getPath(getTile(x, y), getTile(player.getX(), player.getY()));
 				if(path !== null){
 					if (path.length > 0) {
@@ -78,29 +82,37 @@ var Chaser = function(startX, startY, level, player) {
 					var tempTile = getPixel(smoothPath[len]);
 					if (x < tempTile.x) {
 						x += moveAmount;
+						facing = chaserImageRight;
 					}
 					if (x > tempTile.x) {
 						x -= moveAmount;
+						facing = chaserImageLeft;
 					}
 					if (y < tempTile.y) {
 						y += moveAmount;
+						facing = chaserImageDown;
 					}
 					if (y > tempTile.y) {
 						y -= moveAmount;
+						facing = chaserImageUp;
 					}
 					// now on same tile adjust for pixel perfect.
 				} else {
 					if(x < player.getX()){
 						x += moveAmount;
+						facing = chaserImageRight;
 					}
 					if(x > player.getX()){
 						x -= moveAmount;
+						facing = chaserImageLeft;
 					}
 					if(y < player.getY()){
 						y += moveAmount;
+						facing = chaserImageDown;
 					}
 					if(y > player.getY()){
 						y -= moveAmount;
+						facing = chaserImageUp;
 					}
 				}
 			}
@@ -307,7 +319,20 @@ var Chaser = function(startX, startY, level, player) {
 		//so the way this works. we only want to change the frame every 5th time draw is
 		//called. otherwise it goes through supppperr quick. which is bad.
 		//so only change the frame every rate times per draw called.
-		ctx.drawImage(chaserImage, 0, 1, tileSize, tileSize, Math.round(x-((tileSize*scale)/2)), Math.round(y-((tileSize*scale)/2)), tileSize*scale, tileSize*scale);
+		frame = frame + 1;
+		if(frame % rate === 0) {
+			tempX = facing[frame%facing.length].x;
+			tempY = facing[frame%facing.length].y;
+		}
+		if (frame > 7500) {
+			frame = 0;
+		}
+		var tempBool = x === player.getX() && y === player.getY();
+		if(!tempBool) {
+			ctx.drawImage(chaserImage, tempX, tempY, tileSize, tileSize, Math.round(x-((tileSize*scale)/2)), Math.round(y-((tileSize*scale)/2)), tileSize*scale, tileSize*scale);
+		} else {
+			ctx.drawImage(chaserImage, facing[0].x, facing[0].y, tileSize, tileSize, Math.round(x-((tileSize*scale)/2)), Math.round(y-((tileSize*scale)/2)), tileSize*scale, tileSize*scale);
+		}
 	};
 
 	var getTile = function(x0, y0){
