@@ -37,6 +37,7 @@ var Player = function(can, startX, startY, level, enemies) {
 	var x = startX;
 	var y = startY;
 	var moveAmount = 2.5;
+	var health = 100;
 
 	canvas.addEventListener("mousedown", mouseDown);
 
@@ -65,6 +66,9 @@ var Player = function(can, startX, startY, level, enemies) {
 		return y;
 	};
 
+	var getHealth = function() {
+		return health;
+	};
 
 	var getEnemies = function() {
 		return enemies;
@@ -92,6 +96,10 @@ var Player = function(can, startX, startY, level, enemies) {
 
 	var setSize = function(newSize) {
 			size = newSize;
+	};
+
+	var setHealth = function(newHealth) {
+		health = newHealth;
 	};
 
 	// Update player position
@@ -226,6 +234,8 @@ var Player = function(can, startX, startY, level, enemies) {
 		setProjectiles: setProjectiles,
 		getEnemies: getEnemies,
 		setEnemies: setEnemies,
+		getHealth: getHealth,
+		setHealth: setHealth,
 		getX: getX,
 		getY: getY,
 		setX: setX,

@@ -3,7 +3,6 @@
 ** GAME chaser CLASS
 **************************************************/
 var Chaser = function(startX, startY, level, player) {
-	var moving = false;
 	var chaserImage = new Image();
 	chaserImage.src = "SpriteSheets/PlayerSprites/gentlemanSprite.png";
 	var chaserImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
@@ -29,7 +28,7 @@ var Chaser = function(startX, startY, level, player) {
 	var y = startY;
 	// same move amount as player. but is slower? I don't even know
 	var moveAmount = 5;
-
+	var damage = 10;
 	var health = 100;
 
 	// Getters and setters
@@ -116,21 +115,27 @@ var Chaser = function(startX, startY, level, player) {
 					}
 					// now on same tile adjust for pixel perfect.
 				} else {
-					if(x < player.getX()){
-						x += moveAmount;
-						facing = chaserImageRight;
-					}
-					if(x > player.getX()){
-						x -= moveAmount;
-						facing = chaserImageLeft;
-					}
-					if(y < player.getY()){
-						y += moveAmount;
-						facing = chaserImageDown;
-					}
-					if(y > player.getY()){
-						y -= moveAmount;
-						facing = chaserImageUp;
+					if(rectIntersection()) {
+						if(time % 1000) {
+							player.setHealth(player.getHealth() - damage);
+						}
+					} else {
+						if(x < player.getX()){
+							x += moveAmount;
+							facing = chaserImageRight;
+						}
+						if(x > player.getX()){
+							x -= moveAmount;
+							facing = chaserImageLeft;
+						}
+						if(y < player.getY()){
+							y += moveAmount;
+							facing = chaserImageDown;
+						}
+						if(y > player.getY()){
+							y -= moveAmount;
+							facing = chaserImageUp;
+						}
 					}
 				}
 			}
@@ -142,6 +147,24 @@ var Chaser = function(startX, startY, level, player) {
 			moving = true;
 		}
 		return moving;
+	};
+
+	var rectIntersection = function() {
+		// 1 is players sides
+		var playerX = player.getX();
+		var playerY = player.getY();
+		var playerSize = player.getSize();
+		var left1 = playerX - (playerSize / 2);
+		var right1 = playerX + (playerSize / 2);
+		var top1 = playerY - (playerSize / 2);
+		var bottom1 = playerY + (playerSize / 2);
+		// 2 is chasers sides
+		// Changing by 10 because sprite doesn't actually overlap otherwise
+		var left2 = x - (size / 2) + 15;
+		var right2 = x + (size / 2) - 15;
+		var top2 = y - (size / 2) + 15;
+		var bottom2 = y + (size / 2) - 15;
+		return !(left2 > right1 || right2 < left1 || top2 > bottom1 || bottom2 < top1);
 	};
 	//used in checking if player is in range and astar
 	//calculates the euclidean distance between chaser and the x and y provided

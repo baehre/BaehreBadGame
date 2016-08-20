@@ -44,7 +44,7 @@ function init(){
   keys = new Keys();
   //player.js
   localPlayer = new Player(canvas, 100, 300, levelData, enemies);
-  addChaser(500, 300);
+  addChaser(300, 100);
   projectiles = [];
   //sets all the event handlers
   setEventHandlers();
@@ -97,8 +97,6 @@ function updateChasers(){
     var enemy = enemies[i];
     enemy.update();
   }
-  //chaser1.update();
-  //chaser2.update();
 }
 
 function draw(){
@@ -141,7 +139,14 @@ function drawBackground(){
 }
 
 function drawPlayer(){
-  localPlayer.draw(context);
+  if(localPlayer.getHealth() <= 0) {
+    console.log("DEAD");
+    localPlayer.setX(100);
+    localPlayer.setY(300);
+    localPlayer.setHealth(100);
+  } else {
+    localPlayer.draw(context);
+  }
 }
 
 function drawEnemies() {
