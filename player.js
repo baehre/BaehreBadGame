@@ -2,7 +2,7 @@
 ** GAME PLAYER CLASS
 **************************************************/
 //the player x and y are actually the lower right hand corner of image...
-var Player = function(can, startX, startY, level) {
+var Player = function(can, startX, startY, level, enemies) {
 	var canvas = can;
 	var moving = false;
 	var levelData = level;
@@ -31,7 +31,6 @@ var Player = function(can, startX, startY, level) {
 	var startingProjectileFireRate = 20;
 	//this is the value used to say when they can fire by subtracting then resetting the value
 	var projectileFireRate = startingProjectileFireRate;
-	var mouseClicked = false;
 	//holds all the players projectiles
 	var projectiles = [];
 
@@ -46,12 +45,12 @@ var Player = function(can, startX, startY, level) {
 		var tempX = e.clientX - rect.left;
 		var tempY = e.clientY - rect.top;
 		//PREVX AND PREVY - THE TRANSLATE GIVES YOU PLAYER X AND Y
-		//+ 20 for some reason. may need to tinker with taht number
+		//+ 20 for some reason. may need to tinker with that number
 		if(projectileFireRate <= 0){
 			var dx = (tempX - canvas.width/2) + 20;
 			var dy = (tempY - canvas.height/2) + 20;
 			var direction = Math.atan2(dy,dx);
-			var tempProjectile = new Projectile("player", x, y, direction, canvas, levelData);
+			var tempProjectile = new Projectile("player", x, y, direction, canvas, levelData, enemies);
 			projectiles.push(tempProjectile);
 			projectileFireRate = startingProjectileFireRate;
 		}
@@ -66,12 +65,33 @@ var Player = function(can, startX, startY, level) {
 		return y;
 	};
 
+
+	var getEnemies = function() {
+		return enemies;
+	};
+
+	var getSize = function() {
+		return size;
+	};
+
 	var setX = function(newX) {
 		x = newX;
 	};
 
 	var setY = function(newY) {
 		y = newY;
+	};
+
+	var setEnemies = function(newEnemies) {
+		enemies = newEnemies;
+		for (var i = 0; i < projectiles.length; i++) {
+			var projectile = projectiles[i];
+			projectile.setEnemies(enemies);
+		}
+	};
+
+	var setSize = function(newSize) {
+			size = newSize;
 	};
 
 	// Update player position
@@ -136,12 +156,12 @@ var Player = function(can, startX, startY, level) {
 			//so. the image to draw, from startingX startingY through the width and height
 			//then desination x and y and the width and height you want. so scaling to *3
 			//get the proper animation.
-			ctx.drawImage(playerImage, tempX, tempY, tileSize, tileSize, Math.round(x-((tileSize*scale)/2)), Math.round(y-((tileSize*scale)/2)), tileSize*scale, tileSize*scale);
+			ctx.drawImage(playerImage, tempX, tempY, tileSize, tileSize, Math.round(x-((size)/2)), Math.round(y-((size)/2)), size, size);
 		}
 		else{
 			//if the player is not moving then make sure it is in the stand still frame
 			//by setting it to facing[0]
-			ctx.drawImage(playerImage, facing[0].x, facing[0].y, tileSize, tileSize, Math.round(x-((tileSize*scale)/2)), Math.round(y-((tileSize*scale)/2)), tileSize*scale, tileSize*scale);
+			ctx.drawImage(playerImage, facing[0].x, facing[0].y, tileSize, tileSize, Math.round(x-((size)/2)), Math.round(y-((size)/2)), size, size);
 		}
 	};
 
@@ -204,10 +224,14 @@ var Player = function(can, startX, startY, level) {
 	return {
 		getProjectiles: getProjectiles,
 		setProjectiles: setProjectiles,
+		getEnemies: getEnemies,
+		setEnemies: setEnemies,
 		getX: getX,
 		getY: getY,
 		setX: setX,
 		setY: setY,
+		getSize: getSize,
+		setSize: setSize,
 		update: update,
 		draw: draw
 	}

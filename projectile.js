@@ -1,7 +1,8 @@
-var Projectile = function(entity, xP, yP, direction, can, level) {
+var Projectile = function(entity, xP, yP, direction, can, level, enemies) {
     var canvas = can;
     var projectileImage = new Image();
     projectileImage.src = "SpriteSheets/BulletSprites/bulletSprites.png";
+    //these should eventually come in from whomever is firing
     var projectileSpeed = 5;
     var projectileRange = 200;
     var projectileDamage = 20;
@@ -26,6 +27,30 @@ var Projectile = function(entity, xP, yP, direction, can, level) {
     var getY = function(){
       return y;
     };
+
+    var getEnemies = function() {
+      return enemies;
+    };
+
+    var getSize = function() {
+      return size;
+    };
+
+    var setX = function(newX) {
+      x = newX;
+    };
+
+    var setY = function(newY) {
+      y = newY;
+    };
+
+    var setEnemies = function(newEnemies) {
+      enemies = newEnemies;
+    };
+
+    var setSize = function(newSize) {
+      size = newSize;
+    }
 
     var update = function(){
       if(!checkIntersection(x,y)){
@@ -56,60 +81,79 @@ var Projectile = function(entity, xP, yP, direction, can, level) {
       if(newX > 0){
         var pixelX = projX + (size / 2);
         var pixelY = projY;
-        right = checkTile(getTile(pixelX, pixelY));
+        right = checkTile(getTile(pixelX, pixelY)) || checkHit(pixelX, pixelY);
       }
       else if(newX < 0){
         var pixelX = projX - (size  / 2);
         var pixelY = projY;
-        left = checkTile(getTile(pixelX, pixelY));
+        left = checkTile(getTile(pixelX, pixelY)) || checkHit(pixelX, pixelY);
       }
       if(newY > 0){
         var pixelX = projX;
         var pixelY = projY + (size / 2);
-        down = checkTile(getTile(pixelX, pixelY));
+        down = checkTile(getTile(pixelX, pixelY)) || checkHit(pixelX, pixelY);
       }
       else if(newY < 0){
         var pixelX = projX;
         var pixelY = (projY - size / 2);
-        var temp = getTile(pixelX, pixelY);
-        up = checkTile(getTile(pixelX, pixelY));
+        up = checkTile(getTile(pixelX, pixelY)) || checkHit(pixelX, pixelY);
       }
       return up || down || left || right;
     };
 
     var getTile = function(x0, y0){
-      //minus one to handle the start at 0 thing
       var tileX = Math.floor(x0/48.0);
       var tileY = Math.floor(y0/48.0);
       return {x: tileX, y: tileY};
 	  };
 
     var checkTile = function(tile){
-      if(level[tile.y][tile.x] > 10){
+      if (level[tile.y][tile.x] > 10) {
         return true;
-      }
-      else{
+      } else {
         return false;
       }
-    }
+    };
+
+    var checkHit = function(x0, y0) {
+      for(var i = 0; i < enemies.length; i++) {
+        var enemy = enemies[i];
+
+      }
+      return false;
+    };
 
     var getToRemove = function(){
       return toRemove;
+    };
+
+    var setToRemove = function(newRemove) {
+      toRemove = newRemove;
     };
 
     var draw = function(projectileContext){
       projectileContext.drawImage(projectileImage, 0, 0, tileSize, tileSize, Math.round(x - (tileSize / 2)), Math.round(y - (tileSize / 2)), tileSize, tileSize);
     };
 
-    var getPlayer = function(){
-      return player;
+    var getEntity = function(){
+      return entity;
+    };
+
+    var setEntity = function(newEntity) {
+      entity = newEntity;
     };
 
     return {
-      getPlayer: getPlayer,
+      getEntity: getEntity,
       getX: getX,
       getY: getY,
   		getToRemove: getToRemove,
+      getSize: getSize,
+      setEntity: setEntity,
+      setX: setX,
+      setY: setY,
+      setToRemove: setToRemove,
+      setSize: setSize,
   		update: update,
   		draw: draw
   	}

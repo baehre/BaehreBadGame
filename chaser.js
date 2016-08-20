@@ -39,12 +39,20 @@ var Chaser = function(startX, startY, level, player) {
 		return y;
 	};
 
+	var getSize = function() {
+		return size;
+	};
+
 	var setX = function(newX) {
 		x = newX;
 	};
 
 	var setY = function(newY) {
 		y = newY;
+	};
+
+	var setSize = function(newSize) {
+		size = newSize;
 	};
 
 	// Update chaser position
@@ -327,7 +335,7 @@ var Chaser = function(startX, startY, level, player) {
 		if (frame > 7500) {
 			frame = 0;
 		}
-		ctx.drawImage(chaserImage, tempX, tempY, tileSize, tileSize, Math.round(x-((tileSize*scale)/2)), Math.round(y-((tileSize*scale)/2)), tileSize*scale, tileSize*scale);
+		ctx.drawImage(chaserImage, tempX, tempY, tileSize, tileSize, Math.round(x-((size)/2)), Math.round(y-((size)/2)), size, size);
 	};
 
 	var getTile = function(x0, y0){
@@ -439,8 +447,10 @@ var Chaser = function(startX, startY, level, player) {
 	return {
 		getX: getX,
 		getY: getY,
+		getSize: getSize,
 		setX: setX,
 		setY: setY,
+		setSize: setSize,
 		update: update,
 		draw: draw
 	}
