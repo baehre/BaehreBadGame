@@ -118,7 +118,24 @@ var Projectile = function(entity, xP, yP, direction, can, level, enemies) {
     var checkHit = function(x0, y0) {
       for(var i = 0; i < enemies.length; i++) {
         var enemy = enemies[i];
+        var tempX = enemy.getX();
+        var tempY = enemy.getY();
+        var tempSize = enemy.getSize();
+        var left = tempX - (tempSize / 2);
+        var right = tempX + (tempSize / 2);
+        var top = tempY - (tempSize / 2);
+        var bottom = tempY + (tempSize / 2);
+        //pass in point + sides of rectangle
+        if (rectIntersection(x0, y0, left, right, top, bottom)) {
+          return true;
+        }
+      }
+      return false;
+    };
 
+    var rectIntersection = function(x0, y0, left, right, top, bottom) {
+      if (x0 >= left && x0 <= right && y0 <= bottom && y0 >= top) {
+        return true;
       }
       return false;
     };
