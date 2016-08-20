@@ -27,8 +27,10 @@ var Chaser = function(startX, startY, level, player) {
 
 	var x = startX;
 	var y = startY;
-	// no idea why this is this high. Slows down a lot otherwise though
+	// same move amount as player. but is slower? I don't even know
 	var moveAmount = 5;
+
+	var health = 100;
 
 	// Getters and setters
 	var getX = function() {
@@ -42,6 +44,14 @@ var Chaser = function(startX, startY, level, player) {
 	var getSize = function() {
 		return size;
 	};
+
+	var getHealth = function() {
+		return health;
+	}
+
+	var setHealth = function(newHealth) {
+		health = newHealth;
+	}
 
 	var setX = function(newX) {
 		x = newX;
@@ -448,9 +458,11 @@ var Chaser = function(startX, startY, level, player) {
 		getX: getX,
 		getY: getY,
 		getSize: getSize,
+		getHealth: getHealth,
 		setX: setX,
 		setY: setY,
 		setSize: setSize,
+		setHealth: setHealth,
 		update: update,
 		draw: draw
 	}

@@ -127,6 +127,7 @@ var Projectile = function(entity, xP, yP, direction, can, level, enemies) {
         var bottom = tempY + (tempSize / 2);
         //pass in point + sides of rectangle
         if (rectIntersection(x0, y0, left, right, top, bottom)) {
+          enemy.setHealth(enemy.getHealth() - projectileDamage);
           return true;
         }
       }
@@ -166,11 +167,13 @@ var Projectile = function(entity, xP, yP, direction, can, level, enemies) {
       getY: getY,
   		getToRemove: getToRemove,
       getSize: getSize,
+      getEnemies: getEnemies,
       setEntity: setEntity,
       setX: setX,
       setY: setY,
       setToRemove: setToRemove,
       setSize: setSize,
+      setEnemies: setEnemies,
   		update: update,
   		draw: draw
   	}

@@ -147,7 +147,12 @@ function drawPlayer(){
 function drawEnemies() {
   for (var i = 0; i < enemies.length; i++) {
     var enemy = enemies[i];
-    enemy.draw(context);
+    if (enemy.getHealth() <= 0) {
+      enemies.splice(i, 1);
+      localPlayer.setEnemies(enemies);
+    } else {
+      enemy.draw(context);
+    }
   }
   //chaser1.draw(context);
   //chaser2.draw(context);
@@ -161,7 +166,6 @@ function drawProjectiles(){
     var tempProjectile = projectiles[i];
     if(tempProjectile.getToRemove()){
       projectiles.splice(i, 1);
-      continue;
     }
     else{
       tempProjectile.draw(context);
