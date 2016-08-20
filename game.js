@@ -7,6 +7,7 @@ var projectiles;
 var backgroundSprites;
 var tileSize = 16;
 var scale = 3;
+var enemies = [];
 var backgroundTileSize = tileSize * scale;
 //level data. saying which tiles to use.
 var levelData = [
@@ -42,11 +43,8 @@ function init(){
   //keys.js
   keys = new Keys();
   //player.js
-  //localPlayer = new Player(canvas, 100, 100, levelData, null);
-
-  localPlayer = new Player(canvas, 100, 300, levelData);
-  chaser1 = new Chaser(500, 300, levelData, localPlayer);
-  //chaser2 = new Chaser(300, 100, levelData, localPlayer);
+  localPlayer = new Player(canvas, 100, 300, levelData, enemies);
+  addChaser(300, 100);
   projectiles = [];
   //sets all the event handlers
   setEventHandlers();
@@ -95,8 +93,10 @@ function updateProjectiles(){
 }
 
 function updateChasers(){
-  chaser1.update();
-  //chaser2.update();
+  for (var i = 0; i < enemies.length; i++) {
+    var enemy = enemies[i];
+    enemy.update();
+  }
 }
 
 function draw(){
@@ -139,11 +139,27 @@ function drawBackground(){
 }
 
 function drawPlayer(){
-  localPlayer.draw(context);
+  if(localPlayer.getHealth() <= 0) {
+    console.log("DEAD");
+    localPlayer.setX(100);
+    localPlayer.setY(300);
+    localPlayer.setHealth(100);
+  } else {
+    localPlayer.draw(context);
+  }
 }
 
-function drawEnemies(){
-  chaser1.draw(context);
+function drawEnemies() {
+  for (var i = 0; i < enemies.length; i++) {
+    var enemy = enemies[i];
+    if (enemy.getHealth() <= 0) {
+      enemies.splice(i, 1);
+      localPlayer.setEnemies(enemies);
+    } else {
+      enemy.draw(context);
+    }
+  }
+  //chaser1.draw(context);
   //chaser2.draw(context);
 }
 
@@ -155,7 +171,6 @@ function drawProjectiles(){
     var tempProjectile = projectiles[i];
     if(tempProjectile.getToRemove()){
       projectiles.splice(i, 1);
-      continue;
     }
     else{
       tempProjectile.draw(context);
@@ -163,4 +178,9 @@ function drawProjectiles(){
   }
   // NOTE: this needs to be changed when we have shooting enemies
   localPlayer.setProjectiles(projectiles);
+}
+
+function addChaser(chaserX, chaserY){
+  enemies.push(new Chaser(chaserX, chaserY, levelData, localPlayer));
+  localPlayer.setEnemies(enemies);
 }
