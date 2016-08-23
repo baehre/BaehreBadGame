@@ -23,9 +23,12 @@ var Chaser = function(startX, startY, level, player) {
 	//scale the person to 48 (16*3) pixels with this
 	var scale = 3;
 	var size = tileSize * scale;
-
 	var x = startX;
 	var y = startY;
+	var prevPlayerX = player.getX();
+	var prevPlayerY = player.getY();
+	//make global. for the pathfinding
+	var smoothPath = null;
 	// same move amount as player. but is slower? I don't even know
 	var moveAmount = 5;
 	var damage = 10;
@@ -66,6 +69,20 @@ var Chaser = function(startX, startY, level, player) {
 
 	// Update chaser position
 	var update = function() {
+		if(smoothPath === null) {
+			var path = getPath(getTile(x, y), getTile(player.getX(), player.getY()));
+			if(path !== null){
+				if (path.length > 0) {
+					smoothPath = smooth(path, getTile(x, y));
+				}
+				else {
+					smoothPath = path;
+				}
+			}
+			else {
+				smoothPath = null;
+			}
+		}
 		if (time > 7500) {
 			time = 0;
 		} else {
@@ -79,21 +96,28 @@ var Chaser = function(startX, startY, level, player) {
 			//don't want path to update super quick. may need to even make this slower
 			//basically the way this sets up this is also how often the path is updated
 			// but also how quickly he moves. Change to a big number if you don't believe me
-			if(time % 5 === 0) {
-				var path = getPath(getTile(x, y), getTile(player.getX(), player.getY()));
-				if(path !== null){
-					if (path.length > 0) {
-						var smoothPath = smooth(path, getTile(x, y));
+			// if the player has moved update the path. and update the previous position
+			if ((prevPlayerX !== player.getX() || prevPlayerY !== player.getY())) {
+				console.log("PLAYER MOVE");
+				prevPlayerX = player.getX();
+				prevPlayerY = player.getY();
+				if(smoothPath !== null && smoothPath !== undefined) {
+					if(smoothPath.length !== 0) {
+						var tempTile = getTile(prevPlayerX, prevPlayerY);
+						if(tempTile.x !== smoothPath[smoothPath.length - 1].x || tempTile.y !== smoothPath[smoothPath.length - 1].y) {
+							smoothPath.push(tempTile);
+							smoothPath = smooth(smoothPath, getTile(x, y));
+						}
+					} else {
+						smoothPath.push(tempTile);
 					}
-					else {
-						var smoothPath = path;
-					}
-				}
-				else {
-					var smoothPath = null;
 				}
 			}
-			if(smoothPath !== null && smoothPath !== undefined){
+			if(smoothPath !== null && smoothPath !== undefined && time % 10 === 0){
+				console.log("LENGTH: " + smoothPath.length);
+				for(let j = 0; j < smoothPath.length; j++) {
+					console.log("(" + smoothPath[j].x + ", " + smoothPath[j].y + ")");
+				}
 				var len = smoothPath.length - 1;
 				if(len > 0){
 					var tempTile = getPixel(smoothPath[len]);
@@ -113,6 +137,7 @@ var Chaser = function(startX, startY, level, player) {
 						y -= moveAmount;
 						facing = chaserImageUp;
 					}
+					smoothPath.pop();
 					// now on same tile adjust for pixel perfect.
 				} else {
 					if(rectIntersection()) {
