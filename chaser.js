@@ -30,7 +30,7 @@ var Chaser = function(startX, startY, level, player) {
 	//make global. for the pathfinding
 	var smoothPath = null;
 	// same move amount as player. but is slower? I don't even know
-	var moveAmount = 5;
+	var moveAmount = 2.5;
 	var damage = 10;
 	var health = 100;
 
@@ -110,33 +110,32 @@ var Chaser = function(startX, startY, level, player) {
 				else {
 					smoothPath = null;
 				}
+			} else if ((prevPlayerX !== player.getX() || prevPlayerY !== player.getY())) {
+				console.log("PLAYER MOVE");
+				prevPlayerX = player.getX();
+				prevPlayerY = player.getY();
+				if(smoothPath !== null && smoothPath !== undefined) {
+					if(smoothPath.length !== 0) {
+						var tempTile = getTile(prevPlayerX, prevPlayerY);
+						if(tempTile.x !== smoothPath[smoothPath.length - 1].x || tempTile.y !== smoothPath[smoothPath.length - 1].y) {
+							console.log("SMOOTHPATHLEN: " + smoothPath.length);
+							smoothPath.unshift(tempTile);
+							console.log("SMOOTHPATHLEN: " + smoothPath.length);
+							smoothPath = smooth(smoothPath, getTile(x, y));
+							console.log("SMOOTHPATHLEN: " + smoothPath.length);
+						}
+					} else {
+						smoothPath.push(tempTile);
+					}
+				}
 			}
-			//else if ((prevPlayerX !== player.getX() || prevPlayerY !== player.getY())) {
-			// 	console.log("PLAYER MOVE");
-			// 	prevPlayerX = player.getX();
-			// 	prevPlayerY = player.getY();
-			// 	if(smoothPath !== null && smoothPath !== undefined) {
-			// 		if(smoothPath.length !== 0) {
-			// 			var tempTile = getTile(prevPlayerX, prevPlayerY);
-			// 			if(tempTile.x !== smoothPath[smoothPath.length - 1].x || tempTile.y !== smoothPath[smoothPath.length - 1].y) {
-			// 				console.log("SMOOTHPATHLEN: " + smoothPath.length);
-			// 				smoothPath.unshift(tempTile);
-			// 				console.log("SMOOTHPATHLEN: " + smoothPath.length);
-			// 				smoothPath = smooth(smoothPath, getTile(x, y));
-			// 				console.log("SMOOTHPATHLEN: " + smoothPath.length);
-			// 			}
-			// 		} else {
-			// 			smoothPath.push(tempTile);
-			// 		}
-			// 	}
-			// }
-			if(smoothPath !== null && smoothPath !== undefined && time % 5 === 0){
+			if(smoothPath !== null && smoothPath !== undefined){
 				console.log("LENGTH: " + smoothPath.length);
 				for(let j = 0; j < smoothPath.length; j++) {
 					console.log("(" + smoothPath[j].x + ", " + smoothPath[j].y + ")");
 				}
 				var len = smoothPath.length - 1;
-				if(len > 0){
+				if(len > -1){
 					var tempTile = getPixel(smoothPath[len]);
 					if (x < tempTile.x) {
 						x += moveAmount;
