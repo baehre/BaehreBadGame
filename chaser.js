@@ -92,9 +92,6 @@ var Chaser = function(startX, startY, level, player) {
 		var	prevY = y;
 		//like an a-star algo
 		if(distance(player.getX(), player.getY(), x, y) < 900){
-			//don't want path to update super quick. may need to even make this slower
-			//basically the way this sets up this is also how often the path is updated
-			// but also how quickly he moves. Change to a big number if you don't believe me
 			// if the player has moved update the path. and update the previous position
 			if ((prevPlayerX !== player.getX() || prevPlayerY !== player.getY())) {
 				prevPlayerX = player.getX();
