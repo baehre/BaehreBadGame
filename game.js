@@ -140,7 +140,6 @@ function drawBackground(){
 
 function drawPlayer(){
   if(localPlayer.getHealth() <= 0) {
-    console.log("DEAD");
     localPlayer.setX(100);
     localPlayer.setY(300);
     localPlayer.setHealth(100);
@@ -159,8 +158,6 @@ function drawEnemies() {
       enemy.draw(context);
     }
   }
-  //chaser1.draw(context);
-  //chaser2.draw(context);
 }
 
 function drawProjectiles(){

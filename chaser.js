@@ -83,10 +83,9 @@ var Chaser = function(startX, startY, level, player) {
 				smoothPath = null;
 			}
 		}
+		time = time + 1;
 		if (time > 7500) {
 			time = 0;
-		} else {
-			time = time + 1;
 		}
 		// Previous position
 		var prevX = x;
@@ -97,23 +96,41 @@ var Chaser = function(startX, startY, level, player) {
 			//basically the way this sets up this is also how often the path is updated
 			// but also how quickly he moves. Change to a big number if you don't believe me
 			// if the player has moved update the path. and update the previous position
-			if ((prevPlayerX !== player.getX() || prevPlayerY !== player.getY())) {
-				console.log("PLAYER MOVE");
-				prevPlayerX = player.getX();
-				prevPlayerY = player.getY();
-				if(smoothPath !== null && smoothPath !== undefined) {
-					if(smoothPath.length !== 0) {
-						var tempTile = getTile(prevPlayerX, prevPlayerY);
-						if(tempTile.x !== smoothPath[smoothPath.length - 1].x || tempTile.y !== smoothPath[smoothPath.length - 1].y) {
-							smoothPath.push(tempTile);
-							smoothPath = smooth(smoothPath, getTile(x, y));
-						}
-					} else {
-						smoothPath.push(tempTile);
+			if(time % 60 === 0) {
+				console.log("GOES TO TIME");
+				var path = getPath(getTile(x, y), getTile(player.getX(), player.getY()));
+				if(path !== null){
+					if (path.length > 0) {
+						smoothPath = smooth(path, getTile(x, y));
+					}
+					else {
+						smoothPath = path;
 					}
 				}
+				else {
+					smoothPath = null;
+				}
 			}
-			if(smoothPath !== null && smoothPath !== undefined && time % 10 === 0){
+			//else if ((prevPlayerX !== player.getX() || prevPlayerY !== player.getY())) {
+			// 	console.log("PLAYER MOVE");
+			// 	prevPlayerX = player.getX();
+			// 	prevPlayerY = player.getY();
+			// 	if(smoothPath !== null && smoothPath !== undefined) {
+			// 		if(smoothPath.length !== 0) {
+			// 			var tempTile = getTile(prevPlayerX, prevPlayerY);
+			// 			if(tempTile.x !== smoothPath[smoothPath.length - 1].x || tempTile.y !== smoothPath[smoothPath.length - 1].y) {
+			// 				console.log("SMOOTHPATHLEN: " + smoothPath.length);
+			// 				smoothPath.unshift(tempTile);
+			// 				console.log("SMOOTHPATHLEN: " + smoothPath.length);
+			// 				smoothPath = smooth(smoothPath, getTile(x, y));
+			// 				console.log("SMOOTHPATHLEN: " + smoothPath.length);
+			// 			}
+			// 		} else {
+			// 			smoothPath.push(tempTile);
+			// 		}
+			// 	}
+			// }
+			if(smoothPath !== null && smoothPath !== undefined && time % 5 === 0){
 				console.log("LENGTH: " + smoothPath.length);
 				for(let j = 0; j < smoothPath.length; j++) {
 					console.log("(" + smoothPath[j].x + ", " + smoothPath[j].y + ")");
@@ -137,7 +154,11 @@ var Chaser = function(startX, startY, level, player) {
 						y -= moveAmount;
 						facing = chaserImageUp;
 					}
-					smoothPath.pop();
+					var currTile = getTile(x, y);
+					if(x === tempTile.x && y === tempTile.y) {
+						console.log("HIT THE ONE IN THE PATH");
+						smoothPath.pop();
+					}
 					// now on same tile adjust for pixel perfect.
 				} else {
 					if(rectIntersection()) {
