@@ -129,7 +129,7 @@ var Chaser = function(startX, startY, level, player) {
 						facing = chaserImageUp;
 					}
 					var currTile = getTile(x, y);
-					if(x === tempTile.x && y === tempTile.y) {
+					if(currTile.x === tempTile.x && currTile.y === tempTile.y) {
 						smoothPath.pop();
 					}
 					// now on same tile adjust for pixel perfect.
