@@ -94,24 +94,38 @@ var Chaser = function(startX, startY, level, player) {
 		var	prevY = y;
 		//like an a-star algo
 		if(distance(player.getX(), player.getY(), x, y) < 900){
+			if(pathManDistance(smoothPath) > manDistance(player.getX(), player.getY(), x, y)) {
+				var path = getPath(getTile(x, y), getTile(player.getX(), player.getY()));
+				if(path !== null){
+					if (path.length > 0) {
+						path.push(getTile(x, y));
+						smoothPath = smooth(path);
+						smoothPath.pop();
+					}
+					else {
+						smoothPath = path;
+					}
+				}
+			} else {
 			// if the player has moved update the path. and update the previous position
-			if ((prevPlayerX !== player.getX() || prevPlayerY !== player.getY())) {
-				prevPlayerX = player.getX();
-				prevPlayerY = player.getY();
-				if(smoothPath !== null && smoothPath !== undefined) {
-					if(smoothPath.length !== 0 && smoothPath[smoothPath.length - 1] !== undefined) {
-						var tempTile = getTile(prevPlayerX, prevPlayerY);
-						if(tempTile !== undefined) {
-							if(tempTile.x !== smoothPath[0].x || tempTile.y !== smoothPath[0].y) {
-								smoothPath.unshift(tempTile);
-								smoothPath.push(getTile(x, y));
-								smoothPath = smooth(smoothPath);
-								smoothPath.pop();
+				if ((prevPlayerX !== player.getX() || prevPlayerY !== player.getY())) {
+					prevPlayerX = player.getX();
+					prevPlayerY = player.getY();
+					if(smoothPath !== null && smoothPath !== undefined) {
+						if(smoothPath.length !== 0 && smoothPath[smoothPath.length - 1] !== undefined) {
+							var tempTile = getTile(prevPlayerX, prevPlayerY);
+							if(tempTile !== undefined) {
+								if(tempTile.x !== smoothPath[0].x || tempTile.y !== smoothPath[0].y) {
+									smoothPath.unshift(tempTile);
+									smoothPath.push(getTile(x, y));
+									smoothPath = smooth(smoothPath);
+									smoothPath.pop();
+								}
 							}
-						}
-					} else {
-						if(tempTile !== undefined) {
-							smoothPath.unshift(tempTile);
+						} else {
+							if(tempTile !== undefined) {
+								smoothPath.unshift(tempTile);
+							}
 						}
 					}
 				}
@@ -146,17 +160,19 @@ var Chaser = function(startX, startY, level, player) {
 							player.setHealth(player.getHealth() - damage);
 						}
 					} else {
-						if(x < player.getX()){
+						var smallXCheck = Math.abs(x - player.getX()) > 1;
+						if(x < player.getX() && smallXCheck){
 							x += moveAmount;
 							facing = chaserImageRight;
-						} else if(x > player.getX()){
+						} else if(x > player.getX() && smallXCheck){
 							x -= moveAmount;
 							facing = chaserImageLeft;
 						}
-						if(y < player.getY()){
+						var smallYCheck = Math.abs(y - player.getY()) > 1;
+						if(y < player.getY() && smallYCheck){
 							y += moveAmount;
 							facing = chaserImageDown;
-						} else if(y > player.getY()){
+						} else if(y > player.getY() && smallYCheck){
 							y -= moveAmount;
 							facing = chaserImageUp;
 						}
@@ -172,6 +188,17 @@ var Chaser = function(startX, startY, level, player) {
 		}
 		return moving;
 	};
+
+	var pathManDistance = function(path) {
+		var distance = 0;
+		path.unshift(getTile(x, y));
+		for (var i = 0; i < path.length - 1; i++) {
+			var pixel1 = getPixel(path[i]);
+			var pixel2 = getPixel(path[i + 1]);
+			distance = distance + manDistance(pixel1.x, pixel1.y, pixel2.x, pixel2.y);
+		}
+		return distance;
+	}
 
 	var rectIntersection = function() {
 		// 1 is players sides

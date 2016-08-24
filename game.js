@@ -45,6 +45,14 @@ function init(){
   //player.js
   localPlayer = new Player(canvas, 100, 300, levelData, enemies);
   addChaser(300, 100);
+  //addChaser(400, 100);
+  // addChaser(500, 100);
+  // addChaser(200, 100);
+  // addChaser(600, 100);
+  // addChaser(500, 300);
+  // addChaser(700, 100);
+  // addChaser(500, 400);
+  // addChaser(550, 600);
   projectiles = [];
   //sets all the event handlers
   setEventHandlers();
