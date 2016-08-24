@@ -30,7 +30,7 @@ var Chaser = function(startX, startY, level, player) {
 	//make global. for the pathfinding
 	var smoothPath = null;
 	//how much chaser moves
-	var moveAmount = 2.5;
+	var moveAmount = 1.5;
 	var damage = 10;
 	var health = 100;
 
@@ -73,7 +73,9 @@ var Chaser = function(startX, startY, level, player) {
 			var path = getPath(getTile(x, y), getTile(player.getX(), player.getY()));
 			if(path !== null){
 				if (path.length > 0) {
-					smoothPath = smooth(path, getTile(x, y));
+					path.push(getTile(x, y));
+					smoothPath = smooth(path);
+					smoothPath.pop();
 				}
 				else {
 					smoothPath = path;
@@ -97,39 +99,44 @@ var Chaser = function(startX, startY, level, player) {
 				prevPlayerX = player.getX();
 				prevPlayerY = player.getY();
 				if(smoothPath !== null && smoothPath !== undefined) {
-					if(smoothPath.length !== 0) {
+					if(smoothPath.length !== 0 && smoothPath[smoothPath.length - 1] !== undefined) {
 						var tempTile = getTile(prevPlayerX, prevPlayerY);
-						if(tempTile.x !== smoothPath[smoothPath.length - 1].x || tempTile.y !== smoothPath[smoothPath.length - 1].y) {
-							smoothPath.unshift(tempTile);
-							smoothPath = smooth(smoothPath, getTile(x, y));
+						if(tempTile !== undefined) {
+							if(tempTile.x !== smoothPath[0].x || tempTile.y !== smoothPath[0].y) {
+								smoothPath.unshift(tempTile);
+								smoothPath.push(getTile(x, y));
+								smoothPath = smooth(smoothPath);
+								smoothPath.pop();
+							}
 						}
 					} else {
-						smoothPath.unshift(tempTile);
+						if(tempTile !== undefined) {
+							smoothPath.unshift(tempTile);
+						}
 					}
 				}
 			}
 			if(smoothPath !== null && smoothPath !== undefined){
 				var len = smoothPath.length - 1;
-				if(len > -1){
+				if(len > -1 && smoothPath[len] !== undefined){
 					var tempTile = getPixel(smoothPath[len]);
-					if (x < tempTile.x) {
+					var smallXCheck = Math.abs(x - tempTile.x) > 1;
+					if (x < tempTile.x && smallXCheck) {
 						x += moveAmount;
 						facing = chaserImageRight;
-					}
-					if (x > tempTile.x) {
+					} else if (x > tempTile.x && smallXCheck) {
 						x -= moveAmount;
 						facing = chaserImageLeft;
 					}
-					if (y < tempTile.y) {
+					var smallYCheck = Math.abs(y - tempTile.y) > 1;
+					if (y < tempTile.y && smallYCheck) {
 						y += moveAmount;
 						facing = chaserImageDown;
-					}
-					if (y > tempTile.y) {
+					} else if (y > tempTile.y && smallYCheck) {
 						y -= moveAmount;
 						facing = chaserImageUp;
 					}
-					var currTile = getTile(x, y);
-					if(currTile.x === tempTile.x && currTile.y === tempTile.y) {
+					if(Math.abs(x - tempTile.x) < moveAmount && Math.abs(y - tempTile.y) < moveAmount) {
 						smoothPath.pop();
 					}
 					// now on same tile adjust for pixel perfect.
@@ -142,16 +149,14 @@ var Chaser = function(startX, startY, level, player) {
 						if(x < player.getX()){
 							x += moveAmount;
 							facing = chaserImageRight;
-						}
-						if(x > player.getX()){
+						} else if(x > player.getX()){
 							x -= moveAmount;
 							facing = chaserImageLeft;
 						}
 						if(y < player.getY()){
 							y += moveAmount;
 							facing = chaserImageDown;
-						}
-						if(y > player.getY()){
+						} else if(y > player.getY()){
 							y -= moveAmount;
 							facing = chaserImageUp;
 						}
@@ -240,7 +245,7 @@ var Chaser = function(startX, startY, level, player) {
 				if(contains(closedList, tempNode)){
 					continue;
 				}
-				var jumpNodeGCost = manDistance(start.x, start.y, jumpNode.x, jumpNode.y);
+				//var jumpNodeGCost = manDistance(start.x, start.y, jumpNode.x, jumpNode.y);
 				//if (!contains(openList, tempNode) || gCost < jumpNodeGCost) {
 				if (!contains(openList, tempNode)) {
 					openList.push(tempNode);
@@ -408,25 +413,25 @@ var Chaser = function(startX, startY, level, player) {
 
 	//smooth out the turns for the astar
 	//add old so the whole line isnt checked every time
-	var smooth = function(arr, start){
+	var smooth = function(arr){
 		//initial check
-		var checkPoint = start;
+		var checkPoint = arr[0];
+		var i = 1;
 		//the point to see if can be removed
-		var i = 0;
 		var currentPoint = arr[i];
 		//while we don't go past the array
-		while(arr[i+1] !== null && arr[i+1] !== undefined){
+		while(arr[i + 1] !== null && arr[i + 1] !== undefined){
 			//checks the vector between the points
-			if(walkable(checkPoint, currentPoint)){
+			if(walkable(checkPoint, arr[i + 1])){
 				//keep checking along the line
-				currentPoint = arr[i+1];
+				currentPoint = arr[i + 1];
 				//get rid of the old point
 				arr.splice(i, 1);
 			}
-			else{
+			else {
 				//otherwise that's the best we can smooth that section. next section now
 				checkPoint = currentPoint;
-				currentPoint = arr[i+1];
+				currentPoint = arr[i + 1];
 				i = i + 1;
 			}
 		}
@@ -447,10 +452,10 @@ var Chaser = function(startX, startY, level, player) {
 			var checkPixelX = start.x + (dist * uX);
 			var checkPixelY = start.y + (dist * uY);
 			//get the corners
-			var topY = checkPixelY - (size / 2);
-			var bottomY = checkPixelY + (size / 2);
-			var leftX = checkPixelX - (size / 2);
-			var rightX = checkPixelX + (size / 2);
+			var topY = checkPixelY - (size / 2) + 1;
+			var bottomY = checkPixelY + (size / 2) - 1;
+			var leftX = checkPixelX - (size / 2) + 1;
+			var rightX = checkPixelX + (size / 2) - 1;
 			//get the tiles for the corners and the middle
 			var topLeft = getTile(leftX, topY);
 			var topRight = getTile(rightX, topY);
