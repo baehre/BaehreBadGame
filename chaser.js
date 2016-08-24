@@ -31,7 +31,7 @@ var Chaser = function(startX, startY, level, player) {
 	var smoothPath = null;
 	//how much chaser moves
 	var moveAmount = 1.5;
-	var damage = 10;
+	var damage = 5;
 	var health = 100;
 
 	// Getters and setters
@@ -132,7 +132,12 @@ var Chaser = function(startX, startY, level, player) {
 			}
 			if(smoothPath !== null && smoothPath !== undefined){
 				var len = smoothPath.length - 1;
-				if(len > -1 && smoothPath[len] !== undefined){
+				if(len > -1 && smoothPath[len] !== undefined) {
+					if(len === 0) {
+						if (manDistance(player.getX(), player.getY(), x, y) < 38) {
+							player.setHealth(player.getHealth() - damage);
+						}
+					}
 					var tempTile = getPixel(smoothPath[len]);
 					var smallXCheck = Math.abs(x - tempTile.x) > 1;
 					if (x < tempTile.x && smallXCheck) {
@@ -152,30 +157,6 @@ var Chaser = function(startX, startY, level, player) {
 					}
 					if(Math.abs(x - tempTile.x) < moveAmount && Math.abs(y - tempTile.y) < moveAmount) {
 						smoothPath.pop();
-					}
-					// now on same tile adjust for pixel perfect.
-				} else {
-					if(rectIntersection()) {
-						if(time % 1000) {
-							player.setHealth(player.getHealth() - damage);
-						}
-					} else {
-						var smallXCheck = Math.abs(x - player.getX()) > 1;
-						if(x < player.getX() && smallXCheck){
-							x += moveAmount;
-							facing = chaserImageRight;
-						} else if(x > player.getX() && smallXCheck){
-							x -= moveAmount;
-							facing = chaserImageLeft;
-						}
-						var smallYCheck = Math.abs(y - player.getY()) > 1;
-						if(y < player.getY() && smallYCheck){
-							y += moveAmount;
-							facing = chaserImageDown;
-						} else if(y > player.getY() && smallYCheck){
-							y -= moveAmount;
-							facing = chaserImageUp;
-						}
 					}
 				}
 			}
@@ -210,20 +191,21 @@ var Chaser = function(startX, startY, level, player) {
 		var top1 = playerY - (playerSize / 2);
 		var bottom1 = playerY + (playerSize / 2);
 		// 2 is chasers sides
-		// Changing by 10 because sprite doesn't actually overlap otherwise
-		var left2 = x - (size / 2) + 15;
-		var right2 = x + (size / 2) - 15;
-		var top2 = y - (size / 2) + 15;
-		var bottom2 = y + (size / 2) - 15;
+		// Changing by 15 because sprite doesn't actually overlap otherwise
+		var left2 = x - (size / 2) + 10;
+		var right2 = x + (size / 2) - 10;
+		var top2 = y - (size / 2) + 10;
+		var bottom2 = y + (size / 2) - 10;
 		return !(left2 > right1 || right2 < left1 || top2 > bottom1 || bottom2 < top1);
 	};
-	//used in checking if player is in range and astar
+	//used in checking if player is in range
 	//calculates the euclidean distance between chaser and the x and y provided
 	var distance = function(x1, y1, x2, y2){
 		return Math.sqrt(Math.abs((x2 - x1) * (x2 - x1) + (y2 - y1)
 			* (y2 - y1)));
 	};
 
+	// manhattan distance. used in aStar and in resetting the path.
 	var manDistance = function(x1, y1, x2, y2) {
 		return Math.abs(x2 - x1) + Math.abs(y2 - y1);
 	}
@@ -305,15 +287,15 @@ var Chaser = function(startX, startY, level, player) {
             }
         }
         else if (dy !== 0) {
-					if (!isBlocked(current.x - 1, current.y)) {
-						neighbors.push({"x": current.x - 1, "y": current.y});
-					}
-					if (!isBlocked(current.x + 1, current.y)) {
-						neighbors.push({"x": current.x + 1, "y": current.y});
-					}
-					if (!isBlocked(current.x, current.y + dy)) {
-						neighbors.push({"x": current.x, "y": current.y + dy});
-					}
+			if (!isBlocked(current.x - 1, current.y)) {
+				neighbors.push({"x": current.x - 1, "y": current.y});
+			}
+			if (!isBlocked(current.x + 1, current.y)) {
+				neighbors.push({"x": current.x + 1, "y": current.y});
+			}
+			if (!isBlocked(current.x, current.y + dy)) {
+				neighbors.push({"x": current.x, "y": current.y + dy});
+			}
         }
     }
     // return all neighbors
