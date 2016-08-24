@@ -18,6 +18,8 @@ var Player = function(can, startX, startY, level, enemies) {
 	var rate = 5;
 	//separate time for update to go with rate
 	var time = 0;
+	//for keeping the update at the same pace
+	var updateTime = 0;
 	//for the frames
 	var tempX = 0;
 	var tempY = 0;
@@ -78,6 +80,10 @@ var Player = function(can, startX, startY, level, enemies) {
 		return size;
 	};
 
+	var getUpdateTime = function() {
+		return updateTime;
+	};
+
 	var setX = function(newX) {
 		x = newX;
 	};
@@ -102,8 +108,16 @@ var Player = function(can, startX, startY, level, enemies) {
 		health = newHealth;
 	};
 
+	var setUpdateTime = function(newTime) {
+		updateTime = newTime;
+	};
+
 	// Update player position
 	var update = function(keys) {
+		updateTime = updateTime + 1;
+		if(updateTime > 7500) {
+			updateTime = 0;
+		}
 		// Previous position
 		var prevX = x;
 		var	prevY = y;
@@ -232,6 +246,8 @@ var Player = function(can, startX, startY, level, enemies) {
 	return {
 		getProjectiles: getProjectiles,
 		setProjectiles: setProjectiles,
+		getUpdateTime: getUpdateTime,
+		setUpdateTime: setUpdateTime,
 		getEnemies: getEnemies,
 		setEnemies: setEnemies,
 		getHealth: getHealth,
