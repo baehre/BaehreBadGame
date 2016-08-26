@@ -27,11 +27,13 @@ var Chaser = function(startX, startY, level, player) {
 	var y = startY;
 	var prevPlayerX = player.getX();
 	var prevPlayerY = player.getY();
+	var prevX;
+	var prevY;
 	//make global. for the pathfinding
 	var smoothPath = null;
 	//how much chaser moves
 	var moveAmount = 1.5;
-	var damage = 5;
+	var damage = 2.5;
 	var health = 100;
 
 	// Getters and setters
@@ -68,7 +70,7 @@ var Chaser = function(startX, startY, level, player) {
 	};
 
 	// Update chaser position
-	var update = function() {
+	var update = function(enemies) {
 		if(smoothPath === null) {
 			var path = getPath(getTile(x, y), getTile(player.getX(), player.getY()));
 			if(path !== null){
@@ -89,10 +91,27 @@ var Chaser = function(startX, startY, level, player) {
 		if (time > 7500) {
 			time = 0;
 		}
+		for (var j = 0; j < enemies.length; j++) {
+			var en = enemies[j];
+			// means they are currently colliding and it is not the same chaser
+			if(manDistance(en.getX(), en.getY(), x, y) < 38 && en.getX() !== x && en.getY() !== y) {
+				var relaxation = 0.2;
+				var desiredDist = 25;
+				var vec = {"x": en.getX() - x, "y": en.getY() - y};
+				var vecLength = Math.sqrt((vec.x * vec.x) + (vec.y * vec.y));
+				var uX = vec.x / vecLength;
+				var uY = vec.y / vecLength;
+				uX *= (desiredDist * relaxation);
+				uY *= (desiredDist * relaxation);
+				x -= uX;
+				y -= uY;
+				en.setX(en.getX() + uX);
+				en.setY(en.getY() + uY);
+			}
+		}
 		// Previous position
-		var prevX = x;
-		var	prevY = y;
-		//like an a-star algo
+		prevX = x;
+		prevY = y;
 		if(distance(player.getX(), player.getY(), x, y) < 900){
 			if(pathManDistance(smoothPath) > manDistance(player.getX(), player.getY(), x, y)) {
 				var path = getPath(getTile(x, y), getTile(player.getX(), player.getY()));
@@ -107,14 +126,18 @@ var Chaser = function(startX, startY, level, player) {
 					}
 				}
 			} else {
-			// if the player has moved update the path. and update the previous position
+				// if the player has moved update the path. and update the previous position
 				if ((prevPlayerX !== player.getX() || prevPlayerY !== player.getY())) {
 					prevPlayerX = player.getX();
 					prevPlayerY = player.getY();
+					// checks we can add to the path
 					if(smoothPath !== null && smoothPath !== undefined) {
+						// this is a check for when the player gets respawned
 						if(smoothPath.length !== 0 && smoothPath[smoothPath.length - 1] !== undefined) {
 							var tempTile = getTile(prevPlayerX, prevPlayerY);
+							// long as the tile doesn't fail
 							if(tempTile !== undefined) {
+								// if the new tile isn't already in the path then add it.
 								if(tempTile.x !== smoothPath[0].x || tempTile.y !== smoothPath[0].y) {
 									smoothPath.unshift(tempTile);
 									smoothPath.push(getTile(x, y));
@@ -123,8 +146,11 @@ var Chaser = function(startX, startY, level, player) {
 								}
 							}
 						} else {
+							// when the path is empty we just tack on the tile regardless
 							if(tempTile !== undefined) {
-								smoothPath.unshift(tempTile);
+								if(tempTile.x !== smoothPath[0].x || tempTile.y !== smoothPath[0].y) {
+									smoothPath.unshift(tempTile);
+								}
 							}
 						}
 					}
@@ -132,13 +158,19 @@ var Chaser = function(startX, startY, level, player) {
 			}
 			if(smoothPath !== null && smoothPath !== undefined){
 				var len = smoothPath.length - 1;
+				/*for(var q = 0; q < smoothPath.length; q++) {
+					console.log("(" + smoothPath[q].x + ", " + smoothPath[q].y  + ")");
+				}*/
+				//check to see if the length is legit. and that some gobble-de-gook didn't get in the path
 				if(len > -1 && smoothPath[len] !== undefined) {
-					if(len === 0) {
-						if (manDistance(player.getX(), player.getY(), x, y) < 38) {
+					if(len < 2) {
+						if (manDistance(player.getX(), player.getY(), x, y) < 48) {
+							console.log("DAMAGE")
 							player.setHealth(player.getHealth() - damage);
 						}
 					}
 					var tempTile = getPixel(smoothPath[len]);
+					// super small stuff won't affect the movement
 					var smallXCheck = Math.abs(x - tempTile.x) > 1;
 					if (x < tempTile.x && smallXCheck) {
 						x += moveAmount;
@@ -148,6 +180,7 @@ var Chaser = function(startX, startY, level, player) {
 						facing = chaserImageLeft;
 					}
 					var smallYCheck = Math.abs(y - tempTile.y) > 1;
+					// if elseif so it can't do both in the same update cycle 
 					if (y < tempTile.y && smallYCheck) {
 						y += moveAmount;
 						facing = chaserImageDown;
@@ -155,7 +188,9 @@ var Chaser = function(startX, startY, level, player) {
 						y -= moveAmount;
 						facing = chaserImageUp;
 					}
-					if(Math.abs(x - tempTile.x) < moveAmount && Math.abs(y - tempTile.y) < moveAmount) {
+					// if we hit the tile we are going to then remove it from the path
+					// used to be moveamount
+					if (Math.abs(x - tempTile.x) < 24 && Math.abs(y - tempTile.y) < 24) {
 						smoothPath.pop();
 					}
 				}
@@ -181,7 +216,7 @@ var Chaser = function(startX, startY, level, player) {
 		return distance;
 	}
 
-	var rectIntersection = function() {
+	/*var rectIntersection = function() {
 		// 1 is players sides
 		var playerX = player.getX();
 		var playerY = player.getY();
@@ -191,13 +226,14 @@ var Chaser = function(startX, startY, level, player) {
 		var top1 = playerY - (playerSize / 2);
 		var bottom1 = playerY + (playerSize / 2);
 		// 2 is chasers sides
-		// Changing by 15 because sprite doesn't actually overlap otherwise
+		// Changing by 10 because sprite doesn't actually overlap otherwise
 		var left2 = x - (size / 2) + 10;
 		var right2 = x + (size / 2) - 10;
 		var top2 = y - (size / 2) + 10;
 		var bottom2 = y + (size / 2) - 10;
 		return !(left2 > right1 || right2 < left1 || top2 > bottom1 || bottom2 < top1);
-	};
+	};*/
+
 	//used in checking if player is in range
 	//calculates the euclidean distance between chaser and the x and y provided
 	var distance = function(x1, y1, x2, y2){
