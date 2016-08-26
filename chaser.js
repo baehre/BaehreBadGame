@@ -96,17 +96,22 @@ var Chaser = function(startX, startY, level, player) {
 			// means they are currently colliding and it is not the same chaser
 			if(manDistance(en.getX(), en.getY(), x, y) < 38 && en.getX() !== x && en.getY() !== y) {
 				var relaxation = 0.2;
-				var desiredDist = 25;
+				var desiredDist = 10;
 				var vec = {"x": en.getX() - x, "y": en.getY() - y};
 				var vecLength = Math.sqrt((vec.x * vec.x) + (vec.y * vec.y));
 				var uX = vec.x / vecLength;
 				var uY = vec.y / vecLength;
 				uX *= (desiredDist * relaxation);
 				uY *= (desiredDist * relaxation);
-				x -= uX;
-				y -= uY;
-				en.setX(en.getX() + uX);
-				en.setY(en.getY() + uY);
+				if(getLevelTile(x - uX, y - uY) < 10) {
+					x -= uX;
+					y -= uY;
+				}
+				// just adjust the current enemy for now
+				/*if(getLevelTile(en.getX() + uX, en.getY() + uY) < 10) {
+					en.setX(en.getX() + uX);
+					en.setY(en.getY() + uY);
+				}*/
 			}
 		}
 		// Previous position
