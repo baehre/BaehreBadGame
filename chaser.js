@@ -107,10 +107,11 @@ var Chaser = function(startX, startY, level, player) {
 					x -= uX;
 					y -= uY;
 				}
-				if(getLevelTile(en.getX() + uX, en.getY() + uY) < 10) {
+				// just adjust the current enemy for now
+				/*if(getLevelTile(en.getX() + uX, en.getY() + uY) < 10) {
 					en.setX(en.getX() + uX);
 					en.setY(en.getY() + uY);
-				}
+				}*/
 			}
 		}
 		// Previous position
