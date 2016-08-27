@@ -103,7 +103,12 @@ var Chaser = function(startX, startY, level, player) {
 				var uY = vec.y / vecLength;
 				uX *= (desiredDist * relaxation);
 				uY *= (desiredDist * relaxation);
-				if(getLevelTile(x - uX, y - uY) < 10) {
+				var tempTile1 = getTile(x - uX - 24, y - uY);
+				var tempTile2 = getTile(x - uX + 24, y - uY);
+				var tempTile3 = getTile(x - uX, y - uY - 24);
+				var tempTile4 = getTile(x - uX, y - uY + 24);
+				if(getLevelTile(tempTile1.x, tempTile1.y) < 10 && getLevelTile(tempTile2.x, tempTile2.y) < 10 &&
+				 getLevelTile(tempTile3.x, tempTile3.y) < 10 && getLevelTile(tempTile4.x, tempTile4.y) < 10) {
 					x -= uX;
 					y -= uY;
 				}
@@ -170,7 +175,6 @@ var Chaser = function(startX, startY, level, player) {
 				if(len > -1 && smoothPath[len] !== undefined) {
 					if(len < 2) {
 						if (manDistance(player.getX(), player.getY(), x, y) < 48) {
-							console.log("DAMAGE")
 							player.setHealth(player.getHealth() - damage);
 						}
 					}
@@ -185,7 +189,7 @@ var Chaser = function(startX, startY, level, player) {
 						facing = chaserImageLeft;
 					}
 					var smallYCheck = Math.abs(y - tempTile.y) > 1;
-					// if elseif so it can't do both in the same update cycle 
+					// if elseif so it can't do both in the same update cycle
 					if (y < tempTile.y && smallYCheck) {
 						y += moveAmount;
 						facing = chaserImageDown;
