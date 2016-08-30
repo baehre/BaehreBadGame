@@ -75,6 +75,7 @@ var Chaser = function(startX, startY, level, player) {
 			var path = getPath(getTile(x, y), getTile(player.getX(), player.getY()));
 			if(path !== null){
 				if (path.length > 0) {
+					// add current tile and then remove it. explanation below a bit.
 					path.push(getTile(x, y));
 					smoothPath = smooth(path);
 					smoothPath.pop();
@@ -95,6 +96,7 @@ var Chaser = function(startX, startY, level, player) {
 			var en = enemies[j];
 			// means they are currently colliding and it is not the same chaser
 			if(manDistance(en.getX(), en.getY(), x, y) < 38 && en.getX() !== x && en.getY() !== y) {
+				// vector stuff. 
 				var relaxation = 0.2;
 				var desiredDist = 10;
 				var vec = {"x": en.getX() - x, "y": en.getY() - y};
@@ -103,10 +105,12 @@ var Chaser = function(startX, startY, level, player) {
 				var uY = vec.y / vecLength;
 				uX *= (desiredDist * relaxation);
 				uY *= (desiredDist * relaxation);
+				// check tile sides.  
 				var tempTile1 = getTile(x - uX - 24, y - uY);
 				var tempTile2 = getTile(x - uX + 24, y - uY);
 				var tempTile3 = getTile(x - uX, y - uY - 24);
 				var tempTile4 = getTile(x - uX, y - uY + 24);
+				// shift the enemy along the vector. if it wouldn't shove it through a blocked tile
 				if(getLevelTile(tempTile1.x, tempTile1.y) < 10 && getLevelTile(tempTile2.x, tempTile2.y) < 10 &&
 				 getLevelTile(tempTile3.x, tempTile3.y) < 10 && getLevelTile(tempTile4.x, tempTile4.y) < 10) {
 					x -= uX;
@@ -123,10 +127,13 @@ var Chaser = function(startX, startY, level, player) {
 		prevX = x;
 		prevY = y;
 		if(distance(player.getX(), player.getY(), x, y) < 900){
+			// if the distance of the current path is greater than the distance to the player we need a new path.
+			// was happening if I ran in circles long enough. would catch up but they would still follow the looping path
 			if(pathManDistance(smoothPath) > manDistance(player.getX(), player.getY(), x, y)) {
 				var path = getPath(getTile(x, y), getTile(player.getX(), player.getY()));
 				if(path !== null){
 					if (path.length > 0) {
+						// same as below. where we currently are needs to be added and then removed.
 						path.push(getTile(x, y));
 						smoothPath = smooth(path);
 						smoothPath.pop();
@@ -149,9 +156,13 @@ var Chaser = function(startX, startY, level, player) {
 							if(tempTile !== undefined) {
 								// if the new tile isn't already in the path then add it.
 								if(tempTile.x !== smoothPath[0].x || tempTile.y !== smoothPath[0].y) {
+									//put the new tile onto the end of the path
 									smoothPath.unshift(tempTile);
+									//add the current tile to the beginning for making sure you can move to the first tile correctly.
 									smoothPath.push(getTile(x, y));
 									smoothPath = smooth(smoothPath);
+									// we don't want to get stuck where we currently are or go back to the center of the first tile.
+									// gotta get rid of it.
 									smoothPath.pop();
 								}
 							}
@@ -214,6 +225,7 @@ var Chaser = function(startX, startY, level, player) {
 		return moving;
 	};
 
+	//return the total manhattan distance of the path given to it
 	var pathManDistance = function(path) {
 		var distance = 0;
 		path.unshift(getTile(x, y));
@@ -224,24 +236,6 @@ var Chaser = function(startX, startY, level, player) {
 		}
 		return distance;
 	}
-
-	/*var rectIntersection = function() {
-		// 1 is players sides
-		var playerX = player.getX();
-		var playerY = player.getY();
-		var playerSize = player.getSize();
-		var left1 = playerX - (playerSize / 2);
-		var right1 = playerX + (playerSize / 2);
-		var top1 = playerY - (playerSize / 2);
-		var bottom1 = playerY + (playerSize / 2);
-		// 2 is chasers sides
-		// Changing by 10 because sprite doesn't actually overlap otherwise
-		var left2 = x - (size / 2) + 10;
-		var right2 = x + (size / 2) - 10;
-		var top2 = y - (size / 2) + 10;
-		var bottom2 = y + (size / 2) - 10;
-		return !(left2 > right1 || right2 < left1 || top2 > bottom1 || bottom2 < top1);
-	};*/
 
 	//used in checking if player is in range
 	//calculates the euclidean distance between chaser and the x and y provided
@@ -255,6 +249,7 @@ var Chaser = function(startX, startY, level, player) {
 		return Math.abs(x2 - x1) + Math.abs(y2 - y1);
 	}
 
+	// returns the path. Uses Jump point to get the neighbors.
 	var getPath = function(start, end){
 		//open moves
 		var openList = [];
@@ -310,41 +305,42 @@ var Chaser = function(startX, startY, level, player) {
 		return null;
 	};
 
+	//get the neighbors (either normal cardinal or based on parent)
 	var getNeighbors = function(current) {
 		var neighbors = [];
 		// directed pruning: can ignore most neighbors, unless forced.
-    if (current.parent) {
-        var px = current.parent.x;
-        var py = current.parent.y;
-        // get the normalized direction of travel
-        var dx = (current.x - px) / Math.max(Math.abs(current.x - px), 1);
-        var dy = (current.y - py) / Math.max(Math.abs(current.y - py), 1);
+		if (current.parent) {
+			var px = current.parent.x;
+			var py = current.parent.y;
+			// get the normalized direction of travel
+			var dx = (current.x - px) / Math.max(Math.abs(current.x - px), 1);
+			var dy = (current.y - py) / Math.max(Math.abs(current.y - py), 1);
 
-        if (dx !== 0) {
-            if (!isBlocked(current.x, current.y - 1)) {
-              neighbors.push({"x": current.x, "y": current.y - 1});
-            }
-            if (!isBlocked(current.x, current.y + 1)) {
-							neighbors.push({"x": current.x, "y": current.y + 1});
-            }
-            if (!isBlocked(current.x + dx, current.y)) {
-							neighbors.push({"x": current.x + dx, "y": current.y});
-            }
-        }
-        else if (dy !== 0) {
-			if (!isBlocked(current.x - 1, current.y)) {
-				neighbors.push({"x": current.x - 1, "y": current.y});
+			if (dx !== 0) {
+				if (!isBlocked(current.x, current.y - 1)) {
+					neighbors.push({"x": current.x, "y": current.y - 1});
+				}
+				if (!isBlocked(current.x, current.y + 1)) {
+					neighbors.push({"x": current.x, "y": current.y + 1});
+				}
+				if (!isBlocked(current.x + dx, current.y)) {
+					neighbors.push({"x": current.x + dx, "y": current.y});
+				}
 			}
-			if (!isBlocked(current.x + 1, current.y)) {
-				neighbors.push({"x": current.x + 1, "y": current.y});
+			else if (dy !== 0) {
+				if (!isBlocked(current.x - 1, current.y)) {
+					neighbors.push({"x": current.x - 1, "y": current.y});
+				}
+				if (!isBlocked(current.x + 1, current.y)) {
+					neighbors.push({"x": current.x + 1, "y": current.y});
+				}
+				if (!isBlocked(current.x, current.y + dy)) {
+					neighbors.push({"x": current.x, "y": current.y + dy});
+				}
 			}
-			if (!isBlocked(current.x, current.y + dy)) {
-				neighbors.push({"x": current.x, "y": current.y + dy});
-			}
-        }
-    }
-    // return all neighbors
-    else {
+		}
+		// return all neighbors
+		else {
 			var neighborX = current.x - 1;
 			var neighborY = current.y;
 			if(!isBlocked(neighborX, neighborY)) {
@@ -365,10 +361,11 @@ var Chaser = function(startX, startY, level, player) {
 			if(!isBlocked(neighborX, neighborY)) {
 				neighbors.push({"x": neighborX, "y": neighborY});
 			}
-    }
+		}
 		return neighbors;
 	};
 
+	//the jump point search. sees how far it can go along one direction.
 	var jump = function(currentX, currentY, parentX, parentY, end) {
 		var directionX = currentX - parentX;
 		var directionY = currentY - parentY;
@@ -401,6 +398,7 @@ var Chaser = function(startX, startY, level, player) {
 		return jump(currentX + directionX, currentY + directionY, currentX, currentY, end);
 	};
 
+	//if an array contains an object. The object is a tile.
 	var contains = function(arr, obj){
 		for(var j = 0; j < arr.length; j++){
 			if(arr[j].x === obj.x && arr[j].y === obj.y){
@@ -410,6 +408,7 @@ var Chaser = function(startX, startY, level, player) {
 		return false;
 	};
 
+	// this is used to sort the open list. Get the best fcost
 	var compareFunc = function(first, second){
 		if(second.fCost < first.fCost){
 			return 1;
@@ -420,6 +419,7 @@ var Chaser = function(startX, startY, level, player) {
 		return 0;
 	};
 
+	//just returns a node object
 	var node = function(tileX, tileY, parent, gCost, hCost)
 	{
 		var temp = {
@@ -443,21 +443,24 @@ var Chaser = function(startX, startY, level, player) {
 			tempX = facing[frame % facing.length].x;
 			tempY = facing[frame % facing.length].y;
 		}
+		// got too big. make it small.
 		if (frame > 7500) {
 			frame = 0;
 		}
-		ctx.drawImage(chaserImage, tempX, tempY, tileSize, tileSize, Math.round(x-((size)/2)), Math.round(y-((size)/2)), size, size);
+		ctx.drawImage(chaserImage, tempX, tempY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
 	};
 
+	//return the tile given pixel coordinates
 	var getTile = function(x0, y0){
-		var tileX = Math.floor(x0/48.0);
-		var tileY = Math.floor(y0/48.0);
+		var tileX = Math.floor(x0 / 48.0);
+		var tileY = Math.floor(y0 / 48.0);
 		if(tileX < 0 || tileX > level[0].length || tileY < 0 || tileY > level.length){
 			return null;
 		}
 		return {"x": tileX, "y": tileY};
 	};
 
+	// based on tile coordinates return the tile's number
 	var getLevelTile = function(x0, y0){
 		if(x0 < 0 || x0 > level[0].length || y0 < 0 || y0 > level.length){
 			return null;
@@ -528,12 +531,14 @@ var Chaser = function(startX, startY, level, player) {
 		return true;
 	};
 
+	//gets the center of the tile obj passed in.
 	var getPixel = function(tile){
 		var tempX = (tile.x * 48) + 24;
 		var tempY = (tile.y * 48) + 24;
 		return {"x": tempX, "y": tempY};
 	};
 
+	// returns if the tile is currently unpassable.
 	var intersection = function(checkTile){
 		if(level[checkTile.y][checkTile.x] > 10){
 			return true;
@@ -542,6 +547,8 @@ var Chaser = function(startX, startY, level, player) {
 			return false;
 		}
 	};
+
+	//based on tile coordinates does a slightly better check. Used in jump point search.
 	var isBlocked = function(checkX, checkY) {
 		if(checkX < 0 || checkX > level[0].length || checkY < 0 || checkY > level.length){
 			return true;
