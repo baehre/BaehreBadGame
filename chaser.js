@@ -29,6 +29,8 @@ var Chaser = function(startX, startY, level, player) {
 	var prevPlayerY = player.getY();
 	var prevX;
 	var prevY;
+	// can be number between 0 and 15 (inclusive) representing which square to go to
+	var directionAttack = null;
 	//make global. for the pathfinding
 	var smoothPath = null;
 	//how much chaser moves
@@ -69,6 +71,14 @@ var Chaser = function(startX, startY, level, player) {
 		size = newSize;
 	};
 
+	var getDirectionAttack = function() {
+		return directionAttack;
+	};
+
+	var setDirectionAttack = function(newDA) {
+			directionAttack = newDA;
+	};
+
 	// Update chaser position
 	var update = function(enemies) {
 		if(smoothPath === null) {
@@ -94,9 +104,12 @@ var Chaser = function(startX, startY, level, player) {
 		}
 		for (var j = 0; j < enemies.length; j++) {
 			var en = enemies[j];
-			// means they are currently colliding and it is not the same chaser
-			if(manDistance(en.getX(), en.getY(), x, y) < 38 && en.getX() !== x && en.getY() !== y) {
-				// vector stuff. 
+			// means it is not the current chaser
+			if(en.getX() === x && en.getY() === y) {
+				continue;
+			}
+			// means they are currently colliding
+			if(manDistance(en.getX(), en.getY(), x, y) < 38) {
 				var relaxation = 0.2;
 				var desiredDist = 10;
 				var vec = {"x": en.getX() - x, "y": en.getY() - y};
@@ -126,10 +139,16 @@ var Chaser = function(startX, startY, level, player) {
 		// Previous position
 		prevX = x;
 		prevY = y;
-		if(distance(player.getX(), player.getY(), x, y) < 900){
-			// if the distance of the current path is greater than the distance to the player we need a new path.
-			// was happening if I ran in circles long enough. would catch up but they would still follow the looping path
-			if(pathManDistance(smoothPath) > manDistance(player.getX(), player.getY(), x, y)) {
+		var dist = distance(player.getX(), player.getY(), x, y);
+		if(dist < 900) {
+			// if the enemy is within 3 tiles of the player spread out.
+			if (dist < 144) {
+				// get a new path. want to try and surround
+				var tempPlayerTile = getTile(player.getX(), player.getY());
+				surroundPlayer(tempPlayerTile.x, tempPlayerTile.y);
+			} else if(pathManDistance(smoothPath) > manDistance(player.getX(), player.getY(), x, y)) {
+				//reset directionattack
+				directionAttack = '';
 				var path = getPath(getTile(x, y), getTile(player.getX(), player.getY()));
 				if(path !== null){
 					if (path.length > 0) {
@@ -143,6 +162,8 @@ var Chaser = function(startX, startY, level, player) {
 					}
 				}
 			} else {
+				//reset directionattack
+				directionAttack = '';
 				// if the player has moved update the path. and update the previous position
 				if ((prevPlayerX !== player.getX() || prevPlayerY !== player.getY())) {
 					prevPlayerX = player.getX();
@@ -247,7 +268,27 @@ var Chaser = function(startX, startY, level, player) {
 	// manhattan distance. used in aStar and in resetting the path.
 	var manDistance = function(x1, y1, x2, y2) {
 		return Math.abs(x2 - x1) + Math.abs(y2 - y1);
-	}
+	};
+
+	var surroundPlayer = function(playerX, playerY) {
+		var attackArr = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+		for(var j = 0; j < enemies.length; j++) {
+			var enemy = enemies[j];
+			// not the current chaser
+			if(enemy.getX() === x && enemy.getY() === y) {
+				continue;
+			}
+			var tempAttack = enemy.getDirectionAttack();
+			if(tempAttack !== '') {
+				attackArr[tempAttack] = attackArr[tempAttack] + 1;
+			}
+		}
+		//need to figure out the best way to choose one of the array next
+		for(var i = 0; i < attackArr.length; i++) {
+
+		}
+	};
 
 	// returns the path. Uses Jump point to get the neighbors.
 	var getPath = function(start, end){
@@ -567,10 +608,12 @@ var Chaser = function(startX, startY, level, player) {
 		getY: getY,
 		getSize: getSize,
 		getHealth: getHealth,
+		getDirectionAttack: getDirectionAttack,
 		setX: setX,
 		setY: setY,
 		setSize: setSize,
 		setHealth: setHealth,
+		setDirectionAttack: setDirectionAttack,
 		update: update,
 		draw: draw
 	}
