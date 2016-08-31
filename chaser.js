@@ -200,9 +200,6 @@ var Chaser = function(startX, startY, level, player) {
 			}
 			if(smoothPath !== null && smoothPath !== undefined){
 				var len = smoothPath.length - 1;
-				/*for(var q = 0; q < smoothPath.length; q++) {
-					console.log("(" + smoothPath[q].x + ", " + smoothPath[q].y  + ")");
-				}*/
 				//check to see if the length is legit. and that some gobble-de-gook didn't get in the path
 				if(len > -1 && smoothPath[len] !== undefined) {
 					if(len < 2) {
@@ -271,6 +268,12 @@ var Chaser = function(startX, startY, level, player) {
 	};
 
 	var surroundPlayer = function(playerX, playerY) {
+		var attackGrid = [
+			[0, 0, 0, 0, 0],
+			[0, 0, 0, 0, 0],
+			[0, 0, 0, 0, 0],
+			[0, 0, 0, 0, 0],
+			[0, 0, 0, 0, 0]];
 		var attackArr = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 		for(var j = 0; j < enemies.length; j++) {
@@ -284,7 +287,36 @@ var Chaser = function(startX, startY, level, player) {
 				attackArr[tempAttack] = attackArr[tempAttack] + 1;
 			}
 		}
-		//need to figure out the best way to choose one of the array next
+		for(var k = 0; k < 25; k++) {
+			// skip the players tile
+			if (k === 12) {
+				continue;
+			}
+			// used for accessing attackGrid and for getting the tile we are looping through
+			var tempX = (k % 5);
+			var tempY = Math.floor(k / 5);
+			var currentTile = getTile(x, y);
+			// minus 2 to convert down from 0 -> 4 to -2 -> 2
+			if (isBlocked(currentTile.x + tempX - 2, currentTile.y + tempY - 2)) {
+				attackGrid[tempY][tempX] = 100;
+				if (k === 6) {
+
+				} else if (k === 7) {
+
+				} else if (k === 8) {
+
+				} else if (k === 11) {
+
+				} else if (k === 13) {
+
+				} else if (k === 16) {
+
+				} else if (k === 17) {
+
+				} else if (k === 18) {
+				}
+			}
+		}
 		for(var i = 0; i < attackArr.length; i++) {
 
 		}
