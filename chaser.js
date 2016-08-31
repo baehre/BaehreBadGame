@@ -30,7 +30,7 @@ var Chaser = function(startX, startY, level, player) {
 	var prevX;
 	var prevY;
 	// can be number between 0 and 15 (inclusive) representing which square to go to
-	var directionAttack = null;
+	var directionAttack = -1;
 	//make global. for the pathfinding
 	var smoothPath = null;
 	//how much chaser moves
@@ -144,11 +144,13 @@ var Chaser = function(startX, startY, level, player) {
 			// if the enemy is within 3 tiles of the player spread out.
 			if (dist < 144) {
 				// get a new path. want to try and surround
-				var tempPlayerTile = getTile(player.getX(), player.getY());
-				surroundPlayer(tempPlayerTile.x, tempPlayerTile.y);
+				if (directionAttack !== -1) {
+					var tempPlayerTile = getTile(player.getX(), player.getY());
+					surroundPlayer(tempPlayerTile.x, tempPlayerTile.y);
+				}
 			} else if(pathManDistance(smoothPath) > manDistance(player.getX(), player.getY(), x, y)) {
 				//reset directionattack
-				directionAttack = '';
+				directionAttack = -1;
 				var path = getPath(getTile(x, y), getTile(player.getX(), player.getY()));
 				if(path !== null){
 					if (path.length > 0) {
@@ -163,7 +165,7 @@ var Chaser = function(startX, startY, level, player) {
 				}
 			} else {
 				//reset directionattack
-				directionAttack = '';
+				directionAttack = -1;
 				// if the player has moved update the path. and update the previous position
 				if ((prevPlayerX !== player.getX() || prevPlayerY !== player.getY())) {
 					prevPlayerX = player.getX();
@@ -268,58 +270,7 @@ var Chaser = function(startX, startY, level, player) {
 	};
 
 	var surroundPlayer = function(playerX, playerY) {
-		var attackGrid = [
-			[0, 0, 0, 0, 0],
-			[0, 0, 0, 0, 0],
-			[0, 0, 0, 0, 0],
-			[0, 0, 0, 0, 0],
-			[0, 0, 0, 0, 0]];
-		var attackArr = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-
-		for(var j = 0; j < enemies.length; j++) {
-			var enemy = enemies[j];
-			// not the current chaser
-			if(enemy.getX() === x && enemy.getY() === y) {
-				continue;
-			}
-			var tempAttack = enemy.getDirectionAttack();
-			if(tempAttack !== '') {
-				attackArr[tempAttack] = attackArr[tempAttack] + 1;
-			}
-		}
-		for(var k = 0; k < 25; k++) {
-			// skip the players tile
-			if (k === 12) {
-				continue;
-			}
-			// used for accessing attackGrid and for getting the tile we are looping through
-			var tempX = (k % 5);
-			var tempY = Math.floor(k / 5);
-			var currentTile = getTile(x, y);
-			// minus 2 to convert down from 0 -> 4 to -2 -> 2
-			if (isBlocked(currentTile.x + tempX - 2, currentTile.y + tempY - 2)) {
-				attackGrid[tempY][tempX] = 100;
-				if (k === 6) {
-
-				} else if (k === 7) {
-
-				} else if (k === 8) {
-
-				} else if (k === 11) {
-
-				} else if (k === 13) {
-
-				} else if (k === 16) {
-
-				} else if (k === 17) {
-
-				} else if (k === 18) {
-				}
-			}
-		}
-		for(var i = 0; i < attackArr.length; i++) {
-
-		}
+		
 	};
 
 	// returns the path. Uses Jump point to get the neighbors.
@@ -623,7 +574,7 @@ var Chaser = function(startX, startY, level, player) {
 
 	//based on tile coordinates does a slightly better check. Used in jump point search.
 	var isBlocked = function(checkX, checkY) {
-		if(checkX < 0 || checkX > level[0].length || checkY < 0 || checkY > level.length){
+		if(checkX < 0 || checkX > level[0].length - 1 || checkY < 0 || checkY > level.length - 1){
 			return true;
 		}
 		if(level[checkY][checkX] > 10){
