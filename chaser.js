@@ -23,10 +23,10 @@ var Chaser = function(startX, startY, level, player) {
 	var size = tileSize * scale;
 	var x = startX;
 	var y = startY;
-	var prevPlayerX = player.getX();
-	var prevPlayerY = player.getY();
 	var prevX;
 	var prevY;
+	var velocityX = 0;
+	var velocityY = 0;
 	//how much chaser moves
 	var moveAmount = 1.5;
 	var damage = 2.5;
@@ -77,19 +77,27 @@ var Chaser = function(startX, startY, level, player) {
 
 	// Update chaser position
 	var update = function(enemies) {
+		// used to calculate vectors for the current player
 		var velocity = {"x": 0, "y": 0};
 		var neighbors = 0;
 		for (var i = 0; i < enemies.length; i++) {
 			var enemy = enemies[i];
 			// we are not the current enemy
 			if(enemy.getX() !== x && enemy.getY() !== y) {
-				// if the enemy is within 3 tiles
-				if (distance(enemy.getX(), enemy.getY(), x, y) < 144) {
-					//velocity.x +=
+				// if the enemy is within 2 tiles
+				if (distance(enemy.getX(), enemy.getY(), x, y) < 96) {
+					velocity.x += x - enemy.getX();
+					velocity.y += y - enemy.getY();
+					neigbors += 1;
 				}
 			}
 		}
-		//want to update after we do vectors but before we change our values
+		if (neighbors !== 0) {
+			var velocityLength = Math.sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y));
+			var uX = vec.x / vecLength;
+			var uY = vec.y / vecLength;
+		}
+		//want to update
 		prevX = x;
 		prevY = y;
 
@@ -126,43 +134,43 @@ var Chaser = function(startX, startY, level, player) {
 		openList.push(current);
 		//if there are open moves keep trying to get places
 		while(openList.length > 0){
-		//sorts the open list based on the fcost.
-		openList.sort(compareFunc);
-		current = openList[0];
-		//if we are here then stop
-		if(current.x === end.x && current.y === end.y) {
-			while(current.parent != null){
-			result.push(current);
-			current = current.parent;
+			//sorts the open list based on the fcost.
+			openList.sort(compareFunc);
+			current = openList[0];
+			//if we are here then stop
+			if(current.x === end.x && current.y === end.y) {
+				while(current.parent != null){
+				result.push(current);
+				current = current.parent;
+				}
+				openList = [];
+				closedList = [];
+				return result;
 			}
-			openList = [];
-			closedList = [];
-			return result;
-		}
-		//removes the current element.
-		openList.shift();
-		//add it to closed list so is not revisited
-		closedList.push(current);
-		var neighbors = getNeighbors(current);
-		for(var i = 0; i < neighbors.length; i++) {
-			var neighbor = neighbors[i];
-			// Try to find a node to jump to:
-			var jumpNode = jump(neighbor.x, neighbor.y, current.x, current.y, end);
-			if (jumpNode === null || jumpNode === undefined) {
-			continue;
+			//removes the current element.
+			openList.shift();
+			//add it to closed list so is not revisited
+			closedList.push(current);
+			var neighbors = getNeighbors(current);
+			for(var i = 0; i < neighbors.length; i++) {
+				var neighbor = neighbors[i];
+				// Try to find a node to jump to:
+				var jumpNode = jump(neighbor.x, neighbor.y, current.x, current.y, end);
+				if (jumpNode === null || jumpNode === undefined) {
+				continue;
+				}
+				var gCost = current.gCost + manDistance(current.x, current.y, jumpNode.x, jumpNode.y);
+				var hCost = manDistance(jumpNode.x, jumpNode.y, end.x, end.y);
+				var tempNode = node(jumpNode.x, jumpNode.y, current, gCost, hCost);
+				if(contains(closedList, tempNode)){
+				continue;
+				}
+				//var jumpNodeGCost = manDistance(start.x, start.y, jumpNode.x, jumpNode.y);
+				//if (!contains(openList, tempNode) || gCost < jumpNodeGCost) {
+				if (!contains(openList, tempNode)) {
+					openList.push(tempNode);
+				}
 			}
-			var gCost = current.gCost + manDistance(current.x, current.y, jumpNode.x, jumpNode.y);
-			var hCost = manDistance(jumpNode.x, jumpNode.y, end.x, end.y);
-			var tempNode = node(jumpNode.x, jumpNode.y, current, gCost, hCost);
-			if(contains(closedList, tempNode)){
-			continue;
-			}
-			//var jumpNodeGCost = manDistance(start.x, start.y, jumpNode.x, jumpNode.y);
-			//if (!contains(openList, tempNode) || gCost < jumpNodeGCost) {
-			if (!contains(openList, tempNode)) {
-			openList.push(tempNode);
-			}
-		}
 		}
 		//has failed
 		return null;
@@ -216,13 +224,13 @@ var Chaser = function(startX, startY, level, player) {
 	//based on tile coordinates does a slightly better check. Used in jump point search.
 	var isBlocked = function(checkX, checkY) {
 		if(checkX < 0 || checkX > level[0].length || checkY < 0 || checkY > level.length){
-		return true;
+			return true;
 		}
 		if(level[checkY][checkX] > 10){
-		return true;
+			return true;
 		}
 		else{
-		return false;
+			return false;
 		}
 	};
 
