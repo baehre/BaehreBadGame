@@ -77,30 +77,10 @@ var Chaser = function(startX, startY, level, player) {
 
 	// Update chaser position
 	var update = function(enemies) {
-		// used to calculate vectors for the current player
-		var velocity = {"x": 0, "y": 0};
-		var neighbors = 0;
-		for (var i = 0; i < enemies.length; i++) {
-			var enemy = enemies[i];
-			// we are not the current enemy
-			if(enemy.getX() !== x && enemy.getY() !== y) {
-				// if the enemy is within 2 tiles
-				if (distance(enemy.getX(), enemy.getY(), x, y) < 96) {
-					velocity.x += x - enemy.getX();
-					velocity.y += y - enemy.getY();
-					neigbors += 1;
-				}
-			}
-		}
-		if (neighbors !== 0) {
-			var velocityLength = Math.sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y));
-			var uX = vec.x / vecLength;
-			var uY = vec.y / vecLength;
-		}
+		separateAndPathing(enemies);
 		//want to update
 		prevX = x;
 		prevY = y;
-
   };
 
   // Draw chaser
@@ -121,7 +101,7 @@ var Chaser = function(startX, startY, level, player) {
 	};
 
 	// returns the path. Uses Jump point to get the neighbors.
-	var getPath = function(start, end){
+	var getSmoothPath = function(start, end){
 		//open moves
 		var openList = [];
 		//can't go back here
@@ -140,12 +120,19 @@ var Chaser = function(startX, startY, level, player) {
 			//if we are here then stop
 			if(current.x === end.x && current.y === end.y) {
 				while(current.parent != null){
-				result.push(current);
-				current = current.parent;
+					result.push(current);
+					current = current.parent;
 				}
 				openList = [];
 				closedList = [];
-				return result;
+				if(result.length > 0) {
+					result.push(getTile(x, y));
+					var tempResult = smooth(result);
+					tempResult.pop();
+					return tempResult;
+				} else {
+					return result;
+				}
 			}
 			//removes the current element.
 			openList.shift();
@@ -174,6 +161,43 @@ var Chaser = function(startX, startY, level, player) {
 		}
 		//has failed
 		return null;
+	};
+
+	var separateAndPathing = function(enemies) {
+		var velocity = {"x": 0, "y": 0};
+		var neighbors = 0;
+		for (var i = 0; i < enemies.length; i++) {
+			var enemy = enemies[i];
+			// we are not the current enemy
+			if(enemy.getX() !== x && enemy.getY() !== y) {
+				// if the enemy is within 2 tiles
+				if (distance(enemy.getX(), enemy.getY(), x, y) < 96) {
+					if (path === null && enemy.getPath() !== null) {
+					}
+					velocity.x += x - enemy.getX();
+					velocity.y += y - enemy.getY();
+					neigbors += 1;
+				}
+			}
+		}
+		if (neighbors !== 0) {
+			velocity.x /= neighbors;
+			velocity.y /= neighbors;
+			velocity.x *= -1;
+			velocity.y *= -1;
+			var velocityLength = Math.sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y));
+			var uX = velocity.x / vecLength;
+			var uY = velocity.y / vecLength;
+			var tempTile1 = getTile(x + uX - 24, y + uY);
+			var tempTile2 = getTile(x + uX + 24, y + uY);
+			var tempTile3 = getTile(x + uX, y + uY - 24);
+			var tempTile4 = getTile(x + uX, y + uY + 24);
+			// shift the enemy along the vector. if it wouldn't shove it through a blocked tile
+			if(getLevelTile(tempTile1.x, tempTile1.y) < 10 && getLevelTile(tempTile2.x, tempTile2.y) < 10 &&
+			 getLevelTile(tempTile3.x, tempTile3.y) < 10 && getLevelTile(tempTile4.x, tempTile4.y) < 10) {
+				x += uX;
+				y += uY;
+			}
 	};
 
 
