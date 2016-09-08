@@ -25,12 +25,15 @@ var Chaser = function(startX, startY, level, player) {
 	var y = startY;
 	var prevX;
 	var prevY;
+	var prevPlayerX = player.getX();
+	var prevPlayerY = player.getY();
 	var velocityX = 0;
 	var velocityY = 0;
 	//how much chaser moves
 	var moveAmount = 1.5;
 	var damage = 2.5;
 	var health = 100;
+	var leader = false;
 	//the path the chaser is taking
 	var path = null;
 
@@ -55,6 +58,14 @@ var Chaser = function(startX, startY, level, player) {
 		return path;
 	};
 
+	var getLeader = function() {
+		return leader;
+	};
+
+	var setLeader = function(newLeader) {
+		leader = newLeader;
+	}
+
 	var setPath = function(newPath) {
 		path = newPath;
 	};
@@ -77,10 +88,14 @@ var Chaser = function(startX, startY, level, player) {
 
 	// Update chaser position
 	var update = function(enemies) {
-		separateAndPathing(enemies);
-		//want to update
 		prevX = x;
 		prevY = y;
+		var dist = distance(player.getX(), player.getY(), x, y);
+		if (dist < 900) {
+			separateAndPathing(enemies);
+		}
+		//get the path from above then follow it
+		followPath();
   };
 
   // Draw chaser
@@ -99,6 +114,45 @@ var Chaser = function(startX, startY, level, player) {
 		}
 		ctx.drawImage(chaserImage, tempX, tempY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
 	};
+
+	//once the path has been set in update follow it.
+	var followPath = function() {
+		if (path !== null && path !== undefined) {
+			var len = path.length - 1;
+			//check to see if the length is legit. and that some gobble-de-gook didn't get in the path
+			if(len > -1 && path[len] !== undefined) {
+				if(len < 2) {
+					if (manDistance(player.getX(), player.getY(), x, y) < 48) {
+						player.setHealth(player.getHealth() - damage);
+					}
+				}
+				var tempTile = getPixel(path[len]);
+				// super small stuff won't affect the movement
+				var smallXCheck = Math.abs(x - tempTile.x) > 1;
+				if (x < tempTile.x && smallXCheck) {
+					x += moveAmount;
+					facing = chaserImageRight;
+				} else if (x > tempTile.x && smallXCheck) {
+					x -= moveAmount;
+					facing = chaserImageLeft;
+				}
+				var smallYCheck = Math.abs(y - tempTile.y) > 1;
+				// if elseif so it can't do both in the same update cycle
+				if (y < tempTile.y && smallYCheck) {
+					y += moveAmount;
+					facing = chaserImageDown;
+				} else if (y > tempTile.y && smallYCheck) {
+					y -= moveAmount;
+					facing = chaserImageUp;
+				}
+				// if we hit the tile we are going to then remove it from the path
+				// used to be moveamount
+				if (Math.abs(x - tempTile.x) < 24 && Math.abs(y - tempTile.y) < 24) {
+					path.pop();
+				}
+			}
+		}
+	}
 
 	// returns the path. Uses Jump point to get the neighbors.
 	var getSmoothPath = function(start, end){
@@ -141,7 +195,7 @@ var Chaser = function(startX, startY, level, player) {
 			var neighbors = getNeighbors(current);
 			for(var i = 0; i < neighbors.length; i++) {
 				var neighbor = neighbors[i];
-				// Try to find a node to jump to:
+				// Try to find a node to jump to
 				var jumpNode = jump(neighbor.x, neighbor.y, current.x, current.y, end);
 				if (jumpNode === null || jumpNode === undefined) {
 				continue;
@@ -166,17 +220,60 @@ var Chaser = function(startX, startY, level, player) {
 	var separateAndPathing = function(enemies) {
 		var velocity = {"x": 0, "y": 0};
 		var neighbors = 0;
+		var noLeader = true;
 		for (var i = 0; i < enemies.length; i++) {
 			var enemy = enemies[i];
 			// we are not the current enemy
 			if(enemy.getX() !== x && enemy.getY() !== y) {
 				// if the enemy is within 2 tiles
 				if (distance(enemy.getX(), enemy.getY(), x, y) < 96) {
-					if (path === null && enemy.getPath() !== null) {
+					if (!leader && enemy.getLeader()) {
+						// means that someone already did the overarching path concat the path to that guy to his path
+						noLeader = false;
+						var tempPath = getSmoothPath(getTile(x, y), getTile(enemy.getX(), enemy.getY()));
+						path = enemy.getPath().concat(tempPath);
 					}
 					velocity.x += x - enemy.getX();
 					velocity.y += y - enemy.getY();
 					neigbors += 1;
+				}
+			}
+		}
+		if (noLeader) {
+			//if no path get one or get a new one if the path is longer than the distance to the player
+			if (path === null || pathManDistance(smoothPath) > manDistance(player.getX(), player.getY(), x, y)) {
+				path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
+			} else {
+				//already has a path. gotta update it.
+				if ((prevPlayerX !== player.getX() || prevPlayerY !== player.getY())) {
+					prevPlayerX = player.getX();
+					prevPlayerY = player.getY();
+					if (path !== null || path !== undefined) {
+						if(path.length !== 0 && path[path.length - 1] !== undefined) {
+							var tempTile = getTile(prevPlayerX, prevPlayerY);
+							// long as the tile doesn't fail
+							if(tempTile !== undefined) {
+								// if the new tile isn't already in the path then add it.
+								if(tempTile.x !== path[0].x || tempTile.y !== path[0].y) {
+									//put the new tile onto the end of the path
+									path.unshift(tempTile);
+									//add the current tile to the beginning for making sure you can move to the first tile correctly.
+									path.push(getTile(x, y));
+									path = smooth(path);
+									// we don't want to get stuck where we currently are or go back to the center of the first tile.
+									// gotta get rid of it.
+									path.pop();
+								}
+							}
+						} else {
+							// when the path is empty we just tack on the tile regardless
+							if(tempTile !== undefined) {
+								if(tempTile.x !== path[0].x || tempTile.y !== path[0].y) {
+									path.unshift(tempTile);
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -188,6 +285,7 @@ var Chaser = function(startX, startY, level, player) {
 			var velocityLength = Math.sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y));
 			var uX = velocity.x / vecLength;
 			var uY = velocity.y / vecLength;
+			//get the hypothetical bounds of the enemy
 			var tempTile1 = getTile(x + uX - 24, y + uY);
 			var tempTile2 = getTile(x + uX + 24, y + uY);
 			var tempTile3 = getTile(x + uX, y + uY - 24);
@@ -198,6 +296,7 @@ var Chaser = function(startX, startY, level, player) {
 				x += uX;
 				y += uY;
 			}
+		}
 	};
 
 
@@ -622,6 +721,8 @@ var Chaser = function(startX, startY, level, player) {
 		getSize: getSize,
 		getHealth: getHealth,
 		getPath: getPath,
+		getLeader: getLeader,
+		setLeader: setLeader,
 		setX: setX,
 		setY: setY,
 		setSize: setSize,

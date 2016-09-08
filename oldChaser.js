@@ -198,7 +198,7 @@ var Chaser = function(startX, startY, level, player) {
 					}
 				}
 			}
-			if(smoothPath !== null && smoothPath !== undefined){
+			if (smoothPath !== null && smoothPath !== undefined) {
 				var len = smoothPath.length - 1;
 				//check to see if the length is legit. and that some gobble-de-gook didn't get in the path
 				if(len > -1 && smoothPath[len] !== undefined) {
