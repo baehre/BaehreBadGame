@@ -230,6 +230,7 @@ var Chaser = function(startX, startY, level, player) {
 					if (!leader && enemy.getLeader()) {
 						// means that someone already did the overarching path concat the path to that guy to his path
 						noLeader = false;
+						// need to double check that this works
 						var tempPath = getSmoothPath(getTile(x, y), getTile(enemy.getX(), enemy.getY()));
 						path = enemy.getPath().concat(tempPath);
 					}
@@ -240,6 +241,7 @@ var Chaser = function(startX, startY, level, player) {
 			}
 		}
 		if (noLeader) {
+			leader = true;
 			//if no path get one or get a new one if the path is longer than the distance to the player
 			if (path === null || pathManDistance(smoothPath) > manDistance(player.getX(), player.getY(), x, y)) {
 				path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
@@ -278,6 +280,7 @@ var Chaser = function(startX, startY, level, player) {
 			}
 		}
 		if (neighbors !== 0) {
+			// all dat sweet sweet velocity stuff
 			velocity.x /= neighbors;
 			velocity.y /= neighbors;
 			velocity.x *= -1;
@@ -315,6 +318,18 @@ var Chaser = function(startX, startY, level, player) {
 	// manhattan distance. used in aStar and in resetting the path.
 	var manDistance = function(x1, y1, x2, y2) {
 		return Math.abs(x2 - x1) + Math.abs(y2 - y1);
+	};
+
+	//return the total manhattan distance of the path given to it
+	var pathManDistance = function(path) {
+		var distance = 0;
+		path.unshift(getTile(x, y));
+		for (var i = 0; i < path.length - 1; i++) {
+			var pixel1 = getPixel(path[i]);
+			var pixel2 = getPixel(path[i + 1]);
+			distance = distance + manDistance(pixel1.x, pixel1.y, pixel2.x, pixel2.y);
+		}
+		return distance;
 	};
 
   //TILE INFO
