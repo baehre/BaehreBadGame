@@ -310,7 +310,10 @@ var Chaser = function(startX, startY, level, player) {
 	};
 
 	var surround = function(enemies) {
-		
+		// vector from enemy to player
+		var dX = x - player.getX();
+		var dY = y - player.getY();
+		var len = Math.sqrt((dX * dX) + (dY* dY));
 	};
 
 

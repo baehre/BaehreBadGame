@@ -56,7 +56,7 @@ function init(){
   localPlayer = new Player(canvas, 100, 300, levelData, enemies);
   //made a function that adds a chaser and updates the enemies for the player
   addChaser(300, 100);
-  addChaser(350, 100);
+  //addChaser(350, 100);
   //addChaser(500, 100);
   //addChaser(200, 100);
   //addChaser(600, 100);
@@ -93,7 +93,7 @@ function keyUp(e){
 function gameLoop(){
   update();
   draw();
-  //the magic by Paul Irish. 
+  //the magic by Paul Irish.
   // chooses the time called based on browser info
   // (like 60 or 30 based on what the browser can handle)
   window.requestAnimFrame(gameLoop);
@@ -155,7 +155,7 @@ function drawBackground(){
       var tileNum = levelData[y][x];
       //so. draw the appropriate sprite. at an x and y coordinate * 48 since that's how
       //many pixels we want each sprite to take up
-      // by using Mod we can make tiles solid if we want. 
+      // by using Mod we can make tiles solid if we want.
       if(tileNum % 10 === 0){
         context.drawImage(backgroundSprites, grassSprite.x, grassSprite.y, backgroundTileSize, backgroundTileSize, Math.round(x*backgroundTileSize), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
       }
