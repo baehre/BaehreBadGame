@@ -25,14 +25,15 @@ var Chaser = function(startX, startY, level, player) {
 	var y = startY;
 	var prevX;
 	var prevY;
+	var drawX;
+	var drawY;
 	var prevPlayerX = player.getX();
 	var prevPlayerY = player.getY();
-	var velocityX = 0;
-	var velocityY = 0;
 	//how much chaser moves
 	var moveAmount = 1.5;
 	var damage = 2.5;
 	var health = 100;
+	//used in path finding. if leader he is getting the path. everyone else steals from him
 	var leader = false;
 	//the path the chaser is taking
 	var path = null;
@@ -91,28 +92,32 @@ var Chaser = function(startX, startY, level, player) {
 		prevX = x;
 		prevY = y;
 		var dist = distance(player.getX(), player.getY(), x, y);
-		if (dist < 900) {
+		// if within 3 tiles
+		if(dist < 144) {
+			surround(enemies);
+		} else if (dist < 900) {
+			//if within a large number of tiles
 			separateAndPathing(enemies);
 		}
 		//get the path from above then follow it
 		followPath();
-  };
+	};
 
-  // Draw chaser
+	// Draw chaser
 	var draw = function(ctx) {
 		//so the way this works. we only want to change the frame every 5th time draw is
 		//called. otherwise it goes through supppperr quick. which is bad.
 		//so only change the frame every rate times per draw called.
 		frame = frame + 1;
 		if(frame % rate === 0) {
-			tempX = facing[frame % facing.length].x;
-			tempY = facing[frame % facing.length].y;
+			drawX = facing[frame % facing.length].x;
+			drawY = facing[frame % facing.length].y;
 		}
 		// got too big. make it small.
 		if (frame > 7500) {
 			frame = 0;
 		}
-		ctx.drawImage(chaserImage, tempX, tempY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
+		ctx.drawImage(chaserImage, drawX, drawY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
 	};
 
 	//once the path has been set in update follow it.
@@ -217,6 +222,7 @@ var Chaser = function(startX, startY, level, player) {
 		return null;
 	};
 
+	// keeps the chasers separate and gets the path
 	var separateAndPathing = function(enemies) {
 		var velocity = {"x": 0, "y": 0};
 		var neighbors = 0;
@@ -236,14 +242,15 @@ var Chaser = function(startX, startY, level, player) {
 					}
 					velocity.x += x - enemy.getX();
 					velocity.y += y - enemy.getY();
-					neigbors += 1;
+					neighbors += 1;
 				}
 			}
 		}
+		//if none of the other enemies are leaders
 		if (noLeader) {
 			leader = true;
 			//if no path get one or get a new one if the path is longer than the distance to the player
-			if (path === null || pathManDistance(smoothPath) > manDistance(player.getX(), player.getY(), x, y)) {
+			if (path === null || pathManDistance(path) > manDistance(player.getX(), player.getY(), x, y)) {
 				path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
 			} else {
 				//already has a path. gotta update it.
@@ -286,8 +293,8 @@ var Chaser = function(startX, startY, level, player) {
 			velocity.x *= -1;
 			velocity.y *= -1;
 			var velocityLength = Math.sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y));
-			var uX = velocity.x / vecLength;
-			var uY = velocity.y / vecLength;
+			var uX = velocity.x / velocityLength;
+			var uY = velocity.y / velocityLength;
 			//get the hypothetical bounds of the enemy
 			var tempTile1 = getTile(x + uX - 24, y + uY);
 			var tempTile2 = getTile(x + uX + 24, y + uY);
@@ -296,10 +303,14 @@ var Chaser = function(startX, startY, level, player) {
 			// shift the enemy along the vector. if it wouldn't shove it through a blocked tile
 			if(getLevelTile(tempTile1.x, tempTile1.y) < 10 && getLevelTile(tempTile2.x, tempTile2.y) < 10 &&
 			 getLevelTile(tempTile3.x, tempTile3.y) < 10 && getLevelTile(tempTile4.x, tempTile4.y) < 10) {
-				x += uX;
-				y += uY;
+				x -= uX;
+				y -= uY;
 			}
 		}
+	};
+
+	var surround = function(enemies) {
+		
 	};
 
 
@@ -535,23 +546,6 @@ var Chaser = function(startX, startY, level, player) {
 			"fCost": gCost + hCost,
 		};
 		return temp;
-	};
-
-	// Draw chaser
-	var draw = function(ctx) {
-		//so the way this works. we only want to change the frame every 5th time draw is
-		//called. otherwise it goes through supppperr quick. which is bad.
-		//so only change the frame every rate times per draw called.
-		frame = frame + 1;
-		if(frame % rate === 0) {
-			tempX = facing[frame % facing.length].x;
-			tempY = facing[frame % facing.length].y;
-		}
-		// got too big. make it small.
-		if (frame > 7500) {
-			frame = 0;
-		}
-		ctx.drawImage(chaserImage, tempX, tempY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
 	};
 
 	//return the tile given pixel coordinates
