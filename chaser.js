@@ -37,6 +37,8 @@ var Chaser = function(startX, startY, level, player) {
 	var leader = false;
 	//the path the chaser is taking
 	var path = null;
+	// says which path an enemy is taking to the attack the player
+	var attackDirection = -1;
 
 	// Getters and setters
 	var getX = function() {
@@ -62,6 +64,14 @@ var Chaser = function(startX, startY, level, player) {
 	var getLeader = function() {
 		return leader;
 	};
+
+	var getAttackDirection = function() {
+		return attackDirection;
+	};
+
+	var setAttackDirection = function(newDA) {
+		attackDirection = newDA;
+	}
 
 	var setLeader = function(newLeader) {
 		leader = newLeader;
@@ -93,8 +103,13 @@ var Chaser = function(startX, startY, level, player) {
 		prevY = y;
 		var dist = distance(player.getX(), player.getY(), x, y);
 		// if within 3 tiles
-		if(dist < 144) {
-			surround(enemies);
+		if (dist < 144) {
+			// double check that your path is actually good to go not just the pixel distance
+			if(path !== null && pathManDistance(path) < 144) {
+				surround(enemies);
+			} else {
+				separateAndPathing(enemies);
+			}
 		} else if (dist < 900) {
 			//if within a large number of tiles
 			separateAndPathing(enemies);
@@ -224,6 +239,8 @@ var Chaser = function(startX, startY, level, player) {
 
 	// keeps the chasers separate and gets the path
 	var separateAndPathing = function(enemies) {
+		// reset since we aren't in range anymore
+		attackDirection = -1;
 		var velocity = {"x": 0, "y": 0};
 		var neighbors = 0;
 		var noLeader = true;
@@ -253,7 +270,7 @@ var Chaser = function(startX, startY, level, player) {
 			if (path === null || pathManDistance(path) > manDistance(player.getX(), player.getY(), x, y)) {
 				path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
 			} else {
-				//already has a path. gotta update it.
+				//already has a path. gotta update it.but only if player has moved
 				if ((prevPlayerX !== player.getX() || prevPlayerY !== player.getY())) {
 					prevPlayerX = player.getX();
 					prevPlayerY = player.getY();
@@ -272,6 +289,7 @@ var Chaser = function(startX, startY, level, player) {
 									// we don't want to get stuck where we currently are or go back to the center of the first tile.
 									// gotta get rid of it.
 									path.pop();
+									updateAttackPaths();
 								}
 							}
 						} else {
@@ -310,14 +328,74 @@ var Chaser = function(startX, startY, level, player) {
 	};
 
 	var surround = function(enemies) {
-		// vector from enemy to player
-		var dX = x - player.getX();
-		var dY = y - player.getY();
-		var len = Math.sqrt((dX * dX) + (dY* dY));
+		//only grab a new one if we haven't already got a path
+		if (attackDirection === -1) {
+			var attackDirectionArr = [{"dir": 0, "val": 0},{"dir": 1, "val": 0},{"dir": 2, "val": 0},{"dir": 3, "val": 0},{"dir": 4, "val": 0},
+			{"dir": 5, "val": 0},{"dir": 6, "val": 0},{"dir": 7, "val": 0}];
+			for (var i = 0; i < enemies.length; i++) {
+				var enemy = enemies[i];
+				var dirAttack = enemy.getAttackDirection();
+				if (dirAttack !== -1) {
+					attackDirectionArr[dirAttack].val += 1;
+				}
+			}
+			attackDirectionArr.sort(attackDirSort);
+			var playerX = player.getX();
+			var playerY = player.getY();
+			var tempX = x - playerX;
+			var tempY = y - playerY;
+			var dirX;
+			var dirY;
+			if (Math.abs(tempX) < 48) {
+				dirX = 0;
+			} else if (tempX < 0) {
+				dirX = -1;
+			} else if (tempX > 0) {
+				dirX = 1;
+			}
+			if (Math.abs(tempY) < 48) {
+				dirY = 0;
+			} else if (tempY < 0) {
+				dirY = -1;
+			} else if (tempY > 0) {
+				dirY = 1;
+			}
+			// check if the directions are different. then grab the cheapest one
+			//if the directions are all equal
+			var direction = getClosestAttackDirection(dirX, dirY, attackDirectionArr);
+		}
 	};
 
-
   //UTIL FUNCTIONS
+
+	getClosestAttackDirection(dirX, dirY, attackDirectionArr) {
+		var dir;
+		if(dirX === -1) {
+			if (dirY === -1) {
+				dir = 0;
+			} else if (dirY === 0) {
+				dir = 7;
+			} else {
+				dir = 6;
+			}
+		} else if (dirX === 0) {
+			if (dirY === -1) {
+				dir = 1;
+			} else {
+				//hopefully it will never be 0,0. that'd be AWKward
+				dir = 5;
+			}
+		} else {
+			if (dirY === -1) {
+				dir = 2;
+			} else if (dirY === 0) {
+				dir = 3;
+			} else {
+				dir = 4;
+			}
+		}
+		return dir;
+	};
 
   //DISTANCE
 
@@ -404,6 +482,16 @@ var Chaser = function(startX, startY, level, player) {
 			return 1;
 		}
 		if(second.fCost > first.fCost){
+			return -1;
+		}
+		return 0;
+	};
+
+	var attackDirSort = function(first, second) {
+		if(second.val < first.val) {
+			return 1;
+		}
+		if(second.val > first.val) {
 			return -1;
 		}
 		return 0;
@@ -734,6 +822,8 @@ var Chaser = function(startX, startY, level, player) {
 		getHealth: getHealth,
 		getPath: getPath,
 		getLeader: getLeader,
+		getAttackDirection: getAttackDirection,
+		setAttackDirection: setAttackDirection,
 		setLeader: setLeader,
 		setX: setX,
 		setY: setY,
