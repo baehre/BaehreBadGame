@@ -385,11 +385,15 @@ var Chaser = function(startX, startY, level, player) {
 			}
 
 			//at this point we should have our attackDirection
-			
+			path = getCircularPath(getTile(x, y), tempTile);
 		}
 	};
 
   //UTIL FUNCTIONS
+
+	var getCircularPath = function(start, end) {
+		
+	};
 
 	var getClosestAttackDirection = function(dirX, dirY, attackDirectionArr) {
 		var dir;
