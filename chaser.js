@@ -224,7 +224,7 @@ var Chaser = function(startX, startY, level, player) {
 				var hCost = manDistance(jumpNode.x, jumpNode.y, end.x, end.y);
 				var tempNode = node(jumpNode.x, jumpNode.y, current, gCost, hCost);
 				if(contains(closedList, tempNode)){
-				continue;
+					continue;
 				}
 				//var jumpNodeGCost = manDistance(start.x, start.y, jumpNode.x, jumpNode.y);
 				//if (!contains(openList, tempNode) || gCost < jumpNodeGCost) {
@@ -328,7 +328,7 @@ var Chaser = function(startX, startY, level, player) {
 	};
 
 	var surround = function(enemies) {
-		//only grab a new one if we haven't already got a path
+		//only grab a new one if we haven't already got a direction
 		if (attackDirection === -1) {
 			var attackDirectionArr = [{"dir": 0, "val": 0},{"dir": 1, "val": 0},{"dir": 2, "val": 0},{"dir": 3, "val": 0},{"dir": 4, "val": 0},
 			{"dir": 5, "val": 0},{"dir": 6, "val": 0},{"dir": 7, "val": 0}];
@@ -360,15 +360,38 @@ var Chaser = function(startX, startY, level, player) {
 			} else if (tempY > 0) {
 				dirY = 1;
 			}
-			// check if the directions are different. then grab the cheapest one
-			//if the directions are all equal
-			var direction = getClosestAttackDirection(dirX, dirY, attackDirectionArr);
+			var direction = -1;
+			var checkDirection = false;
+			// keep going until we have the closest direction that doesn't take forever to get to
+			while (!checkDirection) {
+				// the value for the first and the second are different. Go ahead and grab that first one.
+				if (attackDirectionArr[0].val !== attackDirection[1].val) {
+					direction = attackDirectionArr[0].dir; 
+				} else {
+					//if the directions are all equal grab the closest one
+					direction = getClosestAttackDirection(dirX, dirY, attackDirectionArr);
+				}
+				var tempTile = getAttackDirectionTile(dirX, dirY)
+				var tempPath = getSmoothPath(getTile(x, y), tempTile);
+				// technically at the WORST it would be 384. But give it some wiggle
+				// checks to see if getting to that path would take too long
+				if (pathManDistance(tempPath) < 450){
+					checkDirection = true;
+					attackDirection = direction;
+				} else {
+					//remove the direction from the front of the array
+					attackDirectionArr.shift();
+				}
+			}
+
+			//at this point we should have our attackDirection
+			
 		}
 	};
 
   //UTIL FUNCTIONS
 
-	getClosestAttackDirection(dirX, dirY, attackDirectionArr) {
+	var getClosestAttackDirection = function(dirX, dirY, attackDirectionArr) {
 		var dir;
 		if(dirX === -1) {
 			if (dirY === -1) {
@@ -395,6 +418,11 @@ var Chaser = function(startX, startY, level, player) {
 			}
 		}
 		return dir;
+	};
+
+	var getAttackDirectionTile = function(dirX, dirY) {
+		var playerTile = getTile(player.getX(), player.getY());
+		return {"x": playerTile.x + dirX, "y": playerTile.y + dirY};
 	};
 
   //DISTANCE
