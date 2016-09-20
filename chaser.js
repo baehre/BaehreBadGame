@@ -33,6 +33,8 @@ var Chaser = function(startX, startY, level, player) {
 	var moveAmount = 1.5;
 	var damage = 2.5;
 	var health = 100;
+	//the previous behavior. used to reset path between behavior changes
+	var pastBehavior = '';
 	//used in path finding. if leader he is getting the path. everyone else steals from him
 	var leader = false;
 	//the path the chaser is taking
@@ -106,11 +108,23 @@ var Chaser = function(startX, startY, level, player) {
 		if (dist < 144) {
 			// double check that your path is actually good to go not just the pixel distance
 			if(path !== null && pathManDistance(path) < 144) {
+				if(pastBehavior !== 'surround') {
+					path = null;
+				}
+				pastBehavior = 'surround';
 				surround(enemies);
 			} else {
+				if(pastBehavior !== 'separateAndPathing') {
+					path = null;
+				}
+				pastBehavior = 'separateAndPathing';
 				separateAndPathing(enemies);
 			}
 		} else if (dist < 900) {
+			if(pastBehavior !== 'separateAndPathing') {
+				path = null;
+			}
+			pastBehavior = 'separateAndPathing';
 			//if within a large number of tiles
 			separateAndPathing(enemies);
 		}
@@ -248,8 +262,8 @@ var Chaser = function(startX, startY, level, player) {
 			var enemy = enemies[i];
 			// we are not the current enemy
 			if(enemy.getX() !== x && enemy.getY() !== y) {
-				// if the enemy is within 2 tiles
-				if (distance(enemy.getX(), enemy.getY(), x, y) < 96) {
+				// if the enemy is within 3 tiles
+				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144) {
 					if (!leader && enemy.getLeader()) {
 						// means that someone already did the overarching path concat the path to that guy to his path
 						noLeader = false;
@@ -328,6 +342,29 @@ var Chaser = function(startX, startY, level, player) {
 	};
 
 	var surround = function(enemies) {
+		var playerX = player.getX();
+		var playerY = player.getY();
+		var angle = Math.atan2(playerX - x, playerY - y) * 180 / Math.PI;
+		//convert to 360 degrees
+		if(angle < 0) {
+			angle = angle + 360;
+		}
+		while (path === null) {
+			if(walkable(getTile(x, y), getTile(playerX, playerY))) {
+				for (var i = 0; i < enemies.length; i++) {
+					var enemy = enemies[i];
+					//enemy and current enemy are intersecting
+					if(manDistance(enemy.getX(), enemy.getY(), x, y) < 48) {
+						//orbits the player. yay for unit circle?
+						var tempX = playerX - Math.cos(angle) * 96;
+						var tempY = playerY + Math.sin(angle) * 96;
+					}
+				}
+			}
+		}
+	};
+
+	/*var surround = function(enemies) {
 		//only grab a new one if we haven't already got a direction
 		if (attackDirection === -1) {
 			var attackDirectionArr = [{"dir": 0, "val": 0},{"dir": 1, "val": 0},{"dir": 2, "val": 0},{"dir": 3, "val": 0},{"dir": 4, "val": 0},
@@ -372,10 +409,9 @@ var Chaser = function(startX, startY, level, player) {
 					direction = getClosestAttackDirection(dirX, dirY, attackDirectionArr);
 				}
 				var tempTile = getAttackDirectionTile(dirX, dirY)
-				var tempPath = getSmoothPath(getTile(x, y), tempTile);
-				// technically at the WORST it would be 384. But give it some wiggle
-				// checks to see if getting to that path would take too long
-				if (pathManDistance(tempPath) < 450){
+				var check = walkable(getTile(x, y), tempTile);
+				//checks to see if a straight line can be walked to teh two points.
+				if (check) {
 					checkDirection = true;
 					attackDirection = direction;
 				} else {
@@ -387,11 +423,11 @@ var Chaser = function(startX, startY, level, player) {
 			//at this point we should have our attackDirection
 			path = getCircularPath(getTile(x, y), tempTile);
 		}
-	};
+	};*/
 
   //UTIL FUNCTIONS
 
-	var getCircularPath = function(start, end) {
+	/*var getCircularPath = function(start, end) {
 		
 	};
 
@@ -426,8 +462,9 @@ var Chaser = function(startX, startY, level, player) {
 
 	var getAttackDirectionTile = function(dirX, dirY) {
 		var playerTile = getTile(player.getX(), player.getY());
-		return {"x": playerTile.x + dirX, "y": playerTile.y + dirY};
-	};
+		// return the tile based on what direction the enemy is coming from
+		return {"x": playerTile.x + dirX * 2, "y": playerTile.y + dirY * 2};
+	};*/
 
   //DISTANCE
 
