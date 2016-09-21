@@ -39,8 +39,6 @@ var Chaser = function(startX, startY, level, player) {
 	var leader = false;
 	//the path the chaser is taking
 	var path = null;
-	// says which path an enemy is taking to the attack the player
-	var attackDirection = -1;
 
 	// Getters and setters
 	var getX = function() {
@@ -66,14 +64,6 @@ var Chaser = function(startX, startY, level, player) {
 	var getLeader = function() {
 		return leader;
 	};
-
-	var getAttackDirection = function() {
-		return attackDirection;
-	};
-
-	var setAttackDirection = function(newDA) {
-		attackDirection = newDA;
-	}
 
 	var setLeader = function(newLeader) {
 		leader = newLeader;
@@ -112,7 +102,7 @@ var Chaser = function(startX, startY, level, player) {
 					path = null;
 				}
 				pastBehavior = 'surround';
-				surround(enemies);
+				surround(enemies, dist);
 			} else {
 				if(pastBehavior !== 'separateAndPathing') {
 					path = null;
@@ -341,130 +331,81 @@ var Chaser = function(startX, startY, level, player) {
 		}
 	};
 
-	var surround = function(enemies) {
+	var surround = function(enemies, radius) {
+		if (path !== null) {
+			return;
+		}
 		var playerX = player.getX();
 		var playerY = player.getY();
-		var angle = Math.atan2(playerX - x, playerY - y) * 180 / Math.PI;
-		//convert to 360 degrees
-		if(angle < 0) {
-			angle = angle + 360;
-		}
-		while (path === null) {
-			if(walkable(getTile(x, y), getTile(playerX, playerY))) {
-				for (var i = 0; i < enemies.length; i++) {
-					var enemy = enemies[i];
-					//enemy and current enemy are intersecting
-					if(manDistance(enemy.getX(), enemy.getY(), x, y) < 48) {
-						//orbits the player. yay for unit circle?
-						var tempX = playerX - Math.cos(angle) * 96;
-						var tempY = playerY + Math.sin(angle) * 96;
-					}
-				}
-			}
-		}
-	};
-
-	/*var surround = function(enemies) {
-		//only grab a new one if we haven't already got a direction
-		if (attackDirection === -1) {
-			var attackDirectionArr = [{"dir": 0, "val": 0},{"dir": 1, "val": 0},{"dir": 2, "val": 0},{"dir": 3, "val": 0},{"dir": 4, "val": 0},
-			{"dir": 5, "val": 0},{"dir": 6, "val": 0},{"dir": 7, "val": 0}];
+		//in degrees.
+		if(walkable(getTile(x, y), getTile(playerX, playerY))) {
+			var enemyOverlap = false;
 			for (var i = 0; i < enemies.length; i++) {
 				var enemy = enemies[i];
-				var dirAttack = enemy.getAttackDirection();
-				if (dirAttack !== -1) {
-					attackDirectionArr[dirAttack].val += 1;
+				//enemy and current enemy are intersecting
+				if(manDistance(enemy.getX(), enemy.getY(), x, y) < 48) {
+					enemyOverlap = true;
+					break;
 				}
 			}
-			attackDirectionArr.sort(attackDirSort);
-			var playerX = player.getX();
-			var playerY = player.getY();
-			var tempX = x - playerX;
-			var tempY = y - playerY;
-			var dirX;
-			var dirY;
-			if (Math.abs(tempX) < 48) {
-				dirX = 0;
-			} else if (tempX < 0) {
-				dirX = -1;
-			} else if (tempX > 0) {
-				dirX = 1;
+			if(!enemyOverlap) {
+				path = getSmoothPath(getTile(x, y), getTile(playerX, playerY));
+				return;
 			}
-			if (Math.abs(tempY) < 48) {
-				dirY = 0;
-			} else if (tempY < 0) {
-				dirY = -1;
-			} else if (tempY > 0) {
-				dirY = 1;
-			}
-			var direction = -1;
-			var checkDirection = false;
-			// keep going until we have the closest direction that doesn't take forever to get to
-			while (!checkDirection) {
-				// the value for the first and the second are different. Go ahead and grab that first one.
-				if (attackDirectionArr[0].val !== attackDirection[1].val) {
-					direction = attackDirectionArr[0].dir; 
-				} else {
-					//if the directions are all equal grab the closest one
-					direction = getClosestAttackDirection(dirX, dirY, attackDirectionArr);
-				}
-				var tempTile = getAttackDirectionTile(dirX, dirY)
-				var check = walkable(getTile(x, y), tempTile);
-				//checks to see if a straight line can be walked to teh two points.
-				if (check) {
-					checkDirection = true;
-					attackDirection = direction;
-				} else {
-					//remove the direction from the front of the array
-					attackDirectionArr.shift();
-				}
-			}
-
-			//at this point we should have our attackDirection
-			path = getCircularPath(getTile(x, y), tempTile);
 		}
-	};*/
-
-  //UTIL FUNCTIONS
-
-	/*var getCircularPath = function(start, end) {
-		
-	};
-
-	var getClosestAttackDirection = function(dirX, dirY, attackDirectionArr) {
-		var dir;
-		if(dirX === -1) {
-			if (dirY === -1) {
-				dir = 0;
-			} else if (dirY === 0) {
-				dir = 7;
-			} else {
-				dir = 6;
-			}
-		} else if (dirX === 0) {
-			if (dirY === -1) {
-				dir = 1;
-			} else {
-				//hopefully it will never be 0,0. that'd be AWKward
-				dir = 5;
+		var angle = (Math.atan2(y - playerY, x - playerX));
+		// 0.523599 is 30 degrees
+		var positiveAngle = angle + 0.523599;
+		//orbits the player. yay for unit circle?
+		var tempPositiveX = playerX + Math.cos(positiveAngle) * 96;
+		var tempPositiveY = playerY + Math.sin(positiveAngle) * 96;
+		var tempTile = getTile(tempPositiveX, tempPositiveY);
+		if (!isBlocked(tempTile.x, tempTile.y)) {
+			var smallXCheck = Math.abs(x - tempPositiveX) > 1;
+			var smallYCheck = Math.abs(y - tempPositiveY) > 1;
+			while(smallXCheck && smallYCheck) {
+				if (x < tempPositiveX) {
+					x += moveAmount;
+				} else if (x > tempPositiveX) {
+					x -= moveAmount;
+				}
+				if (y < tempPositiveY) {
+					y += moveAmount;
+				} else if (y > tempPositiveY) {
+					y -= moveAmount;
+				}
+				smallXCheck = Math.abs(x - tempPositiveX) > 1;
+				smallYCheck = Math.abs(y - tempPositiveY) > 1;
 			}
 		} else {
-			if (dirY === -1) {
-				dir = 2;
-			} else if (dirY === 0) {
-				dir = 3;
+			// 30 degrees
+			var negativeAngle = angle - 0.523599;
+			var tempNegativeX = playerX + Math.cos(negativeAngle) * 96;
+			var tempNegativeY = playerY + Math.sin(negativeAngle) * 96;
+			tempTile = getTile(tempNegativeX, tempNegativeY);
+			if (!isBlocked(tempTile.x, tempTile.y)) {
+				var smallXCheck = Math.abs(x - tempNegativeX) > 1;
+				var smallYCheck = Math.abs(y - tempNegativeY) > 1;
+				while(smallXCheck && smallYCheck) {
+					if (x < tempNegativeX) {
+						x += moveAmount;
+					} else if (x > tempNegativeX) {
+						x -= moveAmount;
+					}
+					if (y < tempNegativeY) {
+						y += moveAmount;
+					} else if (y > tempNegativeY) {
+						y -= moveAmount;
+					}
+					smallXCheck = Math.abs(x - tempNegativeX) > 1;
+					smallYCheck = Math.abs(y - tempNegativeY) > 1;
+				}
+				//can't move along the circle in either direction
 			} else {
-				dir = 4;
+
 			}
 		}
-		return dir;
 	};
-
-	var getAttackDirectionTile = function(dirX, dirY) {
-		var playerTile = getTile(player.getX(), player.getY());
-		// return the tile based on what direction the enemy is coming from
-		return {"x": playerTile.x + dirX * 2, "y": playerTile.y + dirY * 2};
-	};*/
 
   //DISTANCE
 
@@ -891,8 +832,6 @@ var Chaser = function(startX, startY, level, player) {
 		getHealth: getHealth,
 		getPath: getPath,
 		getLeader: getLeader,
-		getAttackDirection: getAttackDirection,
-		setAttackDirection: setAttackDirection,
 		setLeader: setLeader,
 		setX: setX,
 		setY: setY,
