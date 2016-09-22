@@ -56,14 +56,14 @@ function init(){
   localPlayer = new Player(canvas, 100, 300, levelData, enemies);
   //made a function that adds a chaser and updates the enemies for the player
   addChaser(300, 100);
-  //addChaser(350, 100);
-  //addChaser(500, 100);
-  //addChaser(200, 100);
-  //addChaser(600, 100);
-  //addChaser(500, 300);
-  //addChaser(700, 100);
-  //addChaser(500, 400);
-  //addChaser(550, 600);
+  addChaser(350, 100);
+  addChaser(500, 100);
+  addChaser(200, 100);
+  addChaser(600, 100);
+  addChaser(500, 300);
+  addChaser(700, 100);
+  addChaser(500, 400);
+  addChaser(550, 600);
   projectiles = [];
   //sets all the event handlers
   setEventHandlers();

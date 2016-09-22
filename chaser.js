@@ -37,6 +37,8 @@ var Chaser = function(startX, startY, level, player) {
 	var pastBehavior = '';
 	//used in path finding. if leader he is getting the path. everyone else steals from him
 	var leader = false;
+	// the direction to orbit the player
+	var surroundDirection = -1;
 	//the path the chaser is taking
 	var path = null;
 
@@ -95,11 +97,12 @@ var Chaser = function(startX, startY, level, player) {
 		prevY = y;
 		var dist = distance(player.getX(), player.getY(), x, y);
 		// if within 3 tiles
-		if (dist < 144) {
+		/*if (dist < 144) {
 			// double check that your path is actually good to go not just the pixel distance
 			if(path !== null && pathManDistance(path) < 144) {
 				if(pastBehavior !== 'surround') {
 					path = null;
+					surroundDirection = -1;
 				}
 				pastBehavior = 'surround';
 				surround(enemies, dist);
@@ -110,8 +113,9 @@ var Chaser = function(startX, startY, level, player) {
 				pastBehavior = 'separateAndPathing';
 				separateAndPathing(enemies);
 			}
-		} else if (dist < 900) {
+		} else */if (dist < 900) {
 			if(pastBehavior !== 'separateAndPathing') {
+				console.log("ah wut");
 				path = null;
 			}
 			pastBehavior = 'separateAndPathing';
@@ -142,6 +146,7 @@ var Chaser = function(startX, startY, level, player) {
 	//once the path has been set in update follow it.
 	var followPath = function() {
 		if (path !== null && path !== undefined) {
+			console.log("PATHLEN: " + path.length);
 			var len = path.length - 1;
 			//check to see if the length is legit. and that some gobble-de-gook didn't get in the path
 			if(len > -1 && path[len] !== undefined) {
@@ -243,8 +248,6 @@ var Chaser = function(startX, startY, level, player) {
 
 	// keeps the chasers separate and gets the path
 	var separateAndPathing = function(enemies, distance) {
-		// reset since we aren't in range anymore
-		attackDirection = -1;
 		var velocity = {"x": 0, "y": 0};
 		var neighbors = 0;
 		var noLeader = true;
@@ -255,6 +258,7 @@ var Chaser = function(startX, startY, level, player) {
 				// if the enemy is within 3 tiles
 				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144) {
 					if (!leader && enemy.getLeader()) {
+						console.log("never happens?");
 						// means that someone already did the overarching path concat the path to that guy to his path
 						noLeader = false;
 						// need to double check that this works
@@ -269,16 +273,20 @@ var Chaser = function(startX, startY, level, player) {
 		}
 		//if none of the other enemies are leaders
 		if (noLeader) {
+			console.log('we get here?');
 			leader = true;
 			//if no path get one or get a new one if the path is longer than the distance to the player
 			if (path === null || pathManDistance(path) > manDistance(player.getX(), player.getY(), x, y)) {
+				console.log("reset path");
 				path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
 			} else {
+				console.log("follow da player");
 				//already has a path. gotta update it.but only if player has moved
 				if ((prevPlayerX !== player.getX() || prevPlayerY !== player.getY())) {
+					console.log("player moved");
 					prevPlayerX = player.getX();
 					prevPlayerY = player.getY();
-					if (path !== null || path !== undefined) {
+					if (path !== null && path !== undefined) {
 						if(path.length !== 0 && path[path.length - 1] !== undefined) {
 							var tempTile = getTile(prevPlayerX, prevPlayerY);
 							// long as the tile doesn't fail
@@ -331,12 +339,8 @@ var Chaser = function(startX, startY, level, player) {
 	};
 
 	var surround = function(enemies, radius) {
-		if (path !== null) {
-			return;
-		}
 		var playerX = player.getX();
 		var playerY = player.getY();
-		//in degrees.
 		if(walkable(getTile(x, y), getTile(playerX, playerY))) {
 			var enemyOverlap = false;
 			for (var i = 0; i < enemies.length; i++) {
@@ -347,6 +351,25 @@ var Chaser = function(startX, startY, level, player) {
 				}
 				//enemy and current enemy are intersecting
 				if(manDistance(enemy.getX(), enemy.getY(), x, y) < 48) {
+					//shift the enemy off the other one
+					var vecX = x - enemy.getX();
+					var vecY = y - enemy.getY();
+					vecX *= -1;
+					vecY *= -1;
+					var vecLength = Math.sqrt((vecX * vecX) + (vecY * vecY));
+					var uX = vecX / vecLength;
+					var uY = vecY / vecLength;
+					//get the hypothetical bounds of the enemy
+					var tempTile1 = getTile(x + uX - 24, y + uY);
+					var tempTile2 = getTile(x + uX + 24, y + uY);
+					var tempTile3 = getTile(x + uX, y + uY - 24);
+					var tempTile4 = getTile(x + uX, y + uY + 24);
+					// shift the enemy along the vector. if it wouldn't shove it through a blocked tile
+					if(getLevelTile(tempTile1.x, tempTile1.y) < 10 && getLevelTile(tempTile2.x, tempTile2.y) < 10 &&
+						getLevelTile(tempTile3.x, tempTile3.y) < 10 && getLevelTile(tempTile4.x, tempTile4.y) < 10) {
+						x -= uX;
+						y -= uY;
+					}
 					enemyOverlap = true;
 					break;
 				}
@@ -356,56 +379,58 @@ var Chaser = function(startX, startY, level, player) {
 				return;
 			}
 		}
+		//hasn't been set yet
+		if (surroundDirection === -1) {
+			var temp = [0, 1];
+			var rand = Math.floor(Math.random() * 2);
+			surroundDirection = temp[rand];
+		}
 		var angle = (Math.atan2(y - playerY, x - playerX));
-		// 0.523599 is 30 degrees
-		var positiveAngle = angle + 0.523599;
-		//orbits the player. yay for unit circle?
-		var tempPositiveX = playerX + Math.cos(positiveAngle) * 96;
-		var tempPositiveY = playerY + Math.sin(positiveAngle) * 96;
-		var tempTile = getTile(tempPositiveX, tempPositiveY);
-		if (!isBlocked(tempTile.x, tempTile.y)) {
-			var smallXCheck = Math.abs(x - tempPositiveX) > 1;
-			var smallYCheck = Math.abs(y - tempPositiveY) > 1;
-			while(smallXCheck && smallYCheck) {
-				if (x < tempPositiveX) {
+		if(surroundDirection === 0) {
+			// 0.261799 is 15 degrees
+			var positiveAngle = angle + 0.261799;
+			//orbits the player. yay for unit circle?
+			var tempPositiveX = playerX + Math.cos(positiveAngle) * 96;
+			var tempPositiveY = playerY + Math.sin(positiveAngle) * 96;
+			var tempTile = getTile(tempPositiveX, tempPositiveY);
+			if (!isBlocked(tempTile.x, tempTile.y)) {
+				var smallXCheck = Math.abs(x - tempPositiveX) > 1;
+				var smallYCheck = Math.abs(y - tempPositiveY) > 1;
+				if (x < tempPositiveX && smallXCheck) {
 					x += moveAmount;
-				} else if (x > tempPositiveX) {
+				} else if (x > tempPositiveX && smallXCheck) {
 					x -= moveAmount;
 				}
-				if (y < tempPositiveY) {
+				if (y < tempPositiveY && smallYCheck) {
 					y += moveAmount;
-				} else if (y > tempPositiveY) {
+				} else if (y > tempPositiveY && smallYCheck) {
 					y -= moveAmount;
 				}
-				smallXCheck = Math.abs(x - tempPositiveX) > 1;
-				smallYCheck = Math.abs(y - tempPositiveY) > 1;
+			} else {
+				surroundDirection = 1;
 			}
-		} else {
-			// 30 degrees
-			var negativeAngle = angle - 0.523599;
+		} else if (surroundDirection === 1) {
+			// 15 degrees
+			var negativeAngle = angle - 0.261799;
 			var tempNegativeX = playerX + Math.cos(negativeAngle) * 96;
 			var tempNegativeY = playerY + Math.sin(negativeAngle) * 96;
 			tempTile = getTile(tempNegativeX, tempNegativeY);
 			if (!isBlocked(tempTile.x, tempTile.y)) {
 				var smallXCheck = Math.abs(x - tempNegativeX) > 1;
 				var smallYCheck = Math.abs(y - tempNegativeY) > 1;
-				while(smallXCheck && smallYCheck) {
-					if (x < tempNegativeX) {
-						x += moveAmount;
-					} else if (x > tempNegativeX) {
-						x -= moveAmount;
-					}
-					if (y < tempNegativeY) {
-						y += moveAmount;
-					} else if (y > tempNegativeY) {
-						y -= moveAmount;
-					}
-					smallXCheck = Math.abs(x - tempNegativeX) > 1;
-					smallYCheck = Math.abs(y - tempNegativeY) > 1;
+				if (x < tempNegativeX && smallXCheck) {
+					x += moveAmount;
+				} else if (x > tempNegativeX && smallXCheck) {
+					x -= moveAmount;
+				}
+				if (y < tempNegativeY && smallYCheck) {
+					y += moveAmount;
+				} else if (y > tempNegativeY && smallYCheck) {
+					y -= moveAmount;
 				}
 				//can't move along the circle in either direction
 			} else {
-				//worry about this after testing. shouldn't really happen now
+				surroundDirection = 0;
 			}
 		}
 	};
