@@ -242,7 +242,7 @@ var Chaser = function(startX, startY, level, player) {
 	};
 
 	// keeps the chasers separate and gets the path
-	var separateAndPathing = function(enemies) {
+	var separateAndPathing = function(enemies, distance) {
 		// reset since we aren't in range anymore
 		attackDirection = -1;
 		var velocity = {"x": 0, "y": 0};
@@ -293,7 +293,6 @@ var Chaser = function(startX, startY, level, player) {
 									// we don't want to get stuck where we currently are or go back to the center of the first tile.
 									// gotta get rid of it.
 									path.pop();
-									updateAttackPaths();
 								}
 							}
 						} else {
@@ -342,6 +341,10 @@ var Chaser = function(startX, startY, level, player) {
 			var enemyOverlap = false;
 			for (var i = 0; i < enemies.length; i++) {
 				var enemy = enemies[i];
+				// we are the enemy
+				if (enemy.getX() === x && enemy.getY() === y) {
+					continue;
+				}
 				//enemy and current enemy are intersecting
 				if(manDistance(enemy.getX(), enemy.getY(), x, y) < 48) {
 					enemyOverlap = true;
@@ -402,7 +405,7 @@ var Chaser = function(startX, startY, level, player) {
 				}
 				//can't move along the circle in either direction
 			} else {
-
+				//worry about this after testing. shouldn't really happen now
 			}
 		}
 	};
@@ -423,14 +426,17 @@ var Chaser = function(startX, startY, level, player) {
 	};
 
 	//return the total manhattan distance of the path given to it
-	var pathManDistance = function(path) {
+	// fun fact arrays are passed by reference automatically. This was adding stuff to the path 
+	var pathManDistance = function(tempPath) {
 		var distance = 0;
-		path.unshift(getTile(x, y));
-		for (var i = 0; i < path.length - 1; i++) {
-			var pixel1 = getPixel(path[i]);
-			var pixel2 = getPixel(path[i + 1]);
+		tempPath.unshift(getTile(x, y));
+		for (var i = 0; i < tempPath.length - 1; i++) {
+			var pixel1 = getPixel(tempPath[i]);
+			var pixel2 = getPixel(tempPath[i + 1]);
 			distance = distance + manDistance(pixel1.x, pixel1.y, pixel2.x, pixel2.y);
 		}
+		// get rid of things we did to the tile
+		tempPath.shift();
 		return distance;
 	};
 
@@ -492,16 +498,6 @@ var Chaser = function(startX, startY, level, player) {
 			return 1;
 		}
 		if(second.fCost > first.fCost){
-			return -1;
-		}
-		return 0;
-	};
-
-	var attackDirSort = function(first, second) {
-		if(second.val < first.val) {
-			return 1;
-		}
-		if(second.val > first.val) {
 			return -1;
 		}
 		return 0;
