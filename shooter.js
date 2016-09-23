@@ -37,7 +37,7 @@ var Shooter = function(startX, startY, level, player) {
     var attackRange = 300;
     //for shooting
 	//higher is slower. lower is faster
-	var startingProjectileFireRate = 20;
+	var startingProjectileFireRate = 40;
 	//this is the value used to say when they can fire by subtracting then resetting the value
 	var projectileFireRate = startingProjectileFireRate;
 	//holds all the shooters projectiles
@@ -363,8 +363,8 @@ var Shooter = function(startX, startY, level, player) {
                         var uY = playerVecY / vecLength;
                         // get a point along the vector past where they are (we assume they are going to follow that direction)
                         // 15 is arbitrary. probably need to tinker to get an ok number
-                        var shootX = playerX + uX * 15;
-                        var shootY = playerY + uY * 15;
+                        var shootX = playerX + uX * 30;
+                        var shootY = playerY + uY * 30;
                     } else {
                         var shootX = playerX;
                         var shootY = playerY;
@@ -445,8 +445,7 @@ var Shooter = function(startX, startY, level, player) {
     //take the coordinates to shoot at
     var fireProjectile = function(shootX, shootY) {
         //console.log("failed?");
-        var direction = Math.atan2(shootY, shootX);
-        console.log("DIRECTION: " + direction);
+        var direction = Math.atan2(shootY - y, shootX - x);
         // the enemies are whomever we can hit. so array of player. cuz we can hit the player
         var tempProjectile = new Projectile("shooter", x, y, direction, canvas, levelData, [player]);
         projectiles.push(tempProjectile);

@@ -53,7 +53,6 @@ var Player = function(can, startX, startY, level, enemies) {
 			var dx = (tempX - canvas.width/2) + 20;
 			var dy = (tempY - canvas.height/2) + 20;
 			var direction = Math.atan2(dy,dx);
-			console.log("DIRECTION: " + direction);
 			var tempProjectile = new Projectile("player", x, y, direction, canvas, levelData, enemies);
 			projectiles.push(tempProjectile);
 			projectileFireRate = startingProjectileFireRate;
