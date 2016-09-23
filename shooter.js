@@ -347,36 +347,47 @@ var Shooter = function(startX, startY, level, player) {
         var playerY = player.getY();
         //means we can shoot at him
         if(projectileFireRate <= 0) {
+            //console.log("fire rate");
             //means a clear shot
             if(walkable(getTile(x, y), getTile(playerX, playerY))) {
+                //console.log("WALKABLE");
                 // if the player is moving
                 if (prevPlayerX !== playerX || prevPlayerY !== playerX) {
+                    //console.log("PLAYERMOVED");
                     //vector things
                     var playerVecX = playerX - prevPlayerX;
                     var playerVecY = playerY - prevPlayerY;
                     var vecLength = Math.sqrt((playerVecX * playerVecX) + (playerVecY * playerVecY));
-                    var uX = playerVecX / vecLength;
-                    var uY = playerVecY / vecLength;
-                    // get a point along the vector past where they are (we assume they are going to follow that direction)
-                    // 15 is arbitrary. probably need to tinker to get an ok number
-                    var shootX = playerX + uX * 15;
-                    var shootY = playerY + uY * 15;
+                    if (vecLength > 0) {
+                        var uX = playerVecX / vecLength;
+                        var uY = playerVecY / vecLength;
+                        // get a point along the vector past where they are (we assume they are going to follow that direction)
+                        // 15 is arbitrary. probably need to tinker to get an ok number
+                        var shootX = playerX + uX * 15;
+                        var shootY = playerY + uY * 15;
+                    } else {
+                        var shootX = playerX;
+                        var shootY = playerY;
+                    }
                     fireProjectile(shootX, shootY);
                     //update player position
                     prevPlayerX = playerX
                     prevPlayerY = playerY;
                     //player is not moving
                 } else {
+                    //console.log("PLAYER DIDNT MOVE");
                     fireProjectile(playerX, playerY);
                 }
             // means we need to shift to get a shot
             } else {
+                //console.log("not walkable");
                 //this isn't super efficient. but will work for now
                 separateAndPathing(enemies);
                 pastBehavior = 'separate';
             }
             //means can't fire yet. lets move around a bit
         } else {
+            //console.log("can't fire yet");
             var temp = [0, 1];
             var rand = Math.floor(Math.random() * 2);
             var surroundDirection = temp[rand];
@@ -433,7 +444,9 @@ var Shooter = function(startX, startY, level, player) {
 
     //take the coordinates to shoot at
     var fireProjectile = function(shootX, shootY) {
-        var direction = Math.atan2(dy,dx);
+        //console.log("failed?");
+        var direction = Math.atan2(shootY, shootX);
+        console.log("DIRECTION: " + direction);
         // the enemies are whomever we can hit. so array of player. cuz we can hit the player
         var tempProjectile = new Projectile("shooter", x, y, direction, canvas, levelData, [player]);
         projectiles.push(tempProjectile);

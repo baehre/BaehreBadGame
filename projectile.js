@@ -53,7 +53,7 @@ var Projectile = function(entity, xP, yP, direction, can, level, enemies) {
     }
 
     var update = function(){
-      if(!checkIntersection(x,y)){
+      if(!checkIntersection(x, y)){
         x = x + newX;
         y = y + newY;
       }
