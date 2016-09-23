@@ -199,6 +199,11 @@ function drawEnemies() {
 function drawProjectiles(){
   //get the players projectiles and add them to the overall list
   projectiles = localPlayer.getProjectiles();
+  for(var j = 0; j < enemies.length; j++) {
+    if(enemies[i].hasOwnProperty('getProjectiles')) {
+      projectiles.concat(enemies[i].getProjectiles());
+    }
+  }
   // NOTE: for later concat the array here
   for(var i = 0; i < projectiles.length; i++){
     var tempProjectile = projectiles[i];

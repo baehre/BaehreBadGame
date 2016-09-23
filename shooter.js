@@ -69,10 +69,18 @@ var Shooter = function(startX, startY, level, player) {
 	var getPath = function() {
 		return path;
 	};
+    
+    var getProjectiles = function() {
+        return projectiles;
+    };
 
 	var getLeader = function() {
 		return leader;
 	};
+
+    var setProjectiles = function(proj) {
+        projectiles = proj;
+    };
 
 	var setLeader = function(newLeader) {
 		leader = newLeader;
@@ -363,23 +371,73 @@ var Shooter = function(startX, startY, level, player) {
                 }
             // means we need to shift to get a shot
             } else {
-
+                //this isn't super efficient. but will work for now
+                separateAndPathing(enemies);
+                pastBehavior = 'separate';
             }
             //means can't fire yet. lets move around a bit
         } else {
-            
+            var temp = [0, 1];
+            var rand = Math.floor(Math.random() * 2);
+            var surroundDirection = temp[rand];
+            var angle = (Math.atan2(y - playerY, x - playerX));
+            if(surroundDirection === 0) {
+                // 0.261799 is 15 degrees
+                var positiveAngle = angle + 0.261799;
+                //orbits the player. yay for unit circle?
+                var tempPositiveX = playerX + Math.cos(positiveAngle) * 96;
+                var tempPositiveY = playerY + Math.sin(positiveAngle) * 96;
+                var tempTile = getTile(tempPositiveX, tempPositiveY);
+                if (!isBlocked(tempTile.x, tempTile.y)) {
+                    var smallXCheck = Math.abs(x - tempPositiveX) > 1;
+                    var smallYCheck = Math.abs(y - tempPositiveY) > 1;
+                    if (x < tempPositiveX && smallXCheck) {
+                        x += moveAmount;
+                    } else if (x > tempPositiveX && smallXCheck) {
+                        x -= moveAmount;
+                    }
+                    if (y < tempPositiveY && smallYCheck) {
+                        y += moveAmount;
+                    } else if (y > tempPositiveY && smallYCheck) {
+                        y -= moveAmount;
+                    }
+                } else {
+                    surroundDirection = 1;
+                }
+            } else if (surroundDirection === 1) {
+                // 15 degrees
+                var negativeAngle = angle - 0.261799;
+                var tempNegativeX = playerX + Math.cos(negativeAngle) * 96;
+                var tempNegativeY = playerY + Math.sin(negativeAngle) * 96;
+                tempTile = getTile(tempNegativeX, tempNegativeY);
+                if (!isBlocked(tempTile.x, tempTile.y)) {
+                    var smallXCheck = Math.abs(x - tempNegativeX) > 1;
+                    var smallYCheck = Math.abs(y - tempNegativeY) > 1;
+                    if (x < tempNegativeX && smallXCheck) {
+                        x += moveAmount;
+                    } else if (x > tempNegativeX && smallXCheck) {
+                        x -= moveAmount;
+                    }
+                    if (y < tempNegativeY && smallYCheck) {
+                        y += moveAmount;
+                    } else if (y > tempNegativeY && smallYCheck) {
+                        y -= moveAmount;
+                    }
+                    //can't move along the circle in either direction
+                } else {
+                    surroundDirection = 0;
+                }
+            }
         }
     };
 
     //take the coordinates to shoot at
     var fireProjectile = function(shootX, shootY) {
-        if(projectileFireRate <= 0){
-            var direction = Math.atan2(dy,dx);
-            // the enemies are whomever we can hit. so array of player. cuz we can hit the player
-            var tempProjectile = new Projectile("shooter", x, y, direction, canvas, levelData, [player]);
-            projectiles.push(tempProjectile);
-            projectileFireRate = startingProjectileFireRate;
-        }
+        var direction = Math.atan2(dy,dx);
+        // the enemies are whomever we can hit. so array of player. cuz we can hit the player
+        var tempProjectile = new Projectile("shooter", x, y, direction, canvas, levelData, [player]);
+        projectiles.push(tempProjectile);
+        projectileFireRate = startingProjectileFireRate;
     };
 
   //DISTANCE
@@ -755,6 +813,8 @@ var Shooter = function(startX, startY, level, player) {
 		getHealth: getHealth,
 		getPath: getPath,
 		getLeader: getLeader,
+        getProjectiles: getProjectiles,
+        setProjectiles: setProjectiles,
 		setLeader: setLeader,
 		setX: setX,
 		setY: setY,
