@@ -33,6 +33,15 @@ var Shooter = function(startX, startY, level, player) {
 	var moveAmount = 1.0;
 	var damage = 5.0;
 	var health = 50;
+    // how far the shooter can actually shoot
+    var attackRange = 300;
+    //for shooting
+	//higher is slower. lower is faster
+	var startingProjectileFireRate = 20;
+	//this is the value used to say when they can fire by subtracting then resetting the value
+	var projectileFireRate = startingProjectileFireRate;
+	//holds all the shooters projectiles
+	var projectiles = [];
 	//the previous behavior. used to reset path between behavior changes
 	var pastBehavior = '';
 	//used in path finding. if leader he is getting the path. everyone else steals from him
@@ -93,8 +102,34 @@ var Shooter = function(startX, startY, level, player) {
 	var update = function(enemies) {
 		prevX = x;
 		prevY = y;
+        //if they can fire then update projectileFireRate
+		if(startingProjectileFireRate > 0){
+			projectileFireRate = projectileFireRate - 1;
+		}
 		var dist = distance(player.getX(), player.getY(), x, y);
-		
+        // now attack da guy
+		if (dist < attackRange) {
+            if(path !== null && pathManDistance(path) < attackRange) {
+				if(pastBehavior !== 'shootPlayer') {
+                    path = null;
+                }
+                pastBehavior = 'shootPlayer';
+                shootPlayer(enemies);
+			} else {
+				if(pastBehavior !== 'separate') {
+					path = null;
+				}
+				pastBehavior = 'separate';
+				separateAndPathing(enemies);
+			}
+        } else {
+            if(pastBehavior !== 'separate') {
+                path = null;
+            }
+            pastBehavior = 'separate';
+            // get closer
+            separateAndPathing(enemies);
+        }
 		//get the path from above then follow it
 		followPath();
 	};
@@ -298,6 +333,54 @@ var Shooter = function(startX, startY, level, player) {
 			}
 		}
 	};
+
+    var shootPlayer = function(enemies) {
+        var playerX = player.getX();
+        var playerY = player.getY();
+        //means we can shoot at him
+        if(projectileFireRate <= 0) {
+            //means a clear shot
+            if(walkable(getTile(x, y), getTile(playerX, playerY))) {
+                // if the player is moving
+                if (prevPlayerX !== playerX || prevPlayerY !== playerX) {
+                    //vector things
+                    var playerVecX = playerX - prevPlayerX;
+                    var playerVecY = playerY - prevPlayerY;
+                    var vecLength = Math.sqrt((playerVecX * playerVecX) + (playerVecY * playerVecY));
+                    var uX = playerVecX / vecLength;
+                    var uY = playerVecY / vecLength;
+                    // get a point along the vector past where they are (we assume they are going to follow that direction)
+                    // 15 is arbitrary. probably need to tinker to get an ok number
+                    var shootX = playerX + uX * 15;
+                    var shootY = playerY + uY * 15;
+                    fireProjectile(shootX, shootY);
+                    //update player position
+                    prevPlayerX = playerX
+                    prevPlayerY = playerY;
+                    //player is not moving
+                } else {
+                    fireProjectile(playerX, playerY);
+                }
+            // means we need to shift to get a shot
+            } else {
+
+            }
+            //means can't fire yet. lets move around a bit
+        } else {
+            
+        }
+    };
+
+    //take the coordinates to shoot at
+    var fireProjectile = function(shootX, shootY) {
+        if(projectileFireRate <= 0){
+            var direction = Math.atan2(dy,dx);
+            // the enemies are whomever we can hit. so array of player. cuz we can hit the player
+            var tempProjectile = new Projectile("shooter", x, y, direction, canvas, levelData, [player]);
+            projectiles.push(tempProjectile);
+            projectileFireRate = startingProjectileFireRate;
+        }
+    };
 
   //DISTANCE
 
