@@ -97,7 +97,7 @@ var Chaser = function(startX, startY, level, player) {
 		prevY = y;
 		var dist = distance(player.getX(), player.getY(), x, y);
 		// if within 3 tiles
-		/*if (dist < 144) {
+		if (dist < 144) {
 			// double check that your path is actually good to go not just the pixel distance
 			if(path !== null && pathManDistance(path) < 144) {
 				if(pastBehavior !== 'surround') {
@@ -113,9 +113,8 @@ var Chaser = function(startX, startY, level, player) {
 				pastBehavior = 'separateAndPathing';
 				separateAndPathing(enemies);
 			}
-		} else */if (dist < 900) {
+		} else if (dist < 900) {
 			if(pastBehavior !== 'separateAndPathing') {
-				console.log("ah wut");
 				path = null;
 			}
 			pastBehavior = 'separateAndPathing';
@@ -146,7 +145,6 @@ var Chaser = function(startX, startY, level, player) {
 	//once the path has been set in update follow it.
 	var followPath = function() {
 		if (path !== null && path !== undefined) {
-			console.log("PATHLEN: " + path.length);
 			var len = path.length - 1;
 			//check to see if the length is legit. and that some gobble-de-gook didn't get in the path
 			if(len > -1 && path[len] !== undefined) {
@@ -258,7 +256,6 @@ var Chaser = function(startX, startY, level, player) {
 				// if the enemy is within 3 tiles
 				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144) {
 					if (!leader && enemy.getLeader()) {
-						console.log("never happens?");
 						// means that someone already did the overarching path concat the path to that guy to his path
 						noLeader = false;
 						// need to double check that this works
@@ -273,17 +270,13 @@ var Chaser = function(startX, startY, level, player) {
 		}
 		//if none of the other enemies are leaders
 		if (noLeader) {
-			console.log('we get here?');
 			leader = true;
 			//if no path get one or get a new one if the path is longer than the distance to the player
 			if (path === null || pathManDistance(path) > manDistance(player.getX(), player.getY(), x, y)) {
-				console.log("reset path");
 				path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
 			} else {
-				console.log("follow da player");
 				//already has a path. gotta update it.but only if player has moved
-				if ((prevPlayerX !== player.getX() || prevPlayerY !== player.getY())) {
-					console.log("player moved");
+				if (prevPlayerX !== player.getX() || prevPlayerY !== player.getY()) {
 					prevPlayerX = player.getX();
 					prevPlayerY = player.getY();
 					if (path !== null && path !== undefined) {
@@ -304,11 +297,10 @@ var Chaser = function(startX, startY, level, player) {
 								}
 							}
 						} else {
+							var tempTile = getTile(prevPlayerX, prevPlayerY);
 							// when the path is empty we just tack on the tile regardless
 							if(tempTile !== undefined) {
-								if(tempTile.x !== path[0].x || tempTile.y !== path[0].y) {
-									path.unshift(tempTile);
-								}
+								path.unshift(tempTile);
 							}
 						}
 					}
