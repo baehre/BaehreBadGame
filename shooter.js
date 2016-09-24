@@ -30,11 +30,11 @@ var Shooter = function(startX, startY, level, player) {
 	var prevPlayerX = player.getX();
 	var prevPlayerY = player.getY();
 	//how much shooter moves
-	var moveAmount = 1.0;
+	var moveAmount = 1.25;
 	var damage = 5.0;
 	var health = 50;
     // how far the shooter can actually shoot
-    var attackRange = 300;
+    var attackRange = 250;
     //for shooting
 	//higher is slower. lower is faster
 	var startingProjectileFireRate = 40;
@@ -122,22 +122,25 @@ var Shooter = function(startX, startY, level, player) {
                     path = null;
                 }
                 pastBehavior = 'shootPlayer';
+                avoid();
                 shootPlayer(enemies);
 			} else {
-				if(pastBehavior !== 'separate') {
-					path = null;
-				}
-				pastBehavior = 'separate';
-				separateAndPathing(enemies);
-			}
+                if(pastBehavior !== 'pathing') {
+                    path = null;
+                }
+                pastBehavior = 'pathing';
+                // get closer
+                pathing(enemies);
+            }
         } else {
-            if(pastBehavior !== 'separate') {
+            if(pastBehavior !== 'pathing') {
                 path = null;
             }
-            pastBehavior = 'separate';
+            pastBehavior = 'pathing';
             // get closer
-            separateAndPathing(enemies);
+            pathing(enemies);
         }
+		separate(enemies);
 		//get the path from above then follow it
 		followPath();
 	};
@@ -191,7 +194,7 @@ var Shooter = function(startX, startY, level, player) {
 				}
 			}
 		}
-	}
+	};
 
 	// returns the path. Uses Jump point to get the neighbors.
 	var getSmoothPath = function(start, end){
@@ -257,9 +260,7 @@ var Shooter = function(startX, startY, level, player) {
 	};
 
 	// keeps the chasers separate and gets the path
-	var separateAndPathing = function(enemies, distance) {
-		var velocity = {"x": 0, "y": 0};
-		var neighbors = 0;
+	var pathing = function(enemies, distance) {
 		var noLeader = true;
 		for (var i = 0; i < enemies.length; i++) {
 			var enemy = enemies[i];
@@ -274,9 +275,6 @@ var Shooter = function(startX, startY, level, player) {
 						var tempPath = getSmoothPath(getTile(x, y), getTile(enemy.getX(), enemy.getY()));
 						path = enemy.getPath().concat(tempPath);
 					}
-					velocity.x += x - enemy.getX();
-					velocity.y += y - enemy.getY();
-					neighbors += 1;
 				}
 			}
 		}
@@ -319,6 +317,23 @@ var Shooter = function(startX, startY, level, player) {
 				}
 			}
 		}
+	};
+
+	var separate = function(enemies) {
+		var velocity = {"x": 0, "y": 0};
+		var neighbors = 0;
+		for (var i = 0; i < enemies.length; i++) {
+			var enemy = enemies[i];
+			// we are not the current enemy
+			if(enemy.getX() !== x && enemy.getY() !== y) {
+				// if the enemy is within 3 tiles
+				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144) {
+					velocity.x += x - enemy.getX();
+					velocity.y += y - enemy.getY();
+					neighbors += 1;
+				}
+			}
+		}
 		if (neighbors !== 0) {
 			// all dat sweet sweet velocity stuff
 			velocity.x /= neighbors;
@@ -347,13 +362,10 @@ var Shooter = function(startX, startY, level, player) {
         var playerY = player.getY();
         //means we can shoot at him
         if(projectileFireRate <= 0) {
-            //console.log("fire rate");
             //means a clear shot
             if(walkable(getTile(x, y), getTile(playerX, playerY))) {
-                //console.log("WALKABLE");
                 // if the player is moving
                 if (prevPlayerX !== playerX || prevPlayerY !== playerX) {
-                    //console.log("PLAYERMOVED");
                     //vector things
                     var playerVecX = playerX - prevPlayerX;
                     var playerVecY = playerY - prevPlayerY;
@@ -375,19 +387,16 @@ var Shooter = function(startX, startY, level, player) {
                     prevPlayerY = playerY;
                     //player is not moving
                 } else {
-                    //console.log("PLAYER DIDNT MOVE");
                     fireProjectile(playerX, playerY);
                 }
             // means we need to shift to get a shot
             } else {
-                //console.log("not walkable");
                 //this isn't super efficient. but will work for now
                 separateAndPathing(enemies);
                 pastBehavior = 'separate';
             }
             //means can't fire yet. lets move around a bit
         } else {
-            //console.log("can't fire yet");
             var temp = [0, 1];
             var rand = Math.floor(Math.random() * 2);
             var surroundDirection = temp[rand];
@@ -412,8 +421,6 @@ var Shooter = function(startX, startY, level, player) {
                     } else if (y > tempPositiveY && smallYCheck) {
                         y -= moveAmount;
                     }
-                } else {
-                    surroundDirection = 1;
                 }
             } else if (surroundDirection === 1) {
                 // 15 degrees
@@ -435,16 +442,50 @@ var Shooter = function(startX, startY, level, player) {
                         y -= moveAmount;
                     }
                     //can't move along the circle in either direction
-                } else {
-                    surroundDirection = 0;
                 }
+            }
+        }
+    };
+
+    var avoid = function() {
+        var playerX = player.getX();
+        var playerY = player.getY();
+        var shooterVecX = x - playerX;
+        var shooterVecY = y - playerY;
+        var vecLength = Math.sqrt((shooterVecX * shooterVecX) + (shooterVecY * shooterVecY));
+        if (vecLength > 0) {
+            var uX = shooterVecX / vecLength;
+            var uY = shooterVecY / vecLength;
+            var xStuff = x + uX * moveAmount;
+            var yStuff = y + uY * moveAmount;
+            if (xStuff < x) {
+                var tileX = getTile(xStuff - 24, y);
+            } else {
+                var tileX = getTile(xStuff + 24, y);
+            }
+            if (yStuff < y) {
+                var tileY = getTile(x, yStuff - 24);
+            } else {
+                var tileY = getTile(x, yStuff + 24);
+            }
+            var tileLeft = getTile(xStuff - 24, yStuff);
+            var tileRight = getTile(xStuff + 24, yStuff);
+            var tileUp = getTile(xStuff, yStuff - 24);
+            var tileDown = getTile(xStuff, yStuff + 24);
+            if(!isBlocked(tileLeft.x, tileLeft.y) && !isBlocked(tileRight.x, tileRight.y) &&
+             !isBlocked(tileDown.x, tileDown.y) && !isBlocked(tileUp.x, tileUp.y)) {
+                x = xStuff;
+                y = yStuff;
+            } else if (!isBlocked(tileX.x, tileX.y)) {
+                x = xStuff;
+            } else if (!isBlocked(tileY.x, tileY.y)) {
+                y = yStuff;
             }
         }
     };
 
     //take the coordinates to shoot at
     var fireProjectile = function(shootX, shootY) {
-        //console.log("failed?");
         var direction = Math.atan2(shootY - y, shootX - x);
         // the enemies are whomever we can hit. so array of player. cuz we can hit the player
         var tempProjectile = new Projectile("shooter", x, y, direction, canvas, levelData, [player]);

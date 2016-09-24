@@ -107,20 +107,21 @@ var Chaser = function(startX, startY, level, player) {
 				pastBehavior = 'surround';
 				surround(enemies, dist);
 			} else {
-				if(pastBehavior !== 'separateAndPathing') {
+				if(pastBehavior !== 'pathing') {
 					path = null;
 				}
-				pastBehavior = 'separateAndPathing';
-				separateAndPathing(enemies);
+				pastBehavior = 'pathing';
+				pathing(enemies);
 			}
 		} else if (dist < 900) {
-			if(pastBehavior !== 'separateAndPathing') {
+			if(pastBehavior !== 'pathing') {
 				path = null;
 			}
-			pastBehavior = 'separateAndPathing';
+			pastBehavior = 'pathing';
 			//if within a large number of tiles
-			separateAndPathing(enemies);
+			pathing(enemies);
 		}
+		separate(enemies);
 		//get the path from above then follow it
 		followPath();
 	};
@@ -245,9 +246,7 @@ var Chaser = function(startX, startY, level, player) {
 	};
 
 	// keeps the chasers separate and gets the path
-	var separateAndPathing = function(enemies, distance) {
-		var velocity = {"x": 0, "y": 0};
-		var neighbors = 0;
+	var pathing = function(enemies, distance) {
 		var noLeader = true;
 		for (var i = 0; i < enemies.length; i++) {
 			var enemy = enemies[i];
@@ -260,11 +259,13 @@ var Chaser = function(startX, startY, level, player) {
 						noLeader = false;
 						// need to double check that this works
 						var tempPath = getSmoothPath(getTile(x, y), getTile(enemy.getX(), enemy.getY()));
-						path = enemy.getPath().concat(tempPath);
+						var enemyPath = enemy.getPath();
+						if (enemyPath !== null) {
+							path = enemy.getPath().concat(tempPath);
+						} else {
+							path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
+						}
 					}
-					velocity.x += x - enemy.getX();
-					velocity.y += y - enemy.getY();
-					neighbors += 1;
 				}
 			}
 		}
@@ -307,6 +308,23 @@ var Chaser = function(startX, startY, level, player) {
 				}
 			}
 		}
+	};
+
+	var separate = function(enemies) {
+		var velocity = {"x": 0, "y": 0};
+		var neighbors = 0;
+		for (var i = 0; i < enemies.length; i++) {
+			var enemy = enemies[i];
+			// we are not the current enemy
+			if(enemy.getX() !== x && enemy.getY() !== y) {
+				// if the enemy is within 3 tiles
+				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144) {
+					velocity.x += x - enemy.getX();
+					velocity.y += y - enemy.getY();
+					neighbors += 1;
+				}
+			}
+		}
 		if (neighbors !== 0) {
 			// all dat sweet sweet velocity stuff
 			velocity.x /= neighbors;
@@ -329,6 +347,7 @@ var Chaser = function(startX, startY, level, player) {
 			}
 		}
 	};
+
 
 	var surround = function(enemies, radius) {
 		var playerX = player.getX();

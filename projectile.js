@@ -3,8 +3,8 @@ var Projectile = function(entity, xP, yP, direction, can, level, enemies) {
     var projectileImage = new Image();
     projectileImage.src = "SpriteSheets/BulletSprites/bulletSprites.png";
     //these should eventually come in from whomever is firing
-    var projectileSpeed = 5;
-    var projectileRange = 300;
+    var projectileSpeed = 6;
+    var projectileRange = 250;
     var projectileDamage = 20;
     var tileSize = 16;
     var scale = 1;
