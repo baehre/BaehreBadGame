@@ -392,8 +392,8 @@ var Shooter = function(startX, startY, level, player) {
             // means we need to shift to get a shot
             } else {
                 //this isn't super efficient. but will work for now
-                separateAndPathing(enemies);
-                pastBehavior = 'separate';
+                pathing(enemies);
+                pastBehavior = 'pathing';
             }
             //means can't fire yet. lets move around a bit
         } else {
