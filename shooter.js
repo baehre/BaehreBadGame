@@ -273,7 +273,12 @@ var Shooter = function(startX, startY, level, player) {
 						noLeader = false;
 						// need to double check that this works
 						var tempPath = getSmoothPath(getTile(x, y), getTile(enemy.getX(), enemy.getY()));
-						path = enemy.getPath().concat(tempPath);
+						var enemyPath = enemy.getPath();
+						if (enemyPath !== null) {
+							path = enemy.getPath().concat(tempPath);
+						} else {
+							path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
+						}
 					}
 				}
 			}
