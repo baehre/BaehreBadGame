@@ -55,15 +55,15 @@ function init(){
   //player.js
   localPlayer = new Player(canvas, 100, 300, levelData, enemies);
   //made a function that adds a chaser and updates the enemies for the player
-  addChaser(300, 100);
-  addChaser(350, 100);
-  addChaser(500, 100);
   addChaser(200, 100);
+  addChaser(500, 100);
   addChaser(600, 100);
-  addChaser(500, 300);
   addChaser(700, 100);
-  addChaser(500, 400);
-  addChaser(550, 600);
+  addChaser(100, 500);
+  addChaser(200, 500);
+  addShooter(300, 100);
+  addShooter(400, 100);
+  addShooter(100, 400);
   projectiles = [];
   //sets all the event handlers
   setEventHandlers();
@@ -197,24 +197,49 @@ function drawEnemies() {
 }
 
 function drawProjectiles(){
-  //get the players projectiles and add them to the overall list
-  projectiles = localPlayer.getProjectiles();
-  // NOTE: for later concat the array here
-  for(var i = 0; i < projectiles.length; i++){
-    var tempProjectile = projectiles[i];
+  //handle the player projectiles
+  var temp = localPlayer.getProjectiles()
+  for(var i = 0; i < temp.length; i++) {
+    var tempProjectile = temp[i];
     if(tempProjectile.getToRemove()){
-      projectiles.splice(i, 1);
+      temp.splice(i, 1);
     }
     else{
       tempProjectile.draw(context);
     }
   }
-  // NOTE: this needs to be changed when we have shooting enemies
-  localPlayer.setProjectiles(projectiles);
+  localPlayer.setProjectiles(temp);
+  //set projectiles to the global
+  projectiles = temp.slice();
+  //console.log("PROJECTILES: " + projectiles.length);
+  // now handle enemies projectiles
+  for(var j = 0; j < enemies.length; j++) {
+    // if they can even shoot
+    if(enemies[j].hasOwnProperty('getProjectiles')) {
+      var enemyProj = enemies[j].getProjectiles();
+      for(var k = 0; k < enemyProj.length; k++) {
+        var tempProjectile = enemyProj[k];
+        if(tempProjectile.getToRemove()){
+          enemyProj.splice(k, 1);
+        }
+        else{
+          tempProjectile.draw(context);
+        }
+      }
+      enemies[j].setProjectiles(enemyProj);
+      projectiles = projectiles.concat(enemyProj.slice());
+    }
+  }
 }
 
 //adds a chaser to the game
 function addChaser(chaserX, chaserY){
   enemies.push(new Chaser(chaserX, chaserY, levelData, localPlayer));
+  localPlayer.setEnemies(enemies);
+}
+
+//adds a chaser to the game
+function addShooter(shooterX, shooterY){
+  enemies.push(new Shooter(shooterX, shooterY, levelData, localPlayer));
   localPlayer.setEnemies(enemies);
 }
