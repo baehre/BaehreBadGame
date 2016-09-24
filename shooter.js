@@ -275,7 +275,7 @@ var Shooter = function(startX, startY, level, player) {
 						var tempPath = getSmoothPath(getTile(x, y), getTile(enemy.getX(), enemy.getY()));
 						var enemyPath = enemy.getPath();
 						if (enemyPath !== null) {
-							path = enemy.getPath().concat(tempPath);
+							path = enemyPath.concat(tempPath);
 						} else {
 							path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
 						}
