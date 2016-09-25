@@ -39,7 +39,8 @@ var Player = function(can, startX, startY, level, enemies) {
 	var x = startX;
 	var y = startY;
 	var moveAmount = 2.5;
-	var health = 100;
+	var fullHealth = 100;
+	var health = fullHealth;
 
 	canvas.addEventListener("mousedown", mouseDown);
 
@@ -72,6 +73,10 @@ var Player = function(can, startX, startY, level, enemies) {
 		return health;
 	};
 
+	var getFullHealth = function() {
+		return fullHealth;
+	};
+
 	var getEnemies = function() {
 		return enemies;
 	};
@@ -82,6 +87,10 @@ var Player = function(can, startX, startY, level, enemies) {
 
 	var getUpdateTime = function() {
 		return updateTime;
+	};
+
+	var setFullHealth = function(newHealth) {
+		fullHealth = newHealth;
 	};
 
 	var setX = function(newX) {
@@ -251,6 +260,8 @@ var Player = function(can, startX, startY, level, enemies) {
 		getEnemies: getEnemies,
 		setEnemies: setEnemies,
 		getHealth: getHealth,
+		getFullHealth: getFullHealth,
+		setFullHealth: setFullHealth,
 		setHealth: setHealth,
 		getX: getX,
 		getY: getY,

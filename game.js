@@ -2,10 +2,15 @@
 var canvas;
 // the context used to draw things on the canvas
 var context;
+//players health bar
+var healthBar;
 // keys pressed for the player.
 var keys;
 //the player playing
 var localPlayer;
+// mouse coordinates
+var mouseX;
+var mouseY;
 // the list of projectiles currently in the game
 var projectiles;
 // sprites used to draw the background
@@ -15,7 +20,7 @@ var tileSize = 16;
 // scale the tilesize
 var scale = 3;
 // all the enemies in the game currently
-var enemies
+var enemies;
 // basically what I said above
 var backgroundTileSize = tileSize * scale;
 //level data. saying which tiles to use.
@@ -42,7 +47,8 @@ function init(){
   //set globals
   canvas = document.getElementById("canvas");
   context = canvas.getContext("2d");
-
+  // player health bar
+  healthBar = document.getElementById("healthBar");
   backgroundSprites = new Image();
   backgroundSprites.src = "SpriteSheets/LevelSprites/levelElementSprites48.png";
 
@@ -59,11 +65,11 @@ function init(){
   addChaser(500, 100);
   addChaser(600, 100);
   addChaser(700, 100);
-  addChaser(100, 500);
-  addChaser(200, 500);
-  addShooter(300, 100);
-  addShooter(400, 100);
-  addShooter(100, 400);
+  //addChaser(100, 500);
+  //addChaser(200, 500);
+  //addShooter(300, 100);
+  //addShooter(400, 100);
+  //addShooter(100, 400);
   projectiles = [];
   //sets all the event handlers
   setEventHandlers();
@@ -108,6 +114,12 @@ function update(){
 
 // update the player
 function updatePlayer(){
+  var playerHealth = localPlayer.getHealth();
+  var fullHealth = localPlayer.getFullHealth();
+  if(playerHealth !== fullHealth) {
+    var percent = (playerHealth / fullHealth) * 100;
+    healthBar.style.width = percent.toString() + '%';
+  }
   localPlayer.update(keys);
 }
 
@@ -178,6 +190,7 @@ function drawPlayer(){
     localPlayer.setX(100);
     localPlayer.setY(300);
     localPlayer.setHealth(100);
+    healthBar.style.width = '100%';
   } else {
     localPlayer.draw(context);
   }
