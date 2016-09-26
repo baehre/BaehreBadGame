@@ -36,6 +36,14 @@ var Projectile = function(entity, xP, yP, direction, can, level, enemies) {
       return size;
     };
 
+    var getAngle = function() {
+      return angle;
+    };
+
+    var setAngle = function(newAngle) {
+      angle = newAngle;
+    };
+
     var setX = function(newX) {
       x = newX;
     };
@@ -168,6 +176,8 @@ var Projectile = function(entity, xP, yP, direction, can, level, enemies) {
   		getToRemove: getToRemove,
       getSize: getSize,
       getEnemies: getEnemies,
+      getAngle: getAngle,
+      setAngle: setAngle,
       setEntity: setEntity,
       setX: setX,
       setY: setY,

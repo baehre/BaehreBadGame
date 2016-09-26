@@ -37,6 +37,8 @@ var Shielder = function(startX, startY, level, player) {
 	var pastBehavior = '';
     // the closest ally
     var closest = null;
+    var startProjectileGrabTime = 40;
+    var projectileGrabTime = startProjectileGrabTime;
 	//the path the shielder is taking
 	var path = null;
 
@@ -99,6 +101,9 @@ var Shielder = function(startX, startY, level, player) {
 
 	// Update shielder position
 	var update = function(enemies) {
+        if(startProjectileGrabTime > 0){
+			projectileGrabTime = projectileGrabTime - 1;
+		}
 		prevX = x;
 		prevY = y;
         // get closer
@@ -106,6 +111,10 @@ var Shielder = function(startX, startY, level, player) {
             var closestDist = distance(x, y, closest.getX(), closest.getY());
             // means we are close enough to start a new behavior
             if (dist < 100) {
+                if(pastBehavior !== 'protect') {
+                    path = null;
+                }
+                pastBehavior = 'protect';
                 protect();
             } else {
                 // if not make sure our path is GUCCI
@@ -122,7 +131,7 @@ var Shielder = function(startX, startY, level, player) {
             pastBehavior = 'pathing';
             pathing(enemies);
         }
-        
+        grabProjectile();
 		separate(enemies);
 		//get the path from above then follow it
 		followPath();
@@ -283,11 +292,50 @@ var Shielder = function(startX, startY, level, player) {
 
         //now should have the closest enemy. unless he is the only one left. then RUN FOREST
         if (closest === null) {
+            if(pastBehavior !== 'avoid') {
+                path = null;
+            }
+            pastBehavior = 'avoid';
             avoid();
         } else {
             path = getSmoothPath(getTile(x, y), getTile(closest.getX(), closest.getY()));
         }
 	};
+
+    var protect = function() {
+        if (closest !== null) {
+            var playerX = player.getX();
+            var playerY = player.getY();
+            var closestX = closest.getX();
+            var closestY = closest.getY();
+            var vecX = closestX - playerX;
+            var vecY = closestY - playerY;
+            var vecLength = Math.sqrt((vecX * vecX) + (vecY * vecY));
+            var uX = vecX / vecLength;
+            var uY = vecY / vecLength;
+
+            // the distance to go from the closest between the player
+            var protectDistance = 35;
+
+            var protectX = closestX + (uX * protectDistance);
+            var protectY = closestY + (uX * protectDistance); 
+            var tempTile = getTile(protectX, protectY);
+            if (!isBlocked(tempTile.x, tempTile.y)) {
+                path = getSmoothPath(getTile(x, y), tempTile);
+            }
+        }
+        if(pastBehavior !== 'avoid') {
+            path = null;
+        }
+        pastBehavior = 'avoid';
+        avoid();
+    };
+
+    var grabProjectile = function() {
+        if (projectileGrabTime <= 0) {
+            
+        }
+    };
 
     var avoid = function() {
         var playerX = player.getX();
