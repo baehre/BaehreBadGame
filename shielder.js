@@ -2,15 +2,15 @@
 /**************************************************
 ** GAME shielder CLASS
 **************************************************/
-var Shooter = function(startX, startY, level, player) {
-	var shooterImage = new Image();
-	shooterImage.src = "SpriteSheets/PlayerSprites/sumoWrestlerSprite.png";
-	var shooterImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
-	var shooterImageDown = [{"x":0,"y":1},{"x":0,"y":18},{"x":0,"y":1},{"x":0,"y":35}];
-	var shooterImageRight = [{"x":32,"y":1},{"x":32,"y":18},{"x":32,"y":1},{"x":32,"y":35}];
-	var shooterImageLeft = [{"x":48,"y":1},{"x":48,"y":18},{"x":48,"y":1},{"x":48,"y":35}];
+var Shielder = function(startX, startY, level, player) {
+	var shielderImage = new Image();
+	shielderImage.src = "SpriteSheets/PlayerSprites/afroKidSprite.png";
+	var shielderImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
+	var shielderImageDown = [{"x":0,"y":1},{"x":0,"y":18},{"x":0,"y":1},{"x":0,"y":35}];
+	var shielderImageRight = [{"x":32,"y":1},{"x":32,"y":18},{"x":32,"y":1},{"x":32,"y":35}];
+	var shielderImageLeft = [{"x":48,"y":1},{"x":48,"y":18},{"x":48,"y":1},{"x":48,"y":35}];
 	//default to the chaser looking down
- 	var facing = shooterImageDown;
+ 	var facing = shielderImageDown;
 	//separate time for update to go with rate
 	var time = 0;
 	var rate = 5;
@@ -29,25 +29,15 @@ var Shooter = function(startX, startY, level, player) {
 	var drawY;
 	var prevPlayerX = player.getX();
 	var prevPlayerY = player.getY();
-	//how much shooter moves
-	var moveAmount = 1.25;
-	var damage = 5.0;
-	var fullHealth = 50;
+	//how much shielder moves
+	var moveAmount = 1.75;
+	var fullHealth = 250;
 	var health = fullHealth;
-    // how far the shooter can actually shoot
-    var attackRange = 250;
-    //for shooting
-	//higher is slower. lower is faster
-	var startingProjectileFireRate = 40;
-	//this is the value used to say when they can fire by subtracting then resetting the value
-	var projectileFireRate = startingProjectileFireRate;
-	//holds all the shooters projectiles
-	var projectiles = [];
 	//the previous behavior. used to reset path between behavior changes
 	var pastBehavior = '';
-	//used in path finding. if leader he is getting the path. everyone else steals from him
-	var leader = false;
-	//the path the shooter is taking
+    // the closest ally
+    var closest = null;
+	//the path the shielder is taking
 	var path = null;
 
 	// Getters and setters
@@ -70,10 +60,6 @@ var Shooter = function(startX, startY, level, player) {
 	var getPath = function() {
 		return path;
 	};
-    
-    var getProjectiles = function() {
-        return projectiles;
-    };
 
 	var getLeader = function() {
 		return leader;
@@ -86,10 +72,6 @@ var Shooter = function(startX, startY, level, player) {
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
 	};
-
-    var setProjectiles = function(proj) {
-        projectiles = proj;
-    };
 
 	var setLeader = function(newLeader) {
 		leader = newLeader;
@@ -115,30 +97,22 @@ var Shooter = function(startX, startY, level, player) {
 		size = newSize;
 	};
 
-	// Update shooter position
+	// Update shielder position
 	var update = function(enemies) {
 		prevX = x;
 		prevY = y;
-        //if they can fire then update projectileFireRate
-		if(startingProjectileFireRate > 0){
-			projectileFireRate = projectileFireRate - 1;
-		}
-		var dist = distance(player.getX(), player.getY(), x, y);
-        // now attack da guy
-		if (dist < attackRange) {
-            if(path !== null && pathManDistance(path) < attackRange) {
-				if(pastBehavior !== 'shootPlayer') {
-                    path = null;
-                }
-                pastBehavior = 'shootPlayer';
-                avoid();
-                shootPlayer(enemies);
-			} else {
+        // get closer
+        if (closest !== null) {
+            var closestDist = distance(x, y, closest.getX(), closest.getY());
+            // means we are close enough to start a new behavior
+            if (dist < 100) {
+                protect();
+            } else {
+                // if not make sure our path is GUCCI
                 if(pastBehavior !== 'pathing') {
                     path = null;
                 }
                 pastBehavior = 'pathing';
-                // get closer
                 pathing(enemies);
             }
         } else {
@@ -146,15 +120,15 @@ var Shooter = function(startX, startY, level, player) {
                 path = null;
             }
             pastBehavior = 'pathing';
-            // get closer
             pathing(enemies);
         }
+        
 		separate(enemies);
 		//get the path from above then follow it
 		followPath();
 	};
 
-	// Draw shooter
+	// Draw shielder
 	var draw = function(ctx) {
 		//so the way this works. we only want to change the frame every 5th time draw is
 		//called. otherwise it goes through supppperr quick. which is bad.
@@ -168,7 +142,7 @@ var Shooter = function(startX, startY, level, player) {
 		if (frame > 7500) {
 			frame = 0;
 		}
-		ctx.drawImage(shooterImage, drawX, drawY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
+		ctx.drawImage(shielderImage, drawX, drawY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
 		if (health < fullHealth) {
 			var percent = health / fullHealth;
 			// ratio in relation to the size of the character
@@ -201,19 +175,19 @@ var Shooter = function(startX, startY, level, player) {
 				var smallXCheck = Math.abs(x - tempTile.x) > 1;
 				if (x < tempTile.x && smallXCheck) {
 					x += moveAmount;
-					facing = shooterImageRight;
+					facing = shielderImageRight;
 				} else if (x > tempTile.x && smallXCheck) {
 					x -= moveAmount;
-					facing = shooterImageLeft;
+					facing = shielderImageLeft;
 				}
 				var smallYCheck = Math.abs(y - tempTile.y) > 1;
 				// if elseif so it can't do both in the same update cycle
 				if (y < tempTile.y && smallYCheck) {
 					y += moveAmount;
-					facing = shooterImageDown;
+					facing = shielderImageDown;
 				} else if (y > tempTile.y && smallYCheck) {
 					y -= moveAmount;
-					facing = shooterImageUp;
+					facing = shielderImageUp;
 				}
 				// if we hit the tile we are going to then remove it from the path
 				// used to be moveamount
@@ -288,69 +262,69 @@ var Shooter = function(startX, startY, level, player) {
 	};
 
 	// keeps the chasers separate and gets the path
-	var pathing = function(enemies, distance) {
-		var noLeader = true;
+	var pathing = function(enemies) {
+        // just a stupidly large number
+        var dist = 999999999;
+        //so if there is no one then the closest also gets set to null
+        closest = null;
 		for (var i = 0; i < enemies.length; i++) {
-			var enemy = enemies[i];
-			// we are not the current enemy
-			if(enemy.getX() !== x && enemy.getY() !== y) {
-				// if the enemy is within 3 tiles
-				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144) {
-					if (!leader && enemy.getLeader()) {
-						// means that someone already did the overarching path concat the path to that guy to his path
-						noLeader = false;
-						// need to double check that this works
-						var tempPath = getSmoothPath(getTile(x, y), getTile(enemy.getX(), enemy.getY()));
-						var enemyPath = enemy.getPath();
-						if (enemyPath !== null) {
-							path = enemyPath.concat(tempPath);
-						} else {
-							path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
-						}
-					}
-				}
-			}
-		}
-		//if none of the other enemies are leaders
-		if (noLeader) {
-			leader = true;
-			//if no path get one or get a new one if the path is longer than the distance to the player
-			if (path === null || pathManDistance(path) > manDistance(player.getX(), player.getY(), x, y)) {
-				path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
-			} else {
-				//already has a path. gotta update it.but only if player has moved
-				if (prevPlayerX !== player.getX() || prevPlayerY !== player.getY()) {
-					prevPlayerX = player.getX();
-					prevPlayerY = player.getY();
-					if (path !== null && path !== undefined) {
-						if(path.length !== 0 && path[path.length - 1] !== undefined) {
-							var tempTile = getTile(prevPlayerX, prevPlayerY);
-							// long as the tile doesn't fail
-							if(tempTile !== undefined) {
-								// if the new tile isn't already in the path then add it.
-								if(tempTile.x !== path[0].x || tempTile.y !== path[0].y) {
-									//put the new tile onto the end of the path
-									path.unshift(tempTile);
-									//add the current tile to the beginning for making sure you can move to the first tile correctly.
-									path.push(getTile(x, y));
-									path = smooth(path);
-									// we don't want to get stuck where we currently are or go back to the center of the first tile.
-									// gotta get rid of it.
-									path.pop();
-								}
-							}
-						} else {
-							var tempTile = getTile(prevPlayerX, prevPlayerY);
-							// when the path is empty we just tack on the tile regardless
-							if(tempTile !== undefined) {
-								path.unshift(tempTile);
-							}
-						}
-					}
-				}
-			}
-		}
+            var enemy = enemies[i];
+            // not us
+            var enemyX = enemy.getX();
+            var enemyY = enemy.getY();
+            if (enemyX !== x && enemyY !== y) {
+                var tempDist = manDistance(x, y, enemyX, enemyY);
+                if (tempDist < dist) {
+                    dist = tempDist;
+                    closest = enemy;
+                }
+            }
+        }
+
+        //now should have the closest enemy. unless he is the only one left. then RUN FOREST
+        if (closest === null) {
+            avoid();
+        } else {
+            path = getSmoothPath(getTile(x, y), getTile(closest.getX(), closest.getY()));
+        }
 	};
+
+    var avoid = function() {
+        var playerX = player.getX();
+        var playerY = player.getY();
+        var shielderVecX = x - playerX;
+        var shielderVecY = y - playerY;
+        var vecLength = Math.sqrt((sheilderVecX * shielderVecX) + (shielderVecY * shielderVecY));
+        if (vecLength > 0) {
+            var uX = shielderVecX / vecLength;
+            var uY = shielderVecY / vecLength;
+            var xStuff = x + uX * moveAmount;
+            var yStuff = y + uY * moveAmount;
+            if (xStuff < x) {
+                var tileX = getTile(xStuff - 24, y);
+            } else {
+                var tileX = getTile(xStuff + 24, y);
+            }
+            if (yStuff < y) {
+                var tileY = getTile(x, yStuff - 24);
+            } else {
+                var tileY = getTile(x, yStuff + 24);
+            }
+            var tileLeft = getTile(xStuff - 24, yStuff);
+            var tileRight = getTile(xStuff + 24, yStuff);
+            var tileUp = getTile(xStuff, yStuff - 24);
+            var tileDown = getTile(xStuff, yStuff + 24);
+            if(!isBlocked(tileLeft.x, tileLeft.y) && !isBlocked(tileRight.x, tileRight.y) &&
+             !isBlocked(tileDown.x, tileDown.y) && !isBlocked(tileUp.x, tileUp.y)) {
+                x = xStuff;
+                y = yStuff;
+            } else if (!isBlocked(tileX.x, tileX.y)) {
+                x = xStuff;
+            } else if (!isBlocked(tileY.x, tileY.y)) {
+                y = yStuff;
+            }
+        }
+    };
 
 	var separate = function(enemies) {
 		var velocity = {"x": 0, "y": 0};
@@ -389,142 +363,6 @@ var Shooter = function(startX, startY, level, player) {
 			}
 		}
 	};
-
-    var shootPlayer = function(enemies) {
-        var playerX = player.getX();
-        var playerY = player.getY();
-        //means we can shoot at him
-        if(projectileFireRate <= 0) {
-            //means a clear shot
-            if(walkable(getTile(x, y), getTile(playerX, playerY))) {
-                // if the player is moving
-                if (prevPlayerX !== playerX || prevPlayerY !== playerX) {
-                    //vector things
-                    var playerVecX = playerX - prevPlayerX;
-                    var playerVecY = playerY - prevPlayerY;
-                    var vecLength = Math.sqrt((playerVecX * playerVecX) + (playerVecY * playerVecY));
-                    if (vecLength > 0) {
-                        var uX = playerVecX / vecLength;
-                        var uY = playerVecY / vecLength;
-                        // get a point along the vector past where they are (we assume they are going to follow that direction)
-                        // 15 is arbitrary. probably need to tinker to get an ok number
-                        var shootX = playerX + uX * 30;
-                        var shootY = playerY + uY * 30;
-                    } else {
-                        var shootX = playerX;
-                        var shootY = playerY;
-                    }
-                    fireProjectile(shootX, shootY);
-                    //update player position
-                    prevPlayerX = playerX
-                    prevPlayerY = playerY;
-                    //player is not moving
-                } else {
-                    fireProjectile(playerX, playerY);
-                }
-            // means we need to shift to get a shot
-            } else {
-                //this isn't super efficient. but will work for now
-                pathing(enemies);
-                pastBehavior = 'pathing';
-            }
-            //means can't fire yet. lets move around a bit
-        } else {
-            var temp = [0, 1];
-            var rand = Math.floor(Math.random() * 2);
-            var surroundDirection = temp[rand];
-            var angle = (Math.atan2(y - playerY, x - playerX));
-            if(surroundDirection === 0) {
-                // 0.261799 is 15 degrees
-                var positiveAngle = angle + 0.261799;
-                //orbits the player. yay for unit circle?
-                var tempPositiveX = playerX + Math.cos(positiveAngle) * 96;
-                var tempPositiveY = playerY + Math.sin(positiveAngle) * 96;
-                var tempTile = getTile(tempPositiveX, tempPositiveY);
-                if (!isBlocked(tempTile.x, tempTile.y)) {
-                    var smallXCheck = Math.abs(x - tempPositiveX) > 1;
-                    var smallYCheck = Math.abs(y - tempPositiveY) > 1;
-                    if (x < tempPositiveX && smallXCheck) {
-                        x += moveAmount;
-                    } else if (x > tempPositiveX && smallXCheck) {
-                        x -= moveAmount;
-                    }
-                    if (y < tempPositiveY && smallYCheck) {
-                        y += moveAmount;
-                    } else if (y > tempPositiveY && smallYCheck) {
-                        y -= moveAmount;
-                    }
-                }
-            } else if (surroundDirection === 1) {
-                // 15 degrees
-                var negativeAngle = angle - 0.261799;
-                var tempNegativeX = playerX + Math.cos(negativeAngle) * 96;
-                var tempNegativeY = playerY + Math.sin(negativeAngle) * 96;
-                tempTile = getTile(tempNegativeX, tempNegativeY);
-                if (!isBlocked(tempTile.x, tempTile.y)) {
-                    var smallXCheck = Math.abs(x - tempNegativeX) > 1;
-                    var smallYCheck = Math.abs(y - tempNegativeY) > 1;
-                    if (x < tempNegativeX && smallXCheck) {
-                        x += moveAmount;
-                    } else if (x > tempNegativeX && smallXCheck) {
-                        x -= moveAmount;
-                    }
-                    if (y < tempNegativeY && smallYCheck) {
-                        y += moveAmount;
-                    } else if (y > tempNegativeY && smallYCheck) {
-                        y -= moveAmount;
-                    }
-                    //can't move along the circle in either direction
-                }
-            }
-        }
-    };
-
-    var avoid = function() {
-        var playerX = player.getX();
-        var playerY = player.getY();
-        var shooterVecX = x - playerX;
-        var shooterVecY = y - playerY;
-        var vecLength = Math.sqrt((shooterVecX * shooterVecX) + (shooterVecY * shooterVecY));
-        if (vecLength > 0) {
-            var uX = shooterVecX / vecLength;
-            var uY = shooterVecY / vecLength;
-            var xStuff = x + uX * moveAmount;
-            var yStuff = y + uY * moveAmount;
-            if (xStuff < x) {
-                var tileX = getTile(xStuff - 24, y);
-            } else {
-                var tileX = getTile(xStuff + 24, y);
-            }
-            if (yStuff < y) {
-                var tileY = getTile(x, yStuff - 24);
-            } else {
-                var tileY = getTile(x, yStuff + 24);
-            }
-            var tileLeft = getTile(xStuff - 24, yStuff);
-            var tileRight = getTile(xStuff + 24, yStuff);
-            var tileUp = getTile(xStuff, yStuff - 24);
-            var tileDown = getTile(xStuff, yStuff + 24);
-            if(!isBlocked(tileLeft.x, tileLeft.y) && !isBlocked(tileRight.x, tileRight.y) &&
-             !isBlocked(tileDown.x, tileDown.y) && !isBlocked(tileUp.x, tileUp.y)) {
-                x = xStuff;
-                y = yStuff;
-            } else if (!isBlocked(tileX.x, tileX.y)) {
-                x = xStuff;
-            } else if (!isBlocked(tileY.x, tileY.y)) {
-                y = yStuff;
-            }
-        }
-    };
-
-    //take the coordinates to shoot at
-    var fireProjectile = function(shootX, shootY) {
-        var direction = Math.atan2(shootY - y, shootX - x);
-        // the enemies are whomever we can hit. so array of player. cuz we can hit the player
-        var tempProjectile = new Projectile("shooter", x, y, direction, canvas, levelData, [player]);
-        projectiles.push(tempProjectile);
-        projectileFireRate = startingProjectileFireRate;
-    };
 
   //DISTANCE
 
@@ -899,10 +737,8 @@ var Shooter = function(startX, startY, level, player) {
 		getHealth: getHealth,
 		getPath: getPath,
 		getLeader: getLeader,
-		getProjectiles: getProjectiles,
 		getFullHealth: getFullHealth,
 		setFullHealth: setFullHealth,
-		setProjectiles: setProjectiles,
 		setLeader: setLeader,
 		setX: setX,
 		setY: setY,
