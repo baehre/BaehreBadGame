@@ -5,5 +5,38 @@ body { margin: 20px; background: #111; }
     margin-left: auto;
     margin-right: auto;
     display: block;
-    cursor: 'auto';
+    /*cursor: none;*/
+}
+.hud {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Chrome/Safari/Opera */
+    -khtml-user-select: none;    /* Konqueror */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* Internet Explorer/Edge */
+    user-select: none;  
+    background-color: #c2c2c2;
+    width: 900px;
+    height: 50px;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.health-bar-wrapper {
+    padding-top: 10px;
+    width: 150px;
+    display: inline-block;
+}
+
+.health-bar {
+    height: 15px;
+}
+
+.health {
+    font-size: 24px;
+    font-weight: bold;
+    padding-top: 10px;
+    padding-right: 5px;
+    display: inline-block;
 }
