@@ -32,7 +32,8 @@ var Shooter = function(startX, startY, level, player) {
 	//how much shooter moves
 	var moveAmount = 1.25;
 	var damage = 5.0;
-	var health = 50;
+	var fullHealth = 50;
+	var health = fullHealth;
     // how far the shooter can actually shoot
     var attackRange = 250;
     //for shooting
@@ -76,6 +77,14 @@ var Shooter = function(startX, startY, level, player) {
 
 	var getLeader = function() {
 		return leader;
+	};
+
+	var getFullHealth = function() {
+		return fullHealth;
+	};
+
+	var setFullHealth = function(newHealth) {
+		fullHealth = newHealth;
 	};
 
     var setProjectiles = function(proj) {
@@ -160,6 +169,25 @@ var Shooter = function(startX, startY, level, player) {
 			frame = 0;
 		}
 		ctx.drawImage(shooterImage, drawX, drawY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
+		if (health < fullHealth) {
+			var percent = health / fullHealth;
+			// ratio in relation to the size of the character
+			var pixelWidth = percent * size;
+			// tinker with this number if we want
+			var pixelHeight = 10;
+			// top side then the height and a padding of 2
+			var healthY = y - (size / 2) - pixelHeight - 2;
+			// just the left side of the sprite
+			var healthX = x - (size / 2);
+			if (percent < 0.25) {
+				ctx.fillStyle = '#ff0000';
+			} else if (percent < 0.75) {
+				ctx.fillStyle = '#ffff00';
+			} else {
+				ctx.fillStyle = '#006400';
+			}
+			ctx.fillRect(healthX, healthY, pixelWidth, pixelHeight);
+		}
 	};
 
 	//once the path has been set in update follow it.
@@ -871,8 +899,10 @@ var Shooter = function(startX, startY, level, player) {
 		getHealth: getHealth,
 		getPath: getPath,
 		getLeader: getLeader,
-        getProjectiles: getProjectiles,
-        setProjectiles: setProjectiles,
+		getProjectiles: getProjectiles,
+		getFullHealth: getFullHealth,
+		setFullHealth: setFullHealth,
+		setProjectiles: setProjectiles,
 		setLeader: setLeader,
 		setX: setX,
 		setY: setY,
