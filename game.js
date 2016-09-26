@@ -62,12 +62,12 @@ function init(){
   localPlayer = new Player(canvas, 100, 300, levelData, enemies);
   //made a function that adds a chaser and updates the enemies for the player
   addChaser(200, 100);
-  addChaser(500, 100);
-  addChaser(600, 100);
-  addChaser(700, 100);
+  //addChaser(500, 100);
+  //addChaser(600, 100);
+  //addChaser(700, 100);
   //addChaser(100, 500);
   //addChaser(200, 500);
-  //addShooter(300, 100);
+  addShooter(300, 100);
   //addShooter(400, 100);
   //addShooter(100, 400);
   projectiles = [];
@@ -118,6 +118,13 @@ function updatePlayer(){
   var fullHealth = localPlayer.getFullHealth();
   if(playerHealth !== fullHealth) {
     var percent = (playerHealth / fullHealth) * 100;
+    if (percent < 25) {
+      healthBar.style.backgroundColor = '#ff0000';
+    } else if (percent < 75) {
+      healthBar.style.backgroundColor = '#ffff00';
+    } else {
+      healthBar.style.backgroundColor = '#006400';
+    }
     healthBar.style.width = percent.toString() + '%';
   }
   localPlayer.update(keys);
@@ -184,13 +191,14 @@ function drawBackground(){
   }
 }
 
-// only draw the player if he has health. otherwise reset him
+// only draw the player if he has health. otherwise reset him or her
 function drawPlayer(){
   if(localPlayer.getHealth() <= 0) {
     localPlayer.setX(100);
     localPlayer.setY(300);
     localPlayer.setHealth(100);
     healthBar.style.width = '100%';
+    healthBar.style.backgroundColor = '#006400';
   } else {
     localPlayer.draw(context);
   }

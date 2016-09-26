@@ -30,7 +30,6 @@ body { margin: 20px; background: #111; }
 }
 
 .health-bar {
-    background-color: #00ff00;
     height: 15px;
 }
 
