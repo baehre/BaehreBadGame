@@ -8,9 +8,10 @@ var healthBar;
 var keys;
 //the player playing
 var localPlayer;
-// mouse coordinates
-var mouseX;
-var mouseY;
+// whether to pause the game
+var pause = false;
+// the paused div
+var paused;
 // the list of projectiles currently in the game
 var projectiles;
 // sprites used to draw the background
@@ -47,6 +48,7 @@ function init(){
   //set globals
   canvas = document.getElementById("canvas");
   context = canvas.getContext("2d");
+  paused = document.getElementById("paused");
   // player health bar
   healthBar = document.getElementById("healthBar");
   backgroundSprites = new Image();
@@ -80,7 +82,13 @@ function setEventHandlers(){
 
 // when the key is pressed
 function keyDown(e){
-  if(localPlayer){
+  // enter key hit
+  if (e.keyCode === 13) {
+    // pause or unpause
+    pause = !pause;
+    paused.classList.toggle('hidden', !pause);
+  }
+  if (localPlayer) {
     keys.onKeyDown(e);
   }
 }
@@ -94,7 +102,9 @@ function keyUp(e){
 
 // how the game actually runs
 function gameLoop(){
-  update();
+  if (!pause) {
+    update();
+  }
   draw();
   //the magic by Paul Irish.
   // chooses the time called based on browser info
@@ -151,6 +161,10 @@ function draw(){
   context.save();
   //shifts the canvas based around where the player is
   context.translate(Math.round(canvas.width/2 - localPlayer.getX()), Math.round(canvas.height/2 - localPlayer.getY()));
+  context.globalAlpha = 1.0;
+  if(pause) {
+    context.globalAlpha = 0.6;
+  }
   // draw the layers. background first. otherwise doesn't really matter
   drawBackground();
   drawEnemies();
