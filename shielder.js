@@ -71,6 +71,10 @@ var Shielder = function(startX, startY, level, player) {
         return false;
     };
 
+	var getType = function() {
+		return 'shielder';
+	};
+
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
 	};
@@ -800,6 +804,7 @@ var Shielder = function(startX, startY, level, player) {
 		getHealth: getHealth,
 		getPath: getPath,
         getLeader: getLeader,
+		getType: getType,
 		getFullHealth: getFullHealth,
 		setFullHealth: setFullHealth,
 		setX: setX,

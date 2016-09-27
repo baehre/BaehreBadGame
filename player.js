@@ -56,7 +56,7 @@ var Player = function(can, startX, startY, level, enemies) {
 				var dx = (tempX - canvas.width/2) + 20;
 				var dy = (tempY - canvas.height/2) + 20;
 				var direction = Math.atan2(dy,dx);
-				var tempProjectile = new Projectile("player", x, y, direction, canvas, levelData, enemies);
+				var tempProjectile = new Projectile("player", x, y, direction, canvas, levelData, enemies, 20, 6, 250);
 				projectiles.push(tempProjectile);
 				projectileFireRate = startingProjectileFireRate;
 			}
