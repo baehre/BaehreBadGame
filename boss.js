@@ -31,8 +31,6 @@ var Boss = function(startX, startY, level, player) {
 	var prevPlayerY = player.getY();
 	var fullHealth = 2000;
 	var health = fullHealth;
-	//the previous behavior. used to reset path between behavior changes
-	var pastBehavior = '';
 
 	// Getters and setters
 	var getX = function() {
@@ -81,8 +79,7 @@ var Boss = function(startX, startY, level, player) {
 
 	// Update boss position
 	var update = function(enemies) {
-		prevX = x;
-		prevY = y;
+		
 	};
 
 	// Draw boss
