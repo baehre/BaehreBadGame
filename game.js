@@ -87,6 +87,7 @@ function keyDown(e){
     // pause or unpause
     pause = !pause;
     paused.classList.toggle('hidden', !pause);
+    draw();
   }
   if (localPlayer) {
     keys.onKeyDown(e);
@@ -104,8 +105,8 @@ function keyUp(e){
 function gameLoop(){
   if (!pause) {
     update();
+    draw();
   }
-  draw();
   //the magic by Paul Irish.
   // chooses the time called based on browser info
   // (like 60 or 30 based on what the browser can handle)
