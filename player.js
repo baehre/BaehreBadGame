@@ -5,6 +5,7 @@
 var Player = function(can, startX, startY, level, enemies) {
 	var canvas = can;
 	var moving = false;
+	var paused = document.getElementById('paused');
 	var levelData = level;
 	var playerImage = new Image();
 	playerImage.src = "SpriteSheets/PlayerSprites/racerSprite.png";
@@ -45,18 +46,20 @@ var Player = function(can, startX, startY, level, enemies) {
 	canvas.addEventListener("mousedown", mouseDown);
 
 	function mouseDown(e){
-		var rect = canvas.getBoundingClientRect();
-		var tempX = e.clientX - rect.left;
-		var tempY = e.clientY - rect.top;
-		//PREVX AND PREVY - THE TRANSLATE GIVES YOU PLAYER X AND Y
-		//+ 20 for some reason. may need to tinker with that number
-		if(projectileFireRate <= 0){
-			var dx = (tempX - canvas.width/2) + 20;
-			var dy = (tempY - canvas.height/2) + 20;
-			var direction = Math.atan2(dy,dx);
-			var tempProjectile = new Projectile("player", x, y, direction, canvas, levelData, enemies);
-			projectiles.push(tempProjectile);
-			projectileFireRate = startingProjectileFireRate;
+		if (paused.classList.contains('hidden')) {
+			var rect = canvas.getBoundingClientRect();
+			var tempX = e.clientX - rect.left;
+			var tempY = e.clientY - rect.top;
+			//PREVX AND PREVY - THE TRANSLATE GIVES YOU PLAYER X AND Y
+			//+ 20 for some reason. may need to tinker with that number
+			if(projectileFireRate <= 0){
+				var dx = (tempX - canvas.width/2) + 20;
+				var dy = (tempY - canvas.height/2) + 20;
+				var direction = Math.atan2(dy,dx);
+				var tempProjectile = new Projectile("player", x, y, direction, canvas, levelData, enemies);
+				projectiles.push(tempProjectile);
+				projectileFireRate = startingProjectileFireRate;
+			}
 		}
 	};
 
