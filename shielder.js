@@ -102,6 +102,23 @@ var Shielder = function(startX, startY, level, player) {
 		}
 		prevX = x;
 		prevY = y;
+		// just a stupidly large number
+        var dist = 999999999;
+        //so if there is no one then the closest also gets set to null
+        closest = null;
+		for (var i = 0; i < enemies.length; i++) {
+            var enemy = enemies[i];
+            // not us
+            var enemyX = enemy.getX();
+            var enemyY = enemy.getY();
+            if (enemyX !== x && enemyY !== y) {
+                var tempDist = manDistance(x, y, enemyX, enemyY);
+                if (tempDist < dist) {
+                    dist = tempDist;
+                    closest = enemy;
+                }
+            }
+        }
         // get closer
         if (closest !== null) {
             var closestDist = distance(x, y, closest.getX(), closest.getY());
@@ -118,14 +135,14 @@ var Shielder = function(startX, startY, level, player) {
                     path = null;
                 }
                 pastBehavior = 'pathing';
-                pathing(enemies);
+                pathing();
             }
         } else {
-            if(pastBehavior !== 'pathing') {
+            if(pastBehavior !== 'avoid') {
                 path = null;
             }
-            pastBehavior = 'pathing';
-            pathing(enemies);
+            pastBehavior = 'avoid';
+            avoid();
         }
         grabProjectile();
         if (pastBehavior !== 'protect') {
@@ -269,25 +286,7 @@ var Shielder = function(startX, startY, level, player) {
 	};
 
 	// keeps the chasers separate and gets the path
-	var pathing = function(enemies) {
-        // just a stupidly large number
-        var dist = 999999999;
-        //so if there is no one then the closest also gets set to null
-        closest = null;
-		for (var i = 0; i < enemies.length; i++) {
-            var enemy = enemies[i];
-            // not us
-            var enemyX = enemy.getX();
-            var enemyY = enemy.getY();
-            if (enemyX !== x && enemyY !== y) {
-                var tempDist = manDistance(x, y, enemyX, enemyY);
-                if (tempDist < dist) {
-                    dist = tempDist;
-                    closest = enemy;
-                }
-            }
-        }
-
+	var pathing = function() {
         //now should have the closest enemy. unless he is the only one left. then RUN FOREST
         if (closest === null) {
             if(pastBehavior !== 'avoid') {
