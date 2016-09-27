@@ -342,7 +342,7 @@ var Shielder = function(startX, startY, level, player) {
                     closestProj = proj;
                 }
             }
-            if (closestProj !== null && dist < 100) {
+            if (closestProj !== null && dist < 200) {
 				var closestProjX = closestProj.getX();
 				var closestProjY = closestProj.getY();
 				if(walkable(getTile(x, y), getTile(closestProjX, closestProjY))) {
