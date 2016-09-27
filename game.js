@@ -62,14 +62,11 @@ function init(){
   localPlayer = new Player(canvas, 100, 300, levelData, enemies);
   //made a function that adds a chaser and updates the enemies for the player
   addChaser(200, 100);
-  //addChaser(500, 100);
-  //addChaser(600, 100);
-  //addChaser(700, 100);
-  //addChaser(100, 500);
-  //addChaser(200, 500);
-  addShooter(300, 100);
-  //addShooter(400, 100);
-  //addShooter(100, 400);
+  addShielder(300, 100);
+  addShooter(400, 100);
+  addChaser(200, 600);
+  addShielder(300, 600);
+  addShooter(400, 600);
   projectiles = [];
   //sets all the event handlers
   setEventHandlers();
@@ -259,8 +256,14 @@ function addChaser(chaserX, chaserY){
   localPlayer.setEnemies(enemies);
 }
 
-//adds a chaser to the game
+//adds a shooter to the game
 function addShooter(shooterX, shooterY){
   enemies.push(new Shooter(shooterX, shooterY, levelData, localPlayer));
+  localPlayer.setEnemies(enemies);
+}
+
+// adds a shielder to the game
+function addShielder(shielderX, shielderY) {
+  enemies.push(new Shielder(shielderX, shielderY, levelData, localPlayer));
   localPlayer.setEnemies(enemies);
 }
