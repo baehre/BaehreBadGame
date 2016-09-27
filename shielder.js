@@ -346,7 +346,7 @@ var Shielder = function(startX, startY, level, player) {
 				var closestProjX = closestProj.getX();
 				var closestProjY = closestProj.getY();
 				if(walkable(getTile(x, y), getTile(closestProjX, closestProjY))) {
-                	closestProj.setAngle(Math.atan2(y - closestProjY, x - closestProjX));
+					closestProj.setAngle(Math.atan2(y - closestProjY, x - closestProjX));
 				}
             }
             projectileGrabTime = startProjectileGrabTime;
