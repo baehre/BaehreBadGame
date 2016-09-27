@@ -42,6 +42,8 @@ var Projectile = function(entity, xP, yP, direction, can, level, enemies) {
 
     var setAngle = function(newAngle) {
       angle = newAngle;
+      newX = projectileSpeed * Math.cos(angle);
+      newY = projectileSpeed * Math.sin(angle);
     };
 
     var setX = function(newX) {

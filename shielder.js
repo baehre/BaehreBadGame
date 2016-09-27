@@ -30,14 +30,14 @@ var Shielder = function(startX, startY, level, player) {
 	var prevPlayerX = player.getX();
 	var prevPlayerY = player.getY();
 	//how much shielder moves
-	var moveAmount = 1.75;
-	var fullHealth = 250;
+	var moveAmount = 2.0;
+	var fullHealth = 350;
 	var health = fullHealth;
 	//the previous behavior. used to reset path between behavior changes
 	var pastBehavior = '';
     // the closest ally
     var closest = null;
-    var startProjectileGrabTime = 40;
+    var startProjectileGrabTime = 60;
     var projectileGrabTime = startProjectileGrabTime;
 	//the path the shielder is taking
 	var path = null;
@@ -63,21 +63,17 @@ var Shielder = function(startX, startY, level, player) {
 		return path;
 	};
 
-	var getLeader = function() {
-		return leader;
-	};
-
 	var getFullHealth = function() {
 		return fullHealth;
 	};
 
+    var getLeader = function() {
+        return false;
+    };
+
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
 	};
-
-	var setLeader = function(newLeader) {
-		leader = newLeader;
-	}
 
 	var setPath = function(newPath) {
 		path = newPath;
@@ -110,7 +106,7 @@ var Shielder = function(startX, startY, level, player) {
         if (closest !== null) {
             var closestDist = distance(x, y, closest.getX(), closest.getY());
             // means we are close enough to start a new behavior
-            if (dist < 100) {
+            if (closestDist < 100) {
                 if(pastBehavior !== 'protect') {
                     path = null;
                 }
@@ -132,7 +128,9 @@ var Shielder = function(startX, startY, level, player) {
             pathing(enemies);
         }
         grabProjectile();
-		separate(enemies);
+        if (pastBehavior !== 'protect') {
+            separate(enemies);
+        }
 		//get the path from above then follow it
 		followPath();
 	};
@@ -308,21 +306,22 @@ var Shielder = function(startX, startY, level, player) {
             var playerY = player.getY();
             var closestX = closest.getX();
             var closestY = closest.getY();
-            var vecX = closestX - playerX;
-            var vecY = closestY - playerY;
+            var vecX = playerX - closestX;
+            var vecY = playerY - closestY;
             var vecLength = Math.sqrt((vecX * vecX) + (vecY * vecY));
             var uX = vecX / vecLength;
             var uY = vecY / vecLength;
 
             // the distance to go from the closest between the player
-            var protectDistance = 35;
+            var protectDistance = 70;
 
             var protectX = closestX + (uX * protectDistance);
-            var protectY = closestY + (uX * protectDistance); 
+            var protectY = closestY + (uY * protectDistance);
             var tempTile = getTile(protectX, protectY);
             if (!isBlocked(tempTile.x, tempTile.y)) {
                 path = getSmoothPath(getTile(x, y), tempTile);
             }
+            return;
         }
         if(pastBehavior !== 'avoid') {
             path = null;
@@ -333,7 +332,20 @@ var Shielder = function(startX, startY, level, player) {
 
     var grabProjectile = function() {
         if (projectileGrabTime <= 0) {
-            
+            var dist = 999999999;
+            var closestProj = null;
+            for (var i = 0; i < player.getProjectiles().length; i++) {
+                var proj = player.getProjectiles()[i];
+                var projDist = manDistance(x, y, proj.getX(), proj.getY());
+                if (projDist < dist) {
+                    dist = projDist;
+                    closestProj = proj;
+                }
+            }
+            if (closestProj !== null) {
+                closestProj.setAngle(Math.atan2(y - closestProj.getY(), x - closestProj.getX()));
+            }
+            projectileGrabTime = startProjectileGrabTime;
         }
     };
 
@@ -342,7 +354,7 @@ var Shielder = function(startX, startY, level, player) {
         var playerY = player.getY();
         var shielderVecX = x - playerX;
         var shielderVecY = y - playerY;
-        var vecLength = Math.sqrt((sheilderVecX * shielderVecX) + (shielderVecY * shielderVecY));
+        var vecLength = Math.sqrt((shielderVecX * shielderVecX) + (shielderVecY * shielderVecY));
         if (vecLength > 0) {
             var uX = shielderVecX / vecLength;
             var uY = shielderVecY / vecLength;
@@ -374,7 +386,7 @@ var Shielder = function(startX, startY, level, player) {
         }
     };
 
-	var separate = function(enemies) {
+    var separate = function(enemies) {
 		var velocity = {"x": 0, "y": 0};
 		var neighbors = 0;
 		for (var i = 0; i < enemies.length; i++) {
@@ -784,10 +796,9 @@ var Shielder = function(startX, startY, level, player) {
 		getSize: getSize,
 		getHealth: getHealth,
 		getPath: getPath,
-		getLeader: getLeader,
+        getLeader: getLeader,
 		getFullHealth: getFullHealth,
 		setFullHealth: setFullHealth,
-		setLeader: setLeader,
 		setX: setX,
 		setY: setY,
 		setSize: setSize,
