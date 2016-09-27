@@ -37,7 +37,7 @@ var Shielder = function(startX, startY, level, player) {
 	var pastBehavior = '';
     // the closest ally
     var closest = null;
-    var startProjectileGrabTime = 60;
+    var startProjectileGrabTime = 40;
     var projectileGrabTime = startProjectileGrabTime;
 	//the path the shielder is taking
 	var path = null;
@@ -342,8 +342,12 @@ var Shielder = function(startX, startY, level, player) {
                     closestProj = proj;
                 }
             }
-            if (closestProj !== null) {
-                closestProj.setAngle(Math.atan2(y - closestProj.getY(), x - closestProj.getX()));
+            if (closestProj !== null && dist < 100) {
+				var closestProjX = closestProj.getX();
+				var closestProjY = closestProj.getY();
+				if(walkable(getTile(x, y), getTile(closestProjX, closestProjY))) {
+                	closestProj.setAngle(Math.atan2(y - closestProjY, x - closestProjX));
+				}
             }
             projectileGrabTime = startProjectileGrabTime;
         }
