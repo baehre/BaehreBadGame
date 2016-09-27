@@ -83,6 +83,10 @@ var Shooter = function(startX, startY, level, player) {
 		return fullHealth;
 	};
 
+	var getType = function() {
+		return 'shooter';
+	}
+
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
 	};
@@ -521,7 +525,7 @@ var Shooter = function(startX, startY, level, player) {
     var fireProjectile = function(shootX, shootY) {
         var direction = Math.atan2(shootY - y, shootX - x);
         // the enemies are whomever we can hit. so array of player. cuz we can hit the player
-        var tempProjectile = new Projectile("shooter", x, y, direction, canvas, levelData, [player]);
+        var tempProjectile = new Projectile("shooter", x, y, direction, canvas, levelData, [player], 10, 6, 300);
         projectiles.push(tempProjectile);
         projectileFireRate = startingProjectileFireRate;
     };
@@ -899,6 +903,7 @@ var Shooter = function(startX, startY, level, player) {
 		getHealth: getHealth,
 		getPath: getPath,
 		getLeader: getLeader,
+		getType: getType,
 		getProjectiles: getProjectiles,
 		getFullHealth: getFullHealth,
 		setFullHealth: setFullHealth,

@@ -72,6 +72,10 @@ var Chaser = function(startX, startY, level, player) {
 		return fullHealth;
 	};
 
+	var getType = function() {
+		return 'chaser';
+	};
+
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
 	};
@@ -130,7 +134,9 @@ var Chaser = function(startX, startY, level, player) {
 			//if within a large number of tiles
 			pathing(enemies);
 		}
-		separate(enemies);
+		if(dist > 100) {
+			separate(enemies);
+		}
 		//get the path from above then follow it
 		followPath();
 	};
@@ -179,7 +185,7 @@ var Chaser = function(startX, startY, level, player) {
 			//check to see if the length is legit. and that some gobble-de-gook didn't get in the path
 			if(len > -1 && path[len] !== undefined) {
 				if(len < 2) {
-					if (manDistance(player.getX(), player.getY(), x, y) < 48) {
+					if (manDistance(player.getX(), player.getY(), x, y) < 56) {
 						player.setHealth(player.getHealth() - damage);
 					}
 				}
@@ -207,6 +213,14 @@ var Chaser = function(startX, startY, level, player) {
 				if (Math.abs(x - tempTile.x) < 24 && Math.abs(y - tempTile.y) < 24) {
 					path.pop();
 				}
+			} else {
+				if (manDistance(player.getX(), player.getY(), x, y) < 56) {
+					player.setHealth(player.getHealth() - damage);
+				}
+			}
+		} else {
+			if (manDistance(player.getX(), player.getY(), x, y) < 56) {
+				player.setHealth(player.getHealth() - damage);
 			}
 		}
 	}
@@ -346,8 +360,8 @@ var Chaser = function(startX, startY, level, player) {
 			var enemy = enemies[i];
 			// we are not the current enemy
 			if(enemy.getX() !== x && enemy.getY() !== y) {
-				// if the enemy is within 3 tiles
-				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144) {
+				// if the enemy is within 3 tiles and not a shielder
+				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144 && enemy.getType() !== 'shielder') {
 					velocity.x += x - enemy.getX();
 					velocity.y += y - enemy.getY();
 					neighbors += 1;
@@ -390,7 +404,7 @@ var Chaser = function(startX, startY, level, player) {
 					continue;
 				}
 				//enemy and current enemy are intersecting
-				if(manDistance(enemy.getX(), enemy.getY(), x, y) < 48) {
+				if(manDistance(enemy.getX(), enemy.getY(), x, y) < 48 && enemy.getType() !== 'shielder') {
 					//shift the enemy off the other one
 					var vecX = x - enemy.getX();
 					var vecY = y - enemy.getY();
@@ -901,6 +915,7 @@ var Chaser = function(startX, startY, level, player) {
 		setSize: setSize,
 		setHealth: setHealth,
 		setPath: setPath,
+		getType: getType,
 		update: update,
 		draw: draw
 	}
