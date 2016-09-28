@@ -4,7 +4,7 @@
 **************************************************/
 var Shooter = function(startX, startY, level, player) {
 	var shooterImage = new Image();
-	shooterImage.src = "SpriteSheets/PlayerSprites/gentlemanSprite.png";
+	shooterImage.src = "SpriteSheets/PlayerSprites/scareCrowSprite.png";
 	var shooterImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
 	var shooterImageDown = [{"x":0,"y":1},{"x":0,"y":18},{"x":0,"y":1},{"x":0,"y":35}];
 	var shooterImageRight = [{"x":32,"y":1},{"x":32,"y":18},{"x":32,"y":1},{"x":32,"y":35}];

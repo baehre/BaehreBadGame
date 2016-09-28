@@ -31,7 +31,7 @@ var Chaser = function(startX, startY, level, player) {
 	var prevPlayerX = player.getX();
 	var prevPlayerY = player.getY();
 	//how much chaser moves
-	var moveAmount = 1.25;
+	var moveAmount = 1.75;
 	var damage = 2.5;
 	var fullHealth = 100;
 	var health = fullHealth;
