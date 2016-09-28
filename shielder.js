@@ -115,7 +115,7 @@ var Shielder = function(startX, startY, level, player) {
             // not us
             var enemyX = enemy.getX();
             var enemyY = enemy.getY();
-            if (enemyX !== x && enemyY !== y) {
+            if (enemyX !== x && enemyY !== y && enemy.getType() !== 'shielder') {
                 var tempDist = manDistance(x, y, enemyX, enemyY);
                 if (tempDist < dist) {
                     dist = tempDist;
