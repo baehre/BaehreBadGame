@@ -30,7 +30,7 @@ var Shielder = function(startX, startY, level, player) {
 	var prevPlayerX = player.getX();
 	var prevPlayerY = player.getY();
 	//how much shielder moves
-	var moveAmount = 1.25;
+	var moveAmount = 1.5;
 	var fullHealth = 350;
 	var health = fullHealth;
 	//the previous behavior. used to reset path between behavior changes
