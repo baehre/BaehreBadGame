@@ -186,7 +186,7 @@ var Shielder = function(startX, startY, level, player) {
 			} else if (percent < 0.75) {
 				ctx.fillStyle = '#ffff00';
 			} else {
-				ctx.fillStyle = '#006400';
+				ctx.fillStyle = '#00ff00';
 			}
 			ctx.fillRect(healthX, healthY, pixelWidth, pixelHeight);
 		}
@@ -447,7 +447,7 @@ var Shielder = function(startX, startY, level, player) {
 	};
 
 	//return the total manhattan distance of the path given to it
-	// fun fact arrays are passed by reference automatically. This was adding stuff to the path 
+	// fun fact arrays are passed by reference automatically. This was adding stuff to the path
 	var pathManDistance = function(tempPath) {
 		var distance = 0;
 		tempPath.unshift(getTile(x, y));
