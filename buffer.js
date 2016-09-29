@@ -1,17 +1,16 @@
-//chaser class
+//buffer class
 /**************************************************
-** GAME chaser CLASS
+** GAME buffer CLASS
 **************************************************/
-var Chaser = function(startX, startY, level, player) {
-	var chaserImage = new Image();
-	//chaserImage.src = "SpriteSheets/PlayerSprites/gentlemanSprite.png";
-	chaserImage.src = "SpriteSheets/EnemySprites/jetpackBearSprite.png";
-	var chaserImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
-	var chaserImageDown = [{"x":0,"y":1},{"x":0,"y":18},{"x":0,"y":1},{"x":0,"y":35}];
-	var chaserImageRight = [{"x":32,"y":1},{"x":32,"y":18},{"x":32,"y":1},{"x":32,"y":35}];
-	var chaserImageLeft = [{"x":48,"y":1},{"x":48,"y":18},{"x":48,"y":1},{"x":48,"y":35}];
-	//default to the chaser looking down
- 	var facing = chaserImageDown;
+var Buffer = function(startX, startY, level, player) {
+	var bufferImage = new Image();
+	bufferImage.src = "SpriteSheets/PlayerSprites/gentlemanSprite.png";
+	var bufferImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
+	var bufferImageDown = [{"x":0,"y":1},{"x":0,"y":18},{"x":0,"y":1},{"x":0,"y":35}];
+	var bufferImageRight = [{"x":32,"y":1},{"x":32,"y":18},{"x":32,"y":1},{"x":32,"y":35}];
+	var bufferImageLeft = [{"x":48,"y":1},{"x":48,"y":18},{"x":48,"y":1},{"x":48,"y":35}];
+	//default to the buffer looking down
+ 	var facing = bufferImageDown;
 	//separate time for update to go with rate
 	var time = 0;
 	var rate = 5;
@@ -30,18 +29,15 @@ var Chaser = function(startX, startY, level, player) {
 	var drawY;
 	var prevPlayerX = player.getX();
 	var prevPlayerY = player.getY();
-	//how much chaser moves
-	var moveAmount = 1.75;
-	var damage = 2.5;
-	var fullHealth = 100;
+	//how much buffer moves
+	var moveAmount = 1.5;
+	var fullHealth = 75;
 	var health = fullHealth;
 	//the previous behavior. used to reset path between behavior changes
 	var pastBehavior = '';
 	//used in path finding. if leader he is getting the path. everyone else steals from him
 	var leader = false;
-	// the direction to orbit the player
-	var surroundDirection = -1;
-	//the path the chaser is taking
+	//the path the buffer is taking
 	var path = null;
 
 	// Getters and setters
@@ -66,7 +62,7 @@ var Chaser = function(startX, startY, level, player) {
 	};
 
 	var getLeader = function() {
-		return leader;
+		return false;
 	};
 
 	var getFullHealth = function() {
@@ -74,15 +70,11 @@ var Chaser = function(startX, startY, level, player) {
 	};
 
 	var getType = function() {
-		return 'chaser';
+		return 'buffer';
 	};
 
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
-	};
-
-	var setLeader = function(newLeader) {
-		leader = newLeader;
 	};
 
 	var setPath = function(newPath) {
@@ -105,44 +97,16 @@ var Chaser = function(startX, startY, level, player) {
 		size = newSize;
 	};
 
-	// Update chaser position
+	// Update buffer position
 	var update = function(enemies) {
 		prevX = x;
 		prevY = y;
-		var dist = distance(player.getX(), player.getY(), x, y);
-		// if within 3 tiles
-		if (dist < 144) {
-			// double check that your path is actually good to go not just the pixel distance
-			if(path !== null && pathManDistance(path) < 144) {
-				if(pastBehavior !== 'surround') {
-					path = null;
-					surroundDirection = -1;
-				}
-				pastBehavior = 'surround';
-				surround(enemies, dist);
-			} else {
-				if(pastBehavior !== 'pathing') {
-					path = null;
-				}
-				pastBehavior = 'pathing';
-				pathing(enemies);
-			}
-		} else if (dist < 900) {
-			if(pastBehavior !== 'pathing') {
-				path = null;
-			}
-			pastBehavior = 'pathing';
-			//if within a large number of tiles
-			pathing(enemies);
-		}
-		if(dist > 100) {
-			separate(enemies);
-		}
+		
 		//get the path from above then follow it
 		followPath();
 	};
 
-	// Draw chaser
+	// Draw buffer
 	var draw = function(ctx) {
 		//so the way this works. we only want to change the frame every 5th time draw is
 		//called. otherwise it goes through supppperr quick. which is bad.
@@ -156,7 +120,7 @@ var Chaser = function(startX, startY, level, player) {
 		if (frame > 7500) {
 			frame = 0;
 		}
-		ctx.drawImage(chaserImage, drawX, drawY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
+		ctx.drawImage(bufferImage, drawX, drawY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
 		//draw health bar if they have less than full
 		if (health < fullHealth) {
 			var percent = health / fullHealth;
@@ -185,43 +149,30 @@ var Chaser = function(startX, startY, level, player) {
 			var len = path.length - 1;
 			//check to see if the length is legit. and that some gobble-de-gook didn't get in the path
 			if(len > -1 && path[len] !== undefined) {
-				if(len < 2) {
-					if (manDistance(player.getX(), player.getY(), x, y) < 56) {
-						player.setHealth(player.getHealth() - damage);
-					}
-				}
 				var tempTile = getPixel(path[len]);
 				// super small stuff won't affect the movement
 				var smallXCheck = Math.abs(x - tempTile.x) > 1;
 				if (x < tempTile.x && smallXCheck) {
 					x += moveAmount;
-					facing = chaserImageRight;
+					facing = bufferImageRight;
 				} else if (x > tempTile.x && smallXCheck) {
 					x -= moveAmount;
-					facing = chaserImageLeft;
+					facing = bufferImageLeft;
 				}
 				var smallYCheck = Math.abs(y - tempTile.y) > 1;
 				// if elseif so it can't do both in the same update cycle
 				if (y < tempTile.y && smallYCheck) {
 					y += moveAmount;
-					facing = chaserImageDown;
+					facing = bufferImageDown;
 				} else if (y > tempTile.y && smallYCheck) {
 					y -= moveAmount;
-					facing = chaserImageUp;
+					facing = bufferImageUp;
 				}
 				// if we hit the tile we are going to then remove it from the path
 				// used to be moveamount
 				if (Math.abs(x - tempTile.x) < 24 && Math.abs(y - tempTile.y) < 24) {
 					path.pop();
 				}
-			} else {
-				if (manDistance(player.getX(), player.getY(), x, y) < 56) {
-					player.setHealth(player.getHealth() - damage);
-				}
-			}
-		} else {
-			if (manDistance(player.getX(), player.getY(), x, y) < 56) {
-				player.setHealth(player.getHealth() - damage);
 			}
 		}
 	}
@@ -289,69 +240,9 @@ var Chaser = function(startX, startY, level, player) {
 		return null;
 	};
 
-	// keeps the chasers separate and gets the path
+	// keeps the buffers separate and gets the path
 	var pathing = function(enemies, distance) {
-		var noLeader = true;
-		for (var i = 0; i < enemies.length; i++) {
-			var enemy = enemies[i];
-			// we are not the current enemy
-			if(enemy.getX() !== x && enemy.getY() !== y) {
-				// if the enemy is within 3 tiles
-				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144) {
-					if (!leader && enemy.getLeader()) {
-						// means that someone already did the overarching path concat the path to that guy to his path
-						noLeader = false;
-						// need to double check that this works
-						var tempPath = getSmoothPath(getTile(x, y), getTile(enemy.getX(), enemy.getY()));
-						var enemyPath = enemy.getPath();
-						if (enemyPath !== null) {
-							path = enemy.getPath().concat(tempPath);
-						} else {
-							path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
-						}
-					}
-				}
-			}
-		}
-		//if none of the other enemies are leaders
-		if (noLeader) {
-			leader = true;
-			//if no path get one or get a new one if the path is longer than the distance to the player
-			if (path === null || pathManDistance(path) > manDistance(player.getX(), player.getY(), x, y)) {
-				path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
-			} else {
-				//already has a path. gotta update it.but only if player has moved
-				if (prevPlayerX !== player.getX() || prevPlayerY !== player.getY()) {
-					prevPlayerX = player.getX();
-					prevPlayerY = player.getY();
-					if (path !== null && path !== undefined) {
-						if(path.length !== 0 && path[path.length - 1] !== undefined) {
-							var tempTile = getTile(prevPlayerX, prevPlayerY);
-							// long as the tile doesn't fail
-							if(tempTile !== undefined) {
-								// if the new tile isn't already in the path then add it.
-								if(tempTile.x !== path[0].x || tempTile.y !== path[0].y) {
-									//put the new tile onto the end of the path
-									path.unshift(tempTile);
-									//add the current tile to the beginning for making sure you can move to the first tile correctly.
-									path.push(getTile(x, y));
-									path = smooth(path);
-									// we don't want to get stuck where we currently are or go back to the center of the first tile.
-									// gotta get rid of it.
-									path.pop();
-								}
-							}
-						} else {
-							var tempTile = getTile(prevPlayerX, prevPlayerY);
-							// when the path is empty we just tack on the tile regardless
-							if(tempTile !== undefined) {
-								path.unshift(tempTile);
-							}
-						}
-					}
-				}
-			}
-		}
+		
 	};
 
 	var separate = function(enemies) {
@@ -392,108 +283,10 @@ var Chaser = function(startX, startY, level, player) {
 		}
 	};
 
-
-	var surround = function(enemies, radius) {
-		var playerX = player.getX();
-		var playerY = player.getY();
-		if(walkable(getTile(x, y), getTile(playerX, playerY))) {
-			var enemyOverlap = false;
-			for (var i = 0; i < enemies.length; i++) {
-				var enemy = enemies[i];
-				// we are the enemy
-				if (enemy.getX() === x && enemy.getY() === y) {
-					continue;
-				}
-				//enemy and current enemy are intersecting
-				if(manDistance(enemy.getX(), enemy.getY(), x, y) < 48 && enemy.getType() !== 'shielder') {
-					//shift the enemy off the other one
-					var vecX = x - enemy.getX();
-					var vecY = y - enemy.getY();
-					vecX *= -1;
-					vecY *= -1;
-					var vecLength = Math.sqrt((vecX * vecX) + (vecY * vecY));
-					var uX = vecX / vecLength;
-					var uY = vecY / vecLength;
-					//get the hypothetical bounds of the enemy
-					var tempTile1 = getTile(x + uX - 24, y + uY);
-					var tempTile2 = getTile(x + uX + 24, y + uY);
-					var tempTile3 = getTile(x + uX, y + uY - 24);
-					var tempTile4 = getTile(x + uX, y + uY + 24);
-					// shift the enemy along the vector. if it wouldn't shove it through a blocked tile
-					if(getLevelTile(tempTile1.x, tempTile1.y) < 10 && getLevelTile(tempTile2.x, tempTile2.y) < 10 &&
-						getLevelTile(tempTile3.x, tempTile3.y) < 10 && getLevelTile(tempTile4.x, tempTile4.y) < 10) {
-						x -= uX;
-						y -= uY;
-					}
-					enemyOverlap = true;
-					break;
-				}
-			}
-			if(!enemyOverlap) {
-				path = getSmoothPath(getTile(x, y), getTile(playerX, playerY));
-				return;
-			}
-		}
-		//hasn't been set yet
-		if (surroundDirection === -1) {
-			var temp = [0, 1];
-			var rand = Math.floor(Math.random() * 2);
-			surroundDirection = temp[rand];
-		}
-		var angle = (Math.atan2(y - playerY, x - playerX));
-		if(surroundDirection === 0) {
-			// 0.261799 is 15 degrees
-			var positiveAngle = angle + 0.261799;
-			//orbits the player. yay for unit circle?
-			var tempPositiveX = playerX + Math.cos(positiveAngle) * 96;
-			var tempPositiveY = playerY + Math.sin(positiveAngle) * 96;
-			var tempTile = getTile(tempPositiveX, tempPositiveY);
-			if (!isBlocked(tempTile.x, tempTile.y)) {
-				var smallXCheck = Math.abs(x - tempPositiveX) > 1;
-				var smallYCheck = Math.abs(y - tempPositiveY) > 1;
-				if (x < tempPositiveX && smallXCheck) {
-					x += moveAmount;
-				} else if (x > tempPositiveX && smallXCheck) {
-					x -= moveAmount;
-				}
-				if (y < tempPositiveY && smallYCheck) {
-					y += moveAmount;
-				} else if (y > tempPositiveY && smallYCheck) {
-					y -= moveAmount;
-				}
-			} else {
-				surroundDirection = 1;
-			}
-		} else if (surroundDirection === 1) {
-			// 15 degrees
-			var negativeAngle = angle - 0.261799;
-			var tempNegativeX = playerX + Math.cos(negativeAngle) * 96;
-			var tempNegativeY = playerY + Math.sin(negativeAngle) * 96;
-			tempTile = getTile(tempNegativeX, tempNegativeY);
-			if (!isBlocked(tempTile.x, tempTile.y)) {
-				var smallXCheck = Math.abs(x - tempNegativeX) > 1;
-				var smallYCheck = Math.abs(y - tempNegativeY) > 1;
-				if (x < tempNegativeX && smallXCheck) {
-					x += moveAmount;
-				} else if (x > tempNegativeX && smallXCheck) {
-					x -= moveAmount;
-				}
-				if (y < tempNegativeY && smallYCheck) {
-					y += moveAmount;
-				} else if (y > tempNegativeY && smallYCheck) {
-					y -= moveAmount;
-				}
-				//can't move along the circle in either direction
-			} else {
-				surroundDirection = 0;
-			}
-		}
-	};
-
   //DISTANCE
 
 	//used in checking if player is in range
-	//calculates the euclidean distance between chaser and the x and y provided
+	//calculates the euclidean distance between buffer and the x and y provided
 	var distance = function(x1, y1, x2, y2){
 		return Math.sqrt(Math.abs((x2 - x1) * (x2 - x1) + (y2 - y1)
 			* (y2 - y1)));
