@@ -4,8 +4,8 @@
 **************************************************/
 var Chaser = function(startX, startY, level, player) {
 	var chaserImage = new Image();
-	//chaserImage.src = "SpriteSheets/PlayerSprites/gentlemanSprite.png";
-	chaserImage.src = "SpriteSheets/EnemySprites/jetpackBearSprite.png";
+	chaserImage.src = "SpriteSheets/PlayerSprites/sumoWrestlerTemp.png";
+	//chaserImage.src = "SpriteSheets/EnemySprites/jetpackBearSprite.png";
 	var chaserImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
 	var chaserImageDown = [{"x":0,"y":1},{"x":0,"y":18},{"x":0,"y":1},{"x":0,"y":35}];
 	var chaserImageRight = [{"x":32,"y":1},{"x":32,"y":18},{"x":32,"y":1},{"x":32,"y":35}];
