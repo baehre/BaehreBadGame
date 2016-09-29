@@ -87,38 +87,6 @@ var Boss = function(startX, startY, level, player) {
 
 	// Draw boss
 	var draw = function(ctx) {
-		//so the way this works. we only want to change the frame every 5th time draw is
-		//called. otherwise it goes through supppperr quick. which is bad.
-		//so only change the frame every rate times per draw called.
-		frame = frame + 1;
-		if(frame % rate === 0) {
-			drawX = facing[frame % facing.length].x;
-			drawY = facing[frame % facing.length].y;
-		}
-		// got too big. make it small.
-		if (frame > 7500) {
-			frame = 0;
-		}
-		ctx.drawImage(bossImage, drawX, drawY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
-		if (health < fullHealth) {
-			var percent = health / fullHealth;
-			// ratio in relation to the size of the character
-			var pixelWidth = percent * size;
-			// tinker with this number if we want
-			var pixelHeight = 30;
-			// top side then the height and a padding of 2
-			var healthY = y - (size / 2) - pixelHeight - 2;
-			// just the left side of the sprite
-			var healthX = x - (size / 2);
-			if (percent < 0.25) {
-				ctx.fillStyle = '#ff0000';
-			} else if (percent < 0.75) {
-				ctx.fillStyle = '#ffff00';
-			} else {
-				ctx.fillStyle = '#006400';
-			}
-			ctx.fillRect(healthX, healthY, pixelWidth, pixelHeight);
-		}
 	};
 
   //DISTANCE
