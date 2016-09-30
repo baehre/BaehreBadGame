@@ -4,7 +4,8 @@
 **************************************************/
 var Chaser = function(startX, startY, level, player) {
 	var chaserImage = new Image();
-	chaserImage.src = "SpriteSheets/PlayerSprites/gentlemanSprite.png";
+	chaserImage.src = "SpriteSheets/PlayerSprites/sumoWrestlerTemp.png";
+	//chaserImage.src = "SpriteSheets/EnemySprites/jetpackBearSprite.png";
 	var chaserImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
 	var chaserImageDown = [{"x":0,"y":1},{"x":0,"y":18},{"x":0,"y":1},{"x":0,"y":35}];
 	var chaserImageRight = [{"x":32,"y":1},{"x":32,"y":18},{"x":32,"y":1},{"x":32,"y":35}];
@@ -30,7 +31,7 @@ var Chaser = function(startX, startY, level, player) {
 	var prevPlayerX = player.getX();
 	var prevPlayerY = player.getY();
 	//how much chaser moves
-	var moveAmount = 1.25;
+	var moveAmount = 1.75;
 	var damage = 2.5;
 	var fullHealth = 100;
 	var health = fullHealth;
@@ -172,7 +173,7 @@ var Chaser = function(startX, startY, level, player) {
 			} else if (percent < 0.75) {
 				ctx.fillStyle = '#ffff00';
 			} else {
-				ctx.fillStyle = '#006400';
+				ctx.fillStyle = '#00ff00';
 			}
 			ctx.fillRect(healthX, healthY, pixelWidth, pixelHeight);
 		}
