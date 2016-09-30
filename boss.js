@@ -6,7 +6,7 @@ var Boss = function(startX, startY, level, player) {
 	var bossImage = new Image();
 	bossImage.src = "SpriteSheets/EnemySprites/bossSprite.png";
 	var bossImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
-	var bossImageDown = [{"x":9,"y":2},{"x":4,"y":51},{"x":9,"y":2},{"x":15,"y":100}];
+	var bossImageDown = [{"x":4,"y":2},{"x":4,"y":51},{"x":4,"y":2},{"x":4,"y":100}];
 	var bossImageRight = [{"x":32,"y":1},{"x":32,"y":18},{"x":32,"y":1},{"x":32,"y":35}];
 	var bossImageLeft = [{"x":48,"y":1},{"x":48,"y":18},{"x":48,"y":1},{"x":48,"y":35}];
 	//default to the chaser looking down
@@ -22,7 +22,7 @@ var Boss = function(startX, startY, level, player) {
 	var scale = 3;
 	var size = tileSize * scale;
 	// how much to draw
-	var drawWidth = 30;
+	var drawWidth = 41;
 	var drawHeight = 45;
 	// for when we are checking hit boxes
 	var width = 20;
