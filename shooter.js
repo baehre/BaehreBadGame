@@ -4,7 +4,7 @@
 **************************************************/
 var Shooter = function(startX, startY, level, player) {
 	var shooterImage = new Image();
-	shooterImage.src = "SpriteSheets/PlayerSprites/sumoWrestlerSprite.png";
+	shooterImage.src = "SpriteSheets/PlayerSprites/scareCrowSprite.png";
 	var shooterImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
 	var shooterImageDown = [{"x":0,"y":1},{"x":0,"y":18},{"x":0,"y":1},{"x":0,"y":35}];
 	var shooterImageRight = [{"x":32,"y":1},{"x":32,"y":18},{"x":32,"y":1},{"x":32,"y":35}];
@@ -70,7 +70,7 @@ var Shooter = function(startX, startY, level, player) {
 	var getPath = function() {
 		return path;
 	};
-    
+
     var getProjectiles = function() {
         return projectiles;
     };
@@ -82,6 +82,10 @@ var Shooter = function(startX, startY, level, player) {
 	var getFullHealth = function() {
 		return fullHealth;
 	};
+
+	var getType = function() {
+		return 'shooter';
+	}
 
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
@@ -184,7 +188,7 @@ var Shooter = function(startX, startY, level, player) {
 			} else if (percent < 0.75) {
 				ctx.fillStyle = '#ffff00';
 			} else {
-				ctx.fillStyle = '#006400';
+				ctx.fillStyle = '#00ff00';
 			}
 			ctx.fillRect(healthX, healthY, pixelWidth, pixelHeight);
 		}
@@ -521,7 +525,7 @@ var Shooter = function(startX, startY, level, player) {
     var fireProjectile = function(shootX, shootY) {
         var direction = Math.atan2(shootY - y, shootX - x);
         // the enemies are whomever we can hit. so array of player. cuz we can hit the player
-        var tempProjectile = new Projectile("shooter", x, y, direction, canvas, levelData, [player]);
+        var tempProjectile = new Projectile("shooter", x, y, direction, canvas, levelData, [player], 10, 6, 300);
         projectiles.push(tempProjectile);
         projectileFireRate = startingProjectileFireRate;
     };
@@ -542,7 +546,7 @@ var Shooter = function(startX, startY, level, player) {
 	};
 
 	//return the total manhattan distance of the path given to it
-	// fun fact arrays are passed by reference automatically. This was adding stuff to the path 
+	// fun fact arrays are passed by reference automatically. This was adding stuff to the path
 	var pathManDistance = function(tempPath) {
 		var distance = 0;
 		tempPath.unshift(getTile(x, y));
@@ -798,6 +802,7 @@ var Shooter = function(startX, startY, level, player) {
 		getHealth: getHealth,
 		getPath: getPath,
 		getLeader: getLeader,
+		getType: getType,
 		getProjectiles: getProjectiles,
 		getFullHealth: getFullHealth,
 		setFullHealth: setFullHealth,

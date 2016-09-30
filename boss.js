@@ -4,9 +4,9 @@
 **************************************************/
 var Boss = function(startX, startY, level, player) {
 	var bossImage = new Image();
-	bossImage.src = "SpriteSheets/PlayerSprites/afroKidSprite.png";
+	bossImage.src = "SpriteSheets/EnemySprites/bossSprite.png";
 	var bossImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
-	var bossImageDown = [{"x":0,"y":1},{"x":0,"y":18},{"x":0,"y":1},{"x":0,"y":35}];
+	var bossImageDown = [{"x":4,"y":2},{"x":4,"y":51},{"x":4,"y":2},{"x":4,"y":100}];
 	var bossImageRight = [{"x":32,"y":1},{"x":32,"y":18},{"x":32,"y":1},{"x":32,"y":35}];
 	var bossImageLeft = [{"x":48,"y":1},{"x":48,"y":18},{"x":48,"y":1},{"x":48,"y":35}];
 	//default to the chaser looking down
@@ -21,6 +21,12 @@ var Boss = function(startX, startY, level, player) {
 	//scale the person to 48 (16*3) pixels with this
 	var scale = 3;
 	var size = tileSize * scale;
+	// how much to draw
+	var drawWidth = 41;
+	var drawHeight = 45;
+	// for when we are checking hit boxes
+	var width = 20;
+	var height = 45;
 	var x = startX;
 	var y = startY;
 	var prevX;
@@ -96,7 +102,7 @@ var Boss = function(startX, startY, level, player) {
 		if (frame > 7500) {
 			frame = 0;
 		}
-		ctx.drawImage(bossImage, drawX, drawY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
+		ctx.drawImage(bossImage, drawX, drawY, drawWidth, drawHeight, Math.round(x - (drawWidth * scale / 2)), Math.round(y - (drawHeight * scale / 2)), drawWidth * scale, drawHeight * scale);
 		if (health < fullHealth) {
 			var percent = health / fullHealth;
 			// ratio in relation to the size of the character
@@ -183,7 +189,7 @@ var Boss = function(startX, startY, level, player) {
 		}
 		return false;
 	};
-    
+
 	var walkable = function(point1, point2){
 		//get the middle of the tile
 		var start = getPixel(point1);

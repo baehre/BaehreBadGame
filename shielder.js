@@ -30,7 +30,7 @@ var Shielder = function(startX, startY, level, player) {
 	var prevPlayerX = player.getX();
 	var prevPlayerY = player.getY();
 	//how much shielder moves
-	var moveAmount = 2.0;
+	var moveAmount = 1.5;
 	var fullHealth = 350;
 	var health = fullHealth;
 	//the previous behavior. used to reset path between behavior changes
@@ -70,6 +70,10 @@ var Shielder = function(startX, startY, level, player) {
     var getLeader = function() {
         return false;
     };
+
+	var getType = function() {
+		return 'shielder';
+	};
 
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
@@ -111,7 +115,7 @@ var Shielder = function(startX, startY, level, player) {
             // not us
             var enemyX = enemy.getX();
             var enemyY = enemy.getY();
-            if (enemyX !== x && enemyY !== y) {
+            if (enemyX !== x && enemyY !== y && enemy.getType() !== 'shielder') {
                 var tempDist = manDistance(x, y, enemyX, enemyY);
                 if (tempDist < dist) {
                     dist = tempDist;
@@ -144,7 +148,9 @@ var Shielder = function(startX, startY, level, player) {
             pastBehavior = 'avoid';
             avoid();
         }
-        grabProjectile();
+				if (pastBehavior !== 'avoid') {
+						grabProjectile();
+				}
         if (pastBehavior !== 'protect') {
             separate(enemies);
         }
@@ -182,7 +188,7 @@ var Shielder = function(startX, startY, level, player) {
 			} else if (percent < 0.75) {
 				ctx.fillStyle = '#ffff00';
 			} else {
-				ctx.fillStyle = '#006400';
+				ctx.fillStyle = '#00ff00';
 			}
 			ctx.fillRect(healthX, healthY, pixelWidth, pixelHeight);
 		}
@@ -443,7 +449,7 @@ var Shielder = function(startX, startY, level, player) {
 	};
 
 	//return the total manhattan distance of the path given to it
-	// fun fact arrays are passed by reference automatically. This was adding stuff to the path 
+	// fun fact arrays are passed by reference automatically. This was adding stuff to the path
 	var pathManDistance = function(tempPath) {
 		var distance = 0;
 		tempPath.unshift(getTile(x, y));
@@ -699,6 +705,7 @@ var Shielder = function(startX, startY, level, player) {
 		getHealth: getHealth,
 		getPath: getPath,
         getLeader: getLeader,
+		getType: getType,
 		getFullHealth: getFullHealth,
 		setFullHealth: setFullHealth,
 		setX: setX,
