@@ -20,7 +20,6 @@ var Boss = function(startX, startY, level, player) {
 	var tileSize = 48;
 	//scale the person to 48 (16*3) pixels with this
 	var scale = 3;
-	var size = tileSize * scale;
 	// how much to draw
 	var drawWidth = 41;
 	var drawHeight = 45;
@@ -47,9 +46,13 @@ var Boss = function(startX, startY, level, player) {
 		return y;
 	};
 
-	var getSize = function() {
-		return size;
+	var getWidth = function() {
+		return width * scale;
 	};
+
+	var getHeight = function() {
+		return height * scale;
+	}
 
 	var getHealth = function() {
 		return health;
@@ -79,10 +82,6 @@ var Boss = function(startX, startY, level, player) {
 		y = newY;
 	};
 
-	var setSize = function(newSize) {
-		size = newSize;
-	};
-
 	// Update boss position
 	var update = function(enemies) {
 		
@@ -106,13 +105,13 @@ var Boss = function(startX, startY, level, player) {
 		if (health < fullHealth) {
 			var percent = health / fullHealth;
 			// ratio in relation to the size of the character
-			var pixelWidth = percent * size;
+			var pixelWidth = percent * width * scale;
 			// tinker with this number if we want
-			var pixelHeight = 30;
+			var pixelHeight = 20;
 			// top side then the height and a padding of 2
-			var healthY = y - (size / 2) - pixelHeight - 2;
+			var healthY = y - (height * scale / 2) - pixelHeight - 2;
 			// just the left side of the sprite
-			var healthX = x - (size / 2);
+			var healthX = x - (width * scale / 2);
 			if (percent < 0.25) {
 				ctx.fillStyle = '#ff0000';
 			} else if (percent < 0.75) {
@@ -230,14 +229,14 @@ var Boss = function(startX, startY, level, player) {
 	return {
 		getX: getX,
 		getY: getY,
-		getSize: getSize,
+		getWidth: getWidth,
+		getHeight: getHeight,
 		getHealth: getHealth,
         getLeader: getLeader,
 		getFullHealth: getFullHealth,
 		setFullHealth: setFullHealth,
 		setX: setX,
 		setY: setY,
-		setSize: setSize,
 		setHealth: setHealth,
 		update: update,
 		draw: draw

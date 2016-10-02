@@ -59,7 +59,11 @@ var Shooter = function(startX, startY, level, player) {
 		return y;
 	};
 
-	var getSize = function() {
+	var getWidth = function() {
+		return size;
+	};
+
+	var getHeight = function() {
 		return size;
 	};
 
@@ -113,10 +117,6 @@ var Shooter = function(startX, startY, level, player) {
 
 	var setY = function(newY) {
 		y = newY;
-	};
-
-	var setSize = function(newSize) {
-		size = newSize;
 	};
 
 	// Update shooter position
@@ -798,7 +798,8 @@ var Shooter = function(startX, startY, level, player) {
 	return {
 		getX: getX,
 		getY: getY,
-		getSize: getSize,
+		getWidth: getWidth,
+		getHeight: getHeight,
 		getHealth: getHealth,
 		getPath: getPath,
 		getLeader: getLeader,
@@ -810,7 +811,6 @@ var Shooter = function(startX, startY, level, player) {
 		setLeader: setLeader,
 		setX: setX,
 		setY: setY,
-		setSize: setSize,
 		setHealth: setHealth,
 		setPath: setPath,
 		update: update,

@@ -51,10 +51,6 @@ var Shielder = function(startX, startY, level, player) {
 		return y;
 	};
 
-	var getSize = function() {
-		return size;
-	};
-
 	var getHealth = function() {
 		return health;
 	};
@@ -75,6 +71,14 @@ var Shielder = function(startX, startY, level, player) {
 		return 'shielder';
 	};
 
+	var getWidth = function() {
+		return size;
+	};
+
+	var getHeight = function() {
+		return size;
+	};
+
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
 	};
@@ -93,10 +97,6 @@ var Shielder = function(startX, startY, level, player) {
 
 	var setY = function(newY) {
 		y = newY;
-	};
-
-	var setSize = function(newSize) {
-		size = newSize;
 	};
 
 	// Update shielder position
@@ -701,7 +701,8 @@ var Shielder = function(startX, startY, level, player) {
 	return {
 		getX: getX,
 		getY: getY,
-		getSize: getSize,
+		getWidth: getWidth,
+		getHeight: getHeight,
 		getHealth: getHealth,
 		getPath: getPath,
         getLeader: getLeader,
@@ -710,7 +711,6 @@ var Shielder = function(startX, startY, level, player) {
 		setFullHealth: setFullHealth,
 		setX: setX,
 		setY: setY,
-		setSize: setSize,
 		setHealth: setHealth,
 		setPath: setPath,
 		update: update,
