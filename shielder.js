@@ -153,7 +153,9 @@ var Shielder = function(startX, startY, level, player) {
 				}
         if (pastBehavior !== 'protect') {
             separate(enemies);
-        }
+        } else {
+			separateShielders(enemies);
+		}
 		//get the path from above then follow it
 		followPath();
 	};
@@ -351,7 +353,7 @@ var Shielder = function(startX, startY, level, player) {
 				var closestProjX = closestProj.getX();
 				var closestProjY = closestProj.getY();
 				if(walkable(getTile(x, y), getTile(closestProjX, closestProjY))) {
-                	closestProj.setAngle(Math.atan2(y - closestProjY, x - closestProjX));
+					closestProj.setAngle(Math.atan2(y - closestProjY, x - closestProjX));
 				}
             }
             projectileGrabTime = startProjectileGrabTime;
@@ -429,6 +431,44 @@ var Shielder = function(startX, startY, level, player) {
 			 getLevelTile(tempTile3.x, tempTile3.y) < 10 && getLevelTile(tempTile4.x, tempTile4.y) < 10) {
 				x -= uX;
 				y -= uY;
+			}
+		}
+	};
+
+	var separateShielders = function(enemies) {
+		var velocity = {"x": 0, "y": 0};
+		var neighbors = 0;
+		for (var i = 0; i < enemies.length; i++) {
+			var enemy = enemies[i];
+			// we are not the current enemy
+			if(enemy.getX() !== x && enemy.getY() !== y) {
+				// if the enemy is within 3 tiles
+				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144 && enemy.getType() === 'shielder') {
+					velocity.x += x - enemy.getX();
+					velocity.y += y - enemy.getY();
+					neighbors += 1;
+				}
+			}
+		}
+		if (neighbors !== 0) {
+			// all dat sweet sweet velocity stuff
+			velocity.x /= neighbors;
+			velocity.y /= neighbors;
+			velocity.x *= -1;
+			velocity.y *= -1;
+			var velocityLength = Math.sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y));
+			var uX = velocity.x / velocityLength;
+			var uY = velocity.y / velocityLength;
+			//get the hypothetical bounds of the enemy
+			var tempTile1 = getTile(x + uX - 24, y + uY);
+			var tempTile2 = getTile(x + uX + 24, y + uY);
+			var tempTile3 = getTile(x + uX, y + uY - 24);
+			var tempTile4 = getTile(x + uX, y + uY + 24);
+			// shift the enemy along the vector. if it wouldn't shove it through a blocked tile
+			if(getLevelTile(tempTile1.x, tempTile1.y) < 10 && getLevelTile(tempTile2.x, tempTile2.y) < 10 &&
+			 getLevelTile(tempTile3.x, tempTile3.y) < 10 && getLevelTile(tempTile4.x, tempTile4.y) < 10) {
+				x -= (uX / 2);
+				y -= (uY / 2);
 			}
 		}
 	};
