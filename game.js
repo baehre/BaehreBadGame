@@ -64,6 +64,7 @@ function init(){
   //player.js
   localPlayer = new Player(canvas, 100, 300, levelData, enemies);
   //made a function that adds a chaser and updates the enemies for the player
+  //addBoss(300, 300);
   addChaser(200, 100);
   addShielder(300, 100);
   addShooter(400, 100);
@@ -285,5 +286,10 @@ function addShooter(shooterX, shooterY){
 // adds a shielder to the game
 function addShielder(shielderX, shielderY) {
   enemies.push(new Shielder(shielderX, shielderY, levelData, localPlayer));
+  localPlayer.setEnemies(enemies);
+}
+
+function addBoss(bossX, bossY) {
+  enemies.push(new Boss(bossX, bossY, levelData, localPlayer));
   localPlayer.setEnemies(enemies);
 }

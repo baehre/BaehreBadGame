@@ -130,11 +130,12 @@ var Projectile = function(entity, xP, yP, direction, can, level, enemies, damage
         var enemy = enemies[i];
         var tempX = enemy.getX();
         var tempY = enemy.getY();
-        var tempSize = enemy.getSize();
-        var left = tempX - (tempSize / 2);
-        var right = tempX + (tempSize / 2);
-        var top = tempY - (tempSize / 2);
-        var bottom = tempY + (tempSize / 2);
+        var tempWidth = enemy.getWidth();
+        var tempHeight = enemy.getHeight();
+        var left = tempX - (tempWidth / 2);
+        var right = tempX + (tempWidth / 2);
+        var top = tempY - (tempHeight / 2);
+        var bottom = tempY + (tempHeight / 2);
         //pass in point + sides of rectangle
         if (rectIntersection(x0, y0, left, right, top, bottom)) {
           enemy.setHealth(enemy.getHealth() - projectileDamage);
