@@ -364,7 +364,7 @@ var Shooter = function(startX, startY, level, player) {
 			// we are not the current enemy
 			if(enemy.getX() !== x && enemy.getY() !== y) {
 				// if the enemy is within 3 tiles
-				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144) {
+				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144 && enemy.getType() !== 'shielder') {
 					velocity.x += x - enemy.getX();
 					velocity.y += y - enemy.getY();
 					neighbors += 1;
