@@ -4,7 +4,7 @@
 **************************************************/
 var Shooter = function(startX, startY, level, player) {
 	var shooterImage = new Image();
-	shooterImage.src = "SpriteSheets/PlayerSprites/sumoWrestlerSprite.png";
+	shooterImage.src = "SpriteSheets/PlayerSprites/scareCrowSprite.png";
 	var shooterImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
 	var shooterImageDown = [{"x":0,"y":1},{"x":0,"y":18},{"x":0,"y":1},{"x":0,"y":35}];
 	var shooterImageRight = [{"x":32,"y":1},{"x":32,"y":18},{"x":32,"y":1},{"x":32,"y":35}];
@@ -59,7 +59,11 @@ var Shooter = function(startX, startY, level, player) {
 		return y;
 	};
 
-	var getSize = function() {
+	var getWidth = function() {
+		return size;
+	};
+
+	var getHeight = function() {
 		return size;
 	};
 
@@ -70,7 +74,7 @@ var Shooter = function(startX, startY, level, player) {
 	var getPath = function() {
 		return path;
 	};
-    
+
     var getProjectiles = function() {
         return projectiles;
     };
@@ -82,6 +86,10 @@ var Shooter = function(startX, startY, level, player) {
 	var getFullHealth = function() {
 		return fullHealth;
 	};
+
+	var getType = function() {
+		return 'shooter';
+	}
 
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
@@ -109,10 +117,6 @@ var Shooter = function(startX, startY, level, player) {
 
 	var setY = function(newY) {
 		y = newY;
-	};
-
-	var setSize = function(newSize) {
-		size = newSize;
 	};
 
 	// Update shooter position
@@ -184,7 +188,7 @@ var Shooter = function(startX, startY, level, player) {
 			} else if (percent < 0.75) {
 				ctx.fillStyle = '#ffff00';
 			} else {
-				ctx.fillStyle = '#006400';
+				ctx.fillStyle = '#00ff00';
 			}
 			ctx.fillRect(healthX, healthY, pixelWidth, pixelHeight);
 		}
@@ -360,7 +364,7 @@ var Shooter = function(startX, startY, level, player) {
 			// we are not the current enemy
 			if(enemy.getX() !== x && enemy.getY() !== y) {
 				// if the enemy is within 3 tiles
-				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144) {
+				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144 && enemy.getType() !== 'shielder') {
 					velocity.x += x - enemy.getX();
 					velocity.y += y - enemy.getY();
 					neighbors += 1;
@@ -521,7 +525,7 @@ var Shooter = function(startX, startY, level, player) {
     var fireProjectile = function(shootX, shootY) {
         var direction = Math.atan2(shootY - y, shootX - x);
         // the enemies are whomever we can hit. so array of player. cuz we can hit the player
-        var tempProjectile = new Projectile("shooter", x, y, direction, canvas, levelData, [player]);
+        var tempProjectile = new Projectile("shooter", x, y, direction, canvas, levelData, [player], 10, 6, 300);
         projectiles.push(tempProjectile);
         projectileFireRate = startingProjectileFireRate;
     };
@@ -542,7 +546,7 @@ var Shooter = function(startX, startY, level, player) {
 	};
 
 	//return the total manhattan distance of the path given to it
-	// fun fact arrays are passed by reference automatically. This was adding stuff to the path 
+	// fun fact arrays are passed by reference automatically. This was adding stuff to the path
 	var pathManDistance = function(tempPath) {
 		var distance = 0;
 		tempPath.unshift(getTile(x, y));
@@ -562,38 +566,10 @@ var Shooter = function(startX, startY, level, player) {
 	var getTile = function(x0, y0){
 		var tileX = Math.floor(x0 / 48.0);
 		var tileY = Math.floor(y0 / 48.0);
-		if(tileX < 0 || tileX > level[0].length || tileY < 0 || tileY > level.length){
+		if(tileX < 0 || tileX > level[0].length - 1 || tileY < 0 || tileY > level.length - 1){
 			return null;
 		}
 		return {"x": tileX, "y": tileY};
-	};
-
-	// based on tile coordinates return the tile's number
-	var getLevelTile = function(x0, y0){
-		if(x0 < 0 || x0 > level[0].length || y0 < 0 || y0 > level.length){
-			return null;
-		}
-		return level[y0][x0];
-	};
-
-	//gets the center of the tile obj passed in.
-	var getPixel = function(tile){
-		var tempX = (tile.x * 48) + 24;
-		var tempY = (tile.y * 48) + 24;
-		return {"x": tempX, "y": tempY};
-	};
-
-	//based on tile coordinates does a slightly better check. Used in jump point search.
-	var isBlocked = function(checkX, checkY) {
-		if(checkX < 0 || checkX > level[0].length || checkY < 0 || checkY > level.length){
-			return true;
-		}
-		if(level[checkY][checkX] > 10){
-			return true;
-		}
-		else{
-			return false;
-		}
 	};
 
   //PATHFINDING
@@ -726,19 +702,9 @@ var Shooter = function(startX, startY, level, player) {
 		return temp;
 	};
 
-	//return the tile given pixel coordinates
-	var getTile = function(x0, y0){
-		var tileX = Math.floor(x0 / 48.0);
-		var tileY = Math.floor(y0 / 48.0);
-		if(tileX < 0 || tileX > level[0].length || tileY < 0 || tileY > level.length){
-			return null;
-		}
-		return {"x": tileX, "y": tileY};
-	};
-
 	// based on tile coordinates return the tile's number
 	var getLevelTile = function(x0, y0){
-		if(x0 < 0 || x0 > level[0].length || y0 < 0 || y0 > level.length){
+		if(x0 < 0 || x0 > level[0].length - 1|| y0 < 0 || y0 > level.length - 1){
 			return null;
 		}
 		return level[y0][x0];
@@ -771,42 +737,6 @@ var Shooter = function(startX, startY, level, player) {
 		return arr;
 	};
 
-	var walkable = function(point1, point2){
-		//get the middle of the tile
-		var start = getPixel(point1);
-		var end = getPixel(point2);
-		//doing vector stuff here
-		var vec = {"x": end.x - start.x, "y": end.y - start.y};
-		var vecLength = Math.sqrt((vec.x * vec.x) + (vec.y * vec.y));
-		var uX = vec.x / vecLength;
-		var uY = vec.y / vecLength;
-		var dist = 0;
-		while(dist < vecLength){
-			var checkPixelX = start.x + (dist * uX);
-			var checkPixelY = start.y + (dist * uY);
-			//get the corners
-			var topY = checkPixelY - (size / 2) + 1;
-			var bottomY = checkPixelY + (size / 2) - 1;
-			var leftX = checkPixelX - (size / 2) + 1;
-			var rightX = checkPixelX + (size / 2) - 1;
-			//get the tiles for the corners and the middle
-			var topLeft = getTile(leftX, topY);
-			var topRight = getTile(rightX, topY);
-			var bottomLeft = getTile(leftX, bottomY);
-			var bottomRight = getTile(rightX, bottomY);
-			var middle = getTile(checkPixelX, checkPixelY);
-			//if any of those intersect don't take the line
-			if(isBlocked(topLeft.x, topLeft.y) || isBlocked(topRight.x, topRight.y) || isBlocked(bottomLeft.x, bottomLeft.y) || isBlocked(bottomRight.x, bottomRight.y) ||
-			isBlocked(middle.x, middle.y)){
-				return false;
-			}
-			//checking every 8 pixels along the line
-			dist = dist + 8;
-		}
-		//the whole line was tested. we gucci
-		return true;
-	};
-
 	//gets the center of the tile obj passed in.
 	var getPixel = function(tile){
 		var tempX = (tile.x * 48) + 24;
@@ -826,33 +756,6 @@ var Shooter = function(startX, startY, level, player) {
 			return false;
 		}
 	};
-
-	// Define which variables and methods can be accessed
-  //smooths the path.
-  var smooth = function(arr){
-    //initial check
-    var checkPoint = arr[0];
-    var i = 1;
-    //the point to see if can be removed
-    var currentPoint = arr[i];
-    //while we don't go past the array
-    while(arr[i + 1] !== null && arr[i + 1] !== undefined){
-      //checks the vector between the points
-      if(walkable(checkPoint, arr[i + 1])){
-        //keep checking along the line
-        currentPoint = arr[i + 1];
-        //get rid of the old point
-        arr.splice(i, 1);
-      }
-      else {
-        //otherwise that's the best we can smooth that section. next section now
-        checkPoint = currentPoint;
-        currentPoint = arr[i + 1];
-        i = i + 1;
-      }
-    }
-    return arr;
-  };
 
   //gets a vector between things. returns if you walk a straight line in between them
   var walkable = function(point1, point2){
@@ -895,10 +798,12 @@ var Shooter = function(startX, startY, level, player) {
 	return {
 		getX: getX,
 		getY: getY,
-		getSize: getSize,
+		getWidth: getWidth,
+		getHeight: getHeight,
 		getHealth: getHealth,
 		getPath: getPath,
 		getLeader: getLeader,
+		getType: getType,
 		getProjectiles: getProjectiles,
 		getFullHealth: getFullHealth,
 		setFullHealth: setFullHealth,
@@ -906,7 +811,6 @@ var Shooter = function(startX, startY, level, player) {
 		setLeader: setLeader,
 		setX: setX,
 		setY: setY,
-		setSize: setSize,
 		setHealth: setHealth,
 		setPath: setPath,
 		update: update,

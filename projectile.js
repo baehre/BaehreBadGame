@@ -1,11 +1,11 @@
-var Projectile = function(entity, xP, yP, direction, can, level, enemies) {
+var Projectile = function(entity, xP, yP, direction, can, level, enemies, damage, speed, range) {
     var canvas = can;
     var projectileImage = new Image();
     projectileImage.src = "SpriteSheets/BulletSprites/bulletSprites.png";
     //these should eventually come in from whomever is firing
-    var projectileSpeed = 6;
-    var projectileRange = 250;
-    var projectileDamage = 20;
+    var projectileSpeed = speed;
+    var projectileRange = range;
+    var projectileDamage = damage;
     var tileSize = 16;
     var scale = 1;
     var size = tileSize * scale;
@@ -130,11 +130,12 @@ var Projectile = function(entity, xP, yP, direction, can, level, enemies) {
         var enemy = enemies[i];
         var tempX = enemy.getX();
         var tempY = enemy.getY();
-        var tempSize = enemy.getSize();
-        var left = tempX - (tempSize / 2);
-        var right = tempX + (tempSize / 2);
-        var top = tempY - (tempSize / 2);
-        var bottom = tempY + (tempSize / 2);
+        var tempWidth = enemy.getWidth();
+        var tempHeight = enemy.getHeight();
+        var left = tempX - (tempWidth / 2);
+        var right = tempX + (tempWidth / 2);
+        var top = tempY - (tempHeight / 2);
+        var bottom = tempY + (tempHeight / 2);
         //pass in point + sides of rectangle
         if (rectIntersection(x0, y0, left, right, top, bottom)) {
           enemy.setHealth(enemy.getHealth() - projectileDamage);

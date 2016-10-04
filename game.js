@@ -8,9 +8,10 @@ var healthBar;
 var keys;
 //the player playing
 var localPlayer;
-// mouse coordinates
-var mouseX;
-var mouseY;
+// whether to pause the game
+var pause = false;
+// the paused div
+var paused;
 // the list of projectiles currently in the game
 var projectiles;
 // sprites used to draw the background
@@ -26,27 +27,29 @@ var backgroundTileSize = tileSize * scale;
 //level data. saying which tiles to use.
 var levelData = [
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11],
-[11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,11,11,11,11,11,11,0,2,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,2,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,2,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,11,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,11,11,11,11,11,11,11,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
-[11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11],
+[11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
+[11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
+[11,2,0,2,0,2,0,2,0,11,11,11,11,11,11,2,0,2,0,2,0,2,0,2,11],
+[11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
+[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,0,2,0,2,0,11],
+[11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,0,2,0,2,11],
+[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,2,0,0,2,0,11],
+[11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,0,2,11],
+[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,0,0,0,2,0,11],
+[11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
+[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,0,0,2,0,0,11],
+[11,0,2,0,2,0,2,0,11,11,11,11,11,11,11,2,0,0,0,2,0,2,0,2,11],
+[11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,0,11],
+[11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11]];
+
 
 
 function init(){
   //set globals
   canvas = document.getElementById("canvas");
   context = canvas.getContext("2d");
+  paused = document.getElementById("paused");
   // player health bar
   healthBar = document.getElementById("healthBar");
   backgroundSprites = new Image();
@@ -61,6 +64,7 @@ function init(){
   //player.js
   localPlayer = new Player(canvas, 100, 300, levelData, enemies);
   //made a function that adds a chaser and updates the enemies for the player
+  //addBoss(300, 300);
   addChaser(200, 100);
   addShielder(300, 100);
   addShooter(400, 100);
@@ -80,7 +84,14 @@ function setEventHandlers(){
 
 // when the key is pressed
 function keyDown(e){
-  if(localPlayer){
+  // enter key hit
+  if (e.keyCode === 13) {
+    // pause or unpause
+    pause = !pause;
+    paused.classList.toggle('hidden', !pause);
+    draw();
+  }
+  if (localPlayer) {
     keys.onKeyDown(e);
   }
 }
@@ -94,8 +105,10 @@ function keyUp(e){
 
 // how the game actually runs
 function gameLoop(){
-  update();
-  draw();
+  if (!pause) {
+    update();
+    draw();
+  }
   //the magic by Paul Irish.
   // chooses the time called based on browser info
   // (like 60 or 30 based on what the browser can handle)
@@ -120,7 +133,7 @@ function updatePlayer(){
     } else if (percent < 75) {
       healthBar.style.backgroundColor = '#ffff00';
     } else {
-      healthBar.style.backgroundColor = '#006400';
+      healthBar.style.backgroundColor = '#00ff00';
     }
     healthBar.style.width = percent.toString() + '%';
   }
@@ -151,6 +164,10 @@ function draw(){
   context.save();
   //shifts the canvas based around where the player is
   context.translate(Math.round(canvas.width/2 - localPlayer.getX()), Math.round(canvas.height/2 - localPlayer.getY()));
+  context.globalAlpha = 1.0;
+  if(pause) {
+    context.globalAlpha = 0.6;
+  }
   // draw the layers. background first. otherwise doesn't really matter
   drawBackground();
   drawEnemies();
@@ -164,7 +181,8 @@ function drawBackground(){
   // the coordinates for each type of tile
   var grassSprite = {x : 0, y : 0};
   var rockSprite = {x : 0, y : 96};
-  var flowerSprite = {x : 0, y : 48};
+  var rockSprite2 = {x: 48, y: 96};
+  var grassSprite2 = {x : 0, y : 48};
   var voidSprite = {x : 48, y: 0};
   for(var y = 0; y < levelData.length; y++){
     for(var x = 0; x < levelData[0].length; x++){
@@ -172,16 +190,19 @@ function drawBackground(){
       //so. draw the appropriate sprite. at an x and y coordinate * 48 since that's how
       //many pixels we want each sprite to take up
       // by using Mod we can make tiles solid if we want.
-      if(tileNum % 10 === 0){
+      if (tileNum % 10 === 0) {
         context.drawImage(backgroundSprites, grassSprite.x, grassSprite.y, backgroundTileSize, backgroundTileSize, Math.round(x*backgroundTileSize), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
       }
-      else if(tileNum % 10 === 1){
+      else if (tileNum % 10 === 1) {
         context.drawImage(backgroundSprites, rockSprite.x, rockSprite.y, backgroundTileSize, backgroundTileSize, Math.round(x*backgroundTileSize), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
       }
-      else if(tileNum % 10 === 2){
-        context.drawImage(backgroundSprites, flowerSprite.x, flowerSprite.y, backgroundTileSize, backgroundTileSize, Math.round(x*tileSize*scale), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
+      else if (tileNum % 10 === 2) {
+        context.drawImage(backgroundSprites, grassSprite2.x, grassSprite2.y, backgroundTileSize, backgroundTileSize, Math.round(x*tileSize*scale), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
       }
-      else{
+      else if (tileNum % 10 === 3) {
+        context.drawImage(backgroundSprites, rockSprite2.x, rockSprite2.y, backgroundTileSize, backgroundTileSize, Math.round(x*backgroundTileSize), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
+      }
+      else {
         context.drawImage(backgroundSprites, voidSprite.x, voidSprite.y, backgroundTileSize, backgroundTileSize, Math.round(x*backgroundTileSize), Math.round(y*backgroundTileSize), backgroundTileSize, backgroundTileSize);
       }
     }
@@ -195,7 +216,7 @@ function drawPlayer(){
     localPlayer.setY(300);
     localPlayer.setHealth(100);
     healthBar.style.width = '100%';
-    healthBar.style.backgroundColor = '#006400';
+    healthBar.style.backgroundColor = '#00ff00';
   } else {
     localPlayer.draw(context);
   }
@@ -265,5 +286,10 @@ function addShooter(shooterX, shooterY){
 // adds a shielder to the game
 function addShielder(shielderX, shielderY) {
   enemies.push(new Shielder(shielderX, shielderY, levelData, localPlayer));
+  localPlayer.setEnemies(enemies);
+}
+
+function addBoss(bossX, bossY) {
+  enemies.push(new Boss(bossX, bossY, levelData, localPlayer));
   localPlayer.setEnemies(enemies);
 }
