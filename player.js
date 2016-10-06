@@ -84,7 +84,11 @@ var Player = function(can, startX, startY, level, enemies) {
 		return enemies;
 	};
 
-	var getSize = function() {
+	var getWidth = function() {
+		return size;
+	};
+
+	var getHeight = function() {
 		return size;
 	};
 
@@ -110,10 +114,6 @@ var Player = function(can, startX, startY, level, enemies) {
 			var projectile = projectiles[i];
 			projectile.setEnemies(enemies);
 		}
-	};
-
-	var setSize = function(newSize) {
-			size = newSize;
 	};
 
 	var setHealth = function(newHealth) {
@@ -270,8 +270,8 @@ var Player = function(can, startX, startY, level, enemies) {
 		getY: getY,
 		setX: setX,
 		setY: setY,
-		getSize: getSize,
-		setSize: setSize,
+		getWidth: getWidth,
+		getHeight: getHeight,
 		update: update,
 		draw: draw
 	}
