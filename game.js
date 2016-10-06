@@ -14,6 +14,8 @@ var pause = false;
 var paused;
 // the list of projectiles currently in the game
 var projectiles;
+// the emitters in the game
+var emitters;
 // sprites used to draw the background
 var backgroundSprites;
 // how large a tile would be
@@ -62,7 +64,7 @@ function init(){
   //keys.js
   keys = new Keys();
   //player.js
-  localPlayer = new Player(canvas, 100, 300, levelData, enemies);
+  localPlayer = new Player(this, canvas, 100, 300, levelData, enemies);
   //made a function that adds a chaser and updates the enemies for the player
   //addBoss(300, 300);
   addChaser(200, 100);
@@ -72,6 +74,7 @@ function init(){
   addShielder(300, 600);
   addShooter(400, 600);
   projectiles = [];
+  emitters = [];
   //sets all the event handlers
   setEventHandlers();
 }
@@ -119,6 +122,7 @@ function gameLoop(){
 function update(){
   updatePlayer();
   updateChasers();
+  updateEmitters();
   updateProjectiles();
 }
 
@@ -157,6 +161,14 @@ function updateChasers(){
   }
 }
 
+function updateEmitters() {
+  for (var i = 0; i < emitters.length; i++) {
+    var emitter = emiters[i];
+    //pass in enemies to check for inter-enemy collision
+    emitter.update();
+  }
+}
+
 //draws everything on the canvas
 function draw(){
   //wipe it
@@ -171,6 +183,7 @@ function draw(){
   // draw the layers. background first. otherwise doesn't really matter
   drawBackground();
   drawEnemies();
+  drawEmitters();
   drawPlayer();
   drawProjectiles();
   // keep the context bueno
@@ -235,6 +248,17 @@ function drawEnemies() {
   }
 }
 
+function drawEmitters() {
+  for (var i = 0; i < emitters.length; i++) {
+    var emitter = emitters[i];
+    if (emitter.getToRemove()) {
+      emitters.splice(i, 1);
+    } else {
+      emitter.draw(context);
+    }
+  }
+}
+
 function drawProjectiles(){
   //handle the player projectiles
   var temp = localPlayer.getProjectiles()
@@ -273,23 +297,27 @@ function drawProjectiles(){
 
 //adds a chaser to the game
 function addChaser(chaserX, chaserY){
-  enemies.push(new Chaser(chaserX, chaserY, levelData, localPlayer));
+  enemies.push(new Chaser(this, chaserX, chaserY, levelData, localPlayer));
   localPlayer.setEnemies(enemies);
 }
 
 //adds a shooter to the game
 function addShooter(shooterX, shooterY){
-  enemies.push(new Shooter(shooterX, shooterY, levelData, localPlayer));
+  enemies.push(new Shooter(this, shooterX, shooterY, levelData, localPlayer));
   localPlayer.setEnemies(enemies);
 }
 
 // adds a shielder to the game
 function addShielder(shielderX, shielderY) {
-  enemies.push(new Shielder(shielderX, shielderY, levelData, localPlayer));
+  enemies.push(new Shielder(this, shielderX, shielderY, levelData, localPlayer));
   localPlayer.setEnemies(enemies);
 }
 
 function addBoss(bossX, bossY) {
-  enemies.push(new Boss(bossX, bossY, levelData, localPlayer));
+  enemies.push(new Boss(this, bossX, bossY, levelData, localPlayer));
   localPlayer.setEnemies(enemies);
+}
+
+function addEmitter(emitterX, emitterY) {
+  emitters.push(new Emitter(this, emitterX, emitterY));
 }

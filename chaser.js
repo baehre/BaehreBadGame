@@ -2,7 +2,7 @@
 /**************************************************
 ** GAME chaser CLASS
 **************************************************/
-var Chaser = function(startX, startY, level, player) {
+var Chaser = function(game, startX, startY, level, player) {
 	var chaserImage = new Image();
 	chaserImage.src = "SpriteSheets/EnemySprites/jetpackBearSprite.png";
 	var chaserImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];

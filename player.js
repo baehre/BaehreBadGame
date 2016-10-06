@@ -2,7 +2,7 @@
 ** GAME PLAYER CLASS
 **************************************************/
 //the player x and y are actually the lower right hand corner of image...
-var Player = function(can, startX, startY, level, enemies) {
+var Player = function(game, can, startX, startY, level, enemies) {
 	var canvas = can;
 	var moving = false;
 	var paused = document.getElementById('paused');

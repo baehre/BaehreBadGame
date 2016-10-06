@@ -2,7 +2,7 @@
 /**************************************************
 ** GAME shielder CLASS
 **************************************************/
-var Shooter = function(startX, startY, level, player) {
+var Shooter = function(game, startX, startY, level, player) {
 	var shooterImage = new Image();
 	shooterImage.src = "SpriteSheets/PlayerSprites/scareCrowSprite.png";
 	var shooterImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
