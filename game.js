@@ -318,6 +318,6 @@ function addBoss(bossX, bossY) {
   localPlayer.setEnemies(enemies);
 }
 
-function addEmitter(emitterX, emitterY) {
-  emitters.push(new Emitter(this, emitterX, emitterY));
+function addEmitter(emitterX, emitterY, amount, life, color) {
+  emitters.push(new Emitter(this, emitterX, emitterY, amount, life, color));
 }
