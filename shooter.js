@@ -525,7 +525,7 @@ var Shooter = function(game, startX, startY, level, player) {
     var fireProjectile = function(shootX, shootY) {
         var direction = Math.atan2(shootY - y, shootX - x);
         // the enemies are whomever we can hit. so array of player. cuz we can hit the player
-        var tempProjectile = new Projectile("shooter", x, y, direction, canvas, levelData, [player], 10, 6, 300);
+        var tempProjectile = new Projectile(game, "shooter", x, y, direction, canvas, levelData, [player], 10, 6, 300);
         projectiles.push(tempProjectile);
         projectileFireRate = startingProjectileFireRate;
     };

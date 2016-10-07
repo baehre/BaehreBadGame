@@ -61,6 +61,8 @@ function init(){
   canvas.height = 504;
 
   enemies = [];
+  projectiles = [];
+  emitters = [];
   //keys.js
   keys = new Keys();
   //player.js
@@ -73,8 +75,6 @@ function init(){
   addChaser(200, 600);
   addShielder(300, 600);
   addShooter(400, 600);
-  projectiles = [];
-  emitters = [];
   //sets all the event handlers
   setEventHandlers();
 }
@@ -163,7 +163,7 @@ function updateChasers(){
 
 function updateEmitters() {
   for (var i = 0; i < emitters.length; i++) {
-    var emitter = emiters[i];
+    var emitter = emitters[i];
     //pass in enemies to check for inter-enemy collision
     emitter.update();
   }
@@ -183,8 +183,8 @@ function draw(){
   // draw the layers. background first. otherwise doesn't really matter
   drawBackground();
   drawEnemies();
-  drawEmitters();
   drawPlayer();
+  drawEmitters();
   drawProjectiles();
   // keep the context bueno
   context.restore();
@@ -319,5 +319,5 @@ function addBoss(bossX, bossY) {
 }
 
 function addEmitter(emitterX, emitterY, amount, life, color) {
-  emitters.push(new Emitter(this, emitterX, emitterY, amount, life, color));
+  emitters.push(new Emitter(this, levelData, emitterX, emitterY, amount, life, color));
 }

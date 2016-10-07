@@ -2,21 +2,20 @@
 /**************************************************
 ** GAME particles CLASS
 **************************************************/
-var emitter = function(game, startX, startY, amount, life, color, velocity) {
-	var x = startX;
-	var y = startY;
+var Emitter = function(game, level, startX, startY, amount, life, color) {
+		var x = startX;
+		var y = startY;
+		var particles = [];
     var toRemove = false;
 
     for (var j = 0; j < amount; j++) {
-        particles.push(new Particle(x, y, life, color, velocity));
+        particles.push(new Particle(x, y, level, life, color));
     }
-
-    var particles = [];
 
     var getX = function() {
         return x;
     };
-    
+
     var setX = function(newX) {
         x = newX;
     };

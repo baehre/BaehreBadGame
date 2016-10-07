@@ -1,4 +1,4 @@
-var Projectile = function(entity, xP, yP, direction, can, level, enemies, damage, speed, range) {
+var Projectile = function(game, entity, xP, yP, direction, can, level, enemies, damage, speed, range) {
     var canvas = can;
     var projectileImage = new Image();
     projectileImage.src = "SpriteSheets/BulletSprites/bulletSprites.png";
@@ -119,6 +119,7 @@ var Projectile = function(entity, xP, yP, direction, can, level, enemies, damage
 
     var checkTile = function(tile){
       if (level[tile.y][tile.x] > 10) {
+        game.addEmitter(x, y, 5, 20, '#939393');
         return true;
       } else {
         return false;
@@ -139,6 +140,9 @@ var Projectile = function(entity, xP, yP, direction, can, level, enemies, damage
         //pass in point + sides of rectangle
         if (rectIntersection(x0, y0, left, right, top, bottom)) {
           enemy.setHealth(enemy.getHealth() - projectileDamage);
+          if(enemy.getHealth() > 0) {
+            game.addEmitter(enemy.getX(), enemy.getY(), 5, 20, '#8A0707');
+          }
           return true;
         }
       }
