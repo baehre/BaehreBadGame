@@ -96,6 +96,10 @@ var Player = function(game, can, startX, startY, level, enemies) {
 		return updateTime;
 	};
 
+	var setLevel = function(newLevel) {
+		levelData = newLevel;
+	};
+
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
 	};
@@ -267,6 +271,7 @@ var Player = function(game, can, startX, startY, level, enemies) {
 		setProjectiles: setProjectiles,
 		getUpdateTime: getUpdateTime,
 		setUpdateTime: setUpdateTime,
+		setLevel: setLevel,
 		getEnemies: getEnemies,
 		setEnemies: setEnemies,
 		getHealth: getHealth,
