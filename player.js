@@ -2,7 +2,7 @@
 ** GAME PLAYER CLASS
 **************************************************/
 //the player x and y are actually the lower right hand corner of image...
-var Player = function(can, startX, startY, level, enemies) {
+var Player = function(game, can, startX, startY, level, enemies) {
 	var canvas = can;
 	var moving = false;
 	var paused = document.getElementById('paused');
@@ -56,7 +56,7 @@ var Player = function(can, startX, startY, level, enemies) {
 				var dx = (tempX - canvas.width/2) + 20;
 				var dy = (tempY - canvas.height/2) + 20;
 				var direction = Math.atan2(dy,dx);
-				var tempProjectile = new Projectile("player", x, y, direction, canvas, levelData, enemies, 20, 6, 250);
+				var tempProjectile = new Projectile(game, "player", x, y, direction, canvas, levelData, enemies, 20, 6, 250);
 				projectiles.push(tempProjectile);
 				projectileFireRate = startingProjectileFireRate;
 			}
@@ -137,6 +137,8 @@ var Player = function(can, startX, startY, level, enemies) {
 		if(startingProjectileFireRate > 0){
 			projectileFireRate = projectileFireRate - 1;
 		}
+		//var emitterX = x;
+		//var emitterY = y + (size / 2);
 		//sets which way the character is facing
 		if (keys.up) {
 			if(!upIntersection(x, y)){
@@ -156,18 +158,23 @@ var Player = function(can, startX, startY, level, enemies) {
 			if(!leftIntersection(x, y)){
 				x -= moveAmount;
 			}
+			//emitterX = x + (size / 2);
 			facing = playerImageLeft;
 		}
 		if (keys.right) {
 			if(!rightIntersection(x, y)){
 				x += moveAmount;
 			}
+			//emitterX = x - (size / 2);
 			facing = playerImageRight;
 		}
-		if(prevX == x && prevY == y){
+		if (prevX == x && prevY == y) {
 			moving = false;
-		}
-		else{
+		} else {
+			/*if (prevY >= y || prevX !== x) {
+				//kicking up some dust
+				game.addEmitter(emitterX, emitterY, 3, 5, '#CDB99C');
+			}*/
 			moving = true;
 		}
 		return (prevX != x || prevY != y) ? true : false;
@@ -246,7 +253,7 @@ var Player = function(can, startX, startY, level, enemies) {
 		else{
 			return false;
 		}
-	}
+	};
 
 	var getTile = function(x0, y0){
 		var tileX = Math.floor(x0/48.0);

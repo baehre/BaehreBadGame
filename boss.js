@@ -2,7 +2,7 @@
 /**************************************************
 ** GAME boss CLASS
 **************************************************/
-var Boss = function(startX, startY, level, player) {
+var Boss = function(game, startX, startY, level, player) {
 	var bossImage = new Image();
 	bossImage.src = "SpriteSheets/EnemySprites/bossSprite.png";
 	var bossImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
