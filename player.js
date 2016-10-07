@@ -137,6 +137,8 @@ var Player = function(game, can, startX, startY, level, enemies) {
 		if(startingProjectileFireRate > 0){
 			projectileFireRate = projectileFireRate - 1;
 		}
+		var emitterX = x;
+		var emitterY = y + (size / 2);
 		//sets which way the character is facing
 		if (keys.up) {
 			if(!upIntersection(x, y)){
@@ -156,18 +158,23 @@ var Player = function(game, can, startX, startY, level, enemies) {
 			if(!leftIntersection(x, y)){
 				x -= moveAmount;
 			}
+			emitterX = x + (size / 2);
 			facing = playerImageLeft;
 		}
 		if (keys.right) {
 			if(!rightIntersection(x, y)){
 				x += moveAmount;
 			}
+			emitterX = x - (size / 2);
 			facing = playerImageRight;
 		}
-		if(prevX == x && prevY == y){
+		if (prevX == x && prevY == y) {
 			moving = false;
-		}
-		else{
+		} else {
+			if (prevY >= y || prevX !== x) {
+				//kicking up some dust
+				game.addEmitter(emitterX, emitterY, 3, 5, '#CDB99C');
+			}
 			moving = true;
 		}
 		return (prevX != x || prevY != y) ? true : false;
