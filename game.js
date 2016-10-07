@@ -67,14 +67,14 @@ function init(){
   keys = new Keys();
   //player.js
   localPlayer = new Player(this, canvas, 100, 300, levelData, enemies);
-  //made a function that adds a chaser and updates the enemies for the player
+  //made a function that adds an enemy and updates the enemies for the player
   //addBoss(300, 300);
-  addChaser(200, 100);
-  addShielder(300, 100);
-  addShooter(400, 100);
-  addChaser(200, 600);
-  addShielder(300, 600);
-  addShooter(400, 600);
+  //addChaser(200, 100);
+  //addShielder(300, 100);
+  //addShooter(400, 100);
+  //addChaser(200, 600);
+  //addShielder(300, 600);
+  //addShooter(400, 600);
   //sets all the event handlers
   setEventHandlers();
 }
@@ -318,6 +318,7 @@ function addBoss(bossX, bossY) {
   localPlayer.setEnemies(enemies);
 }
 
+// this is almost always going to be called somewhere other than here
 function addEmitter(emitterX, emitterY, amount, life, color) {
   emitters.push(new Emitter(this, levelData, emitterX, emitterY, amount, life, color));
 }
