@@ -2,7 +2,7 @@
 /**************************************************
 ** GAME shielder CLASS
 **************************************************/
-var Shielder = function(startX, startY, level, player) {
+var Shielder = function(game, startX, startY, level, player) {
 	var shielderImage = new Image();
 	shielderImage.src = "SpriteSheets/PlayerSprites/afroKidSprite.png";
 	var shielderImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
