@@ -2,7 +2,7 @@
 /**************************************************
 ** GAME shielder CLASS
 **************************************************/
-var Shooter = function(startX, startY, level, player) {
+var Shooter = function(game, startX, startY, level, player) {
 	var shooterImage = new Image();
 	shooterImage.src = "SpriteSheets/PlayerSprites/scareCrowSprite.png";
 	var shooterImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
@@ -59,7 +59,11 @@ var Shooter = function(startX, startY, level, player) {
 		return y;
 	};
 
-	var getSize = function() {
+	var getWidth = function() {
+		return size;
+	};
+
+	var getHeight = function() {
 		return size;
 	};
 
@@ -113,10 +117,6 @@ var Shooter = function(startX, startY, level, player) {
 
 	var setY = function(newY) {
 		y = newY;
-	};
-
-	var setSize = function(newSize) {
-		size = newSize;
 	};
 
 	// Update shooter position
@@ -364,7 +364,7 @@ var Shooter = function(startX, startY, level, player) {
 			// we are not the current enemy
 			if(enemy.getX() !== x && enemy.getY() !== y) {
 				// if the enemy is within 3 tiles
-				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144) {
+				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144 && enemy.getType() !== 'shielder') {
 					velocity.x += x - enemy.getX();
 					velocity.y += y - enemy.getY();
 					neighbors += 1;
@@ -525,7 +525,7 @@ var Shooter = function(startX, startY, level, player) {
     var fireProjectile = function(shootX, shootY) {
         var direction = Math.atan2(shootY - y, shootX - x);
         // the enemies are whomever we can hit. so array of player. cuz we can hit the player
-        var tempProjectile = new Projectile("shooter", x, y, direction, canvas, levelData, [player], 10, 6, 300);
+        var tempProjectile = new Projectile(game, "shooter", x, y, direction, canvas, levelData, [player], 10, 6, 300);
         projectiles.push(tempProjectile);
         projectileFireRate = startingProjectileFireRate;
     };
@@ -798,7 +798,8 @@ var Shooter = function(startX, startY, level, player) {
 	return {
 		getX: getX,
 		getY: getY,
-		getSize: getSize,
+		getWidth: getWidth,
+		getHeight: getHeight,
 		getHealth: getHealth,
 		getPath: getPath,
 		getLeader: getLeader,
@@ -810,7 +811,6 @@ var Shooter = function(startX, startY, level, player) {
 		setLeader: setLeader,
 		setX: setX,
 		setY: setY,
-		setSize: setSize,
 		setHealth: setHealth,
 		setPath: setPath,
 		update: update,

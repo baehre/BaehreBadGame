@@ -2,9 +2,8 @@
 /**************************************************
 ** GAME chaser CLASS
 **************************************************/
-var Chaser = function(startX, startY, level, player) {
+var Chaser = function(game, startX, startY, level, player) {
 	var chaserImage = new Image();
-	//chaserImage.src = "SpriteSheets/PlayerSprites/gentlemanSprite.png";
 	chaserImage.src = "SpriteSheets/EnemySprites/jetpackBearSprite.png";
 	var chaserImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
 	var chaserImageDown = [{"x":0,"y":1},{"x":0,"y":18},{"x":0,"y":1},{"x":0,"y":35}];
@@ -53,9 +52,13 @@ var Chaser = function(startX, startY, level, player) {
 		return y;
 	};
 
-	var getSize = function() {
+	var getWidth = function() {
 		return size;
 	};
+
+	var getHeight = function() {
+		return size;
+	}
 
 	var getHealth = function() {
 		return health;
@@ -99,10 +102,6 @@ var Chaser = function(startX, startY, level, player) {
 
 	var setY = function(newY) {
 		y = newY;
-	};
-
-	var setSize = function(newSize) {
-		size = newSize;
 	};
 
 	// Update chaser position
@@ -758,7 +757,8 @@ var Chaser = function(startX, startY, level, player) {
 	return {
 		getX: getX,
 		getY: getY,
-		getSize: getSize,
+		getWidth: getWidth,
+		getHeight: getHeight,
 		getHealth: getHealth,
 		getPath: getPath,
 		getLeader: getLeader,
@@ -767,7 +767,6 @@ var Chaser = function(startX, startY, level, player) {
 		setLeader: setLeader,
 		setX: setX,
 		setY: setY,
-		setSize: setSize,
 		setHealth: setHealth,
 		setPath: setPath,
 		getType: getType,

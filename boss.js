@@ -2,11 +2,11 @@
 /**************************************************
 ** GAME boss CLASS
 **************************************************/
-var Boss = function(startX, startY, level, player) {
+var Boss = function(game, startX, startY, level, player) {
 	var bossImage = new Image();
-	bossImage.src = "SpriteSheets/PlayerSprites/afroKidSprite.png";
+	bossImage.src = "SpriteSheets/EnemySprites/bossSprite.png";
 	var bossImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
-	var bossImageDown = [{"x":0,"y":1},{"x":0,"y":18},{"x":0,"y":1},{"x":0,"y":35}];
+	var bossImageDown = [{"x":4,"y":2},{"x":4,"y":51},{"x":4,"y":2},{"x":4,"y":100}];
 	var bossImageRight = [{"x":32,"y":1},{"x":32,"y":18},{"x":32,"y":1},{"x":32,"y":35}];
 	var bossImageLeft = [{"x":48,"y":1},{"x":48,"y":18},{"x":48,"y":1},{"x":48,"y":35}];
 	//default to the chaser looking down
@@ -20,7 +20,12 @@ var Boss = function(startX, startY, level, player) {
 	var tileSize = 48;
 	//scale the person to 48 (16*3) pixels with this
 	var scale = 3;
-	var size = tileSize * scale;
+	// how much to draw
+	var drawWidth = 41;
+	var drawHeight = 45;
+	// for when we are checking hit boxes
+	var width = 20;
+	var height = 45;
 	var x = startX;
 	var y = startY;
 	var prevX;
@@ -31,8 +36,6 @@ var Boss = function(startX, startY, level, player) {
 	var prevPlayerY = player.getY();
 	var fullHealth = 2000;
 	var health = fullHealth;
-	//the previous behavior. used to reset path between behavior changes
-	var pastBehavior = '';
 
 	// Getters and setters
 	var getX = function() {
@@ -43,9 +46,13 @@ var Boss = function(startX, startY, level, player) {
 		return y;
 	};
 
-	var getSize = function() {
-		return size;
+	var getWidth = function() {
+		return width * scale;
 	};
+
+	var getHeight = function() {
+		return height * scale;
+	}
 
 	var getHealth = function() {
 		return health;
@@ -75,18 +82,45 @@ var Boss = function(startX, startY, level, player) {
 		y = newY;
 	};
 
-	var setSize = function(newSize) {
-		size = newSize;
-	};
-
 	// Update boss position
 	var update = function(enemies) {
-		prevX = x;
-		prevY = y;
+		
 	};
 
 	// Draw boss
 	var draw = function(ctx) {
+		//so the way this works. we only want to change the frame every 5th time draw is
+		//called. otherwise it goes through supppperr quick. which is bad.
+		//so only change the frame every rate times per draw called.
+		frame = frame + 1;
+		if(frame % rate === 0) {
+			drawX = facing[frame % facing.length].x;
+			drawY = facing[frame % facing.length].y;
+		}
+		// got too big. make it small.
+		if (frame > 7500) {
+			frame = 0;
+		}
+		ctx.drawImage(bossImage, drawX, drawY, drawWidth, drawHeight, Math.round(x - (drawWidth * scale / 2)), Math.round(y - (drawHeight * scale / 2)), drawWidth * scale, drawHeight * scale);
+		if (health < fullHealth) {
+			var percent = health / fullHealth;
+			// ratio in relation to the size of the character
+			var pixelWidth = percent * width * scale;
+			// tinker with this number if we want
+			var pixelHeight = 20;
+			// top side then the height and a padding of 2
+			var healthY = y - (height * scale / 2) - pixelHeight - 2;
+			// just the left side of the sprite
+			var healthX = x - (width * scale / 2);
+			if (percent < 0.25) {
+				ctx.fillStyle = '#ff0000';
+			} else if (percent < 0.75) {
+				ctx.fillStyle = '#ffff00';
+			} else {
+				ctx.fillStyle = '#006400';
+			}
+			ctx.fillRect(healthX, healthY, pixelWidth, pixelHeight);
+		}
 	};
 
   //DISTANCE
@@ -154,7 +188,7 @@ var Boss = function(startX, startY, level, player) {
 		}
 		return false;
 	};
-    
+
 	var walkable = function(point1, point2){
 		//get the middle of the tile
 		var start = getPixel(point1);
@@ -195,14 +229,14 @@ var Boss = function(startX, startY, level, player) {
 	return {
 		getX: getX,
 		getY: getY,
-		getSize: getSize,
+		getWidth: getWidth,
+		getHeight: getHeight,
 		getHealth: getHealth,
         getLeader: getLeader,
 		getFullHealth: getFullHealth,
 		setFullHealth: setFullHealth,
 		setX: setX,
 		setY: setY,
-		setSize: setSize,
 		setHealth: setHealth,
 		update: update,
 		draw: draw
