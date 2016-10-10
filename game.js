@@ -250,7 +250,6 @@ function drawProjectiles(){
   localPlayer.setProjectiles(temp);
   //set projectiles to the global
   projectiles = temp.slice();
-  //console.log("PROJECTILES: " + projectiles.length);
   // now handle enemies projectiles
   for(var j = 0; j < enemies.length; j++) {
     // if they can even shoot
