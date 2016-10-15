@@ -4,28 +4,32 @@
 **************************************************/
 var Boss = function(game, startX, startY, level, player) {
 	var bossImage = new Image();
+	//bossImage.src = "SpriteSheets/EnemySprites/bossSprite.png";
 	bossImage.src = "SpriteSheets/EnemySprites/bossSprite.png";
-	var bossImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
-	var bossImageDown = [{"x":4,"y":2},{"x":4,"y":51},{"x":4,"y":2},{"x":4,"y":100}];
-	var bossImageRight = [{"x":32,"y":1},{"x":32,"y":18},{"x":32,"y":1},{"x":32,"y":35}];
-	var bossImageLeft = [{"x":48,"y":1},{"x":48,"y":18},{"x":48,"y":1},{"x":48,"y":35}];
-	//default to the chaser looking down
+	//var bossImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
+	var bossImageDown = [{"x":10,"y":4},{"x":10,"y":53},{"x":10,"y":102},{"x":10,"y":151},{"x":10,"y":200},
+	{"x":10,"y":249},{"x":10,"y":298},{"x":10,"y":347},{"x":10,"y":396},{"x":10,"y":445}];
+	//var bossImageRight = [{"x":32,"y":1},{"x":32,"y":18},{"x":32,"y":1},{"x":32,"y":35}];
+	//var bossImageLeft = [{"x":48,"y":1},{"x":48,"y":18},{"x":48,"y":1},{"x":48,"y":35}];
+	//default to the boss looking down
  	var facing = bossImageDown;
 	//separate time for update to go with rate
 	var time = 0;
 	var rate = 5;
 	//for the frames
 	var frame = 0;
+	// update the frame
+	var frameIndex = 0;
 	//the size of the sprite
 	var tileSize = 48;
 	//scale the person to 48 (16*3) pixels with this
 	var scale = 3;
 	// how much to draw
-	var drawWidth = 41;
-	var drawHeight = 45;
+	var drawWidth = 25;
+	var drawHeight = 43;
 	// for when we are checking hit boxes
-	var width = 20;
-	var height = 45;
+	var width = 25;
+	var height = 37;
 	var x = startX;
 	var y = startY;
 	var prevX;
@@ -84,7 +88,7 @@ var Boss = function(game, startX, startY, level, player) {
 
 	// Update boss position
 	var update = function(enemies) {
-		
+
 	};
 
 	// Draw boss
@@ -94,12 +98,14 @@ var Boss = function(game, startX, startY, level, player) {
 		//so only change the frame every rate times per draw called.
 		frame = frame + 1;
 		if(frame % rate === 0) {
-			drawX = facing[frame % facing.length].x;
-			drawY = facing[frame % facing.length].y;
+			drawX = facing[frameIndex % facing.length].x;
+			drawY = facing[frameIndex % facing.length].y;
+			frameIndex++;
 		}
 		// got too big. make it small.
 		if (frame > 7500) {
 			frame = 0;
+			frameIndex = 0;
 		}
 		ctx.drawImage(bossImage, drawX, drawY, drawWidth, drawHeight, Math.round(x - (drawWidth * scale / 2)), Math.round(y - (drawHeight * scale / 2)), drawWidth * scale, drawHeight * scale);
 		if (health < fullHealth) {

@@ -557,7 +557,7 @@ var Chaser = function(game, startX, startY, level, player) {
 		}
 		return false;
 	};
-	
+
   //get the neighbors (either normal cardinal or based on parent)
 	var getNeighbors = function(current) {
 		var neighbors = [];
