@@ -143,15 +143,16 @@ var Shielder = function(game, startX, startY, level, player) {
                 pathing();
             }
         } else {
+			// if there is no one to protect. then run the fuck away
             if(pastBehavior !== 'avoid') {
                 path = null;
             }
             pastBehavior = 'avoid';
             avoid();
         }
-				if (pastBehavior !== 'avoid') {
-						grabProjectile();
-				}
+		if (pastBehavior !== 'avoid') {
+				grabProjectile();
+		}
         if (pastBehavior !== 'protect') {
             separate(enemies);
         } else {
