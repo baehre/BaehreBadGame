@@ -112,6 +112,11 @@ function gameLoop(){
     update();
     draw();
   }
+  if (!document.hasFocus()) {
+    pause = true;
+    paused.classList.toggle('hidden', !pause);
+    draw();
+  }
   //the magic by Paul Irish.
   // chooses the time called based on browser info
   // (like 60 or 30 based on what the browser can handle)

@@ -16,6 +16,7 @@ var Chaser = function(game, startX, startY, level, player) {
 	var rate = 5;
 	//for the frames
 	var frame = 0;
+	var frameIndex = 0;
 	//the size of the sprite
 	var tileSize = 16;
 	//scale the person to 48 (16*3) pixels with this
@@ -148,12 +149,14 @@ var Chaser = function(game, startX, startY, level, player) {
 		//so only change the frame every rate times per draw called.
 		frame = frame + 1;
 		if(frame % rate === 0) {
-			drawX = facing[frame % facing.length].x;
-			drawY = facing[frame % facing.length].y;
+			drawX = facing[frameIndex % facing.length].x;
+			drawY = facing[frameIndex % facing.length].y;
+			frameIndex++;
 		}
 		// got too big. make it small.
 		if (frame > 7500) {
 			frame = 0;
+			frameIndex = 0;
 		}
 		ctx.drawImage(chaserImage, drawX, drawY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
 		//draw health bar if they have less than full
