@@ -31,6 +31,7 @@ var Shooter = function(game, startX, startY, level, player) {
 	var prevPlayerX = player.getX();
 	var prevPlayerY = player.getY();
 	//how much shooter moves
+	var originalSpeed = 1.25;
 	var moveAmount = 1.25;
 	var damage = 5.0;
 	var fullHealth = 50;
@@ -83,6 +84,22 @@ var Shooter = function(game, startX, startY, level, player) {
 	var getLeader = function() {
 		return leader;
 	};
+	
+	var resetSpeed = function() {
+		moveAmount = originalSpeed;
+	};
+
+	var getOriginalSpeed = function() {
+		return originalSpeed;
+	};
+
+	var getMoveAmount = function() {
+		return moveAmount;
+	};
+
+	var setMoveAmount = function(amount) {
+		moveAmount = amount;
+	};
 
 	var getFullHealth = function() {
 		return fullHealth;
@@ -90,7 +107,7 @@ var Shooter = function(game, startX, startY, level, player) {
 
 	var getType = function() {
 		return 'shooter';
-	}
+	};
 
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
@@ -809,6 +826,10 @@ var Shooter = function(game, startX, startY, level, player) {
 		getType: getType,
 		getProjectiles: getProjectiles,
 		getFullHealth: getFullHealth,
+		setMoveAmount: setMoveAmount,
+		getMoveAmount: getMoveAmount,
+		getOriginalSpeed: getOriginalSpeed,
+		resetSpeed: resetSpeed,
 		setFullHealth: setFullHealth,
 		setProjectiles: setProjectiles,
 		setLeader: setLeader,

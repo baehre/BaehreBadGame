@@ -142,7 +142,6 @@ var Projectile = function(game, entity, xP, yP, direction, can, level, enemies, 
           enemy.setHealth(enemy.getHealth() - projectileDamage);
           if(enemy.getHealth() > 0) {
             var ratio = enemy.getHeight() / 16;
-            console.log("ratio: " + ratio);
             game.addEmitter(enemy.getX(), enemy.getY(), 5 * ratio, 20, '#8A0707');
           }
           return true;

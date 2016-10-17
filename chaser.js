@@ -31,6 +31,7 @@ var Chaser = function(game, startX, startY, level, player) {
 	var prevPlayerX = player.getX();
 	var prevPlayerY = player.getY();
 	//how much chaser moves
+	var originalSpeed = 1.75;
 	var moveAmount = 1.75;
 	var damage = 2.5;
 	var fullHealth = 100;
@@ -81,13 +82,29 @@ var Chaser = function(game, startX, startY, level, player) {
 		return 'chaser';
 	};
 
+	var resetSpeed = function() {
+		moveAmount = originalSpeed;
+	};
+
+	var getOriginalSpeed = function() {
+		return originalSpeed;
+	}
+
+	var getMoveAmount = function() {
+		return moveAmount;
+	};
+
+	var setMoveAmount = function(amount) {
+		moveAmount = amount;
+	};
+
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
 	};
 
 	var setLeader = function(newLeader) {
 		leader = newLeader;
-	}
+	};
 
 	var setPath = function(newPath) {
 		path = newPath;
@@ -766,6 +783,10 @@ var Chaser = function(game, startX, startY, level, player) {
 		getPath: getPath,
 		getLeader: getLeader,
 		getFullHealth: getFullHealth,
+		getMoveAmount: getMoveAmount,
+		getOriginalSpeed: getOriginalSpeed,
+		setMoveAmount: setMoveAmount,
+		resetSpeed: resetSpeed,
 		setFullHealth: setFullHealth,
 		setLeader: setLeader,
 		setX: setX,
