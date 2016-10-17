@@ -18,7 +18,8 @@ var Player = function(game, can, startX, startY, level, enemies) {
 	//for adjusting how fast animations go
 	var rate = 5;
 	//separate time for update to go with rate
-	var time = 0;
+	var frame = 0;
+	var frameIndex = 0;
 	//for keeping the update at the same pace
 	var updateTime = 0;
 	//for the frames
@@ -189,13 +190,15 @@ var Player = function(game, can, startX, startY, level, enemies) {
 		//so the way this works. we only want to change the frame every 5th time draw is
 		//called. otherwise it goes through supppperr quick. which is bad.
 		//so only change the frame every rate times per draw called.
-		time = time + 1
-		if(time%rate === 0){
-			tempX = facing[time%facing.length].x;
-			tempY = facing[time%facing.length].y;
+		frame = frame + 1
+		if(frame % rate === 0){
+			tempX = facing[frameIndex % facing.length].x;
+			tempY = facing[frameIndex % facing.length].y;
+			frameIndex++;
 		}
-		if(time > 7500){
-			time = 0;
+		if(frame > 7500){
+			frame = 0;
+			frameIndex = 0;
 		}
 		if(moving){
 			//so. the image to draw, from startingX startingY through the width and height

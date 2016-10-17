@@ -16,6 +16,7 @@ var Chaser = function(game, startX, startY, level, player) {
 	var rate = 5;
 	//for the frames
 	var frame = 0;
+	var frameIndex = 0;
 	//the size of the sprite
 	var tileSize = 16;
 	//scale the person to 48 (16*3) pixels with this
@@ -30,6 +31,7 @@ var Chaser = function(game, startX, startY, level, player) {
 	var prevPlayerX = player.getX();
 	var prevPlayerY = player.getY();
 	//how much chaser moves
+	var originalSpeed = 1.75;
 	var moveAmount = 1.75;
 	var damage = 2.5;
 	var fullHealth = 100;
@@ -80,13 +82,29 @@ var Chaser = function(game, startX, startY, level, player) {
 		return 'chaser';
 	};
 
+	var resetSpeed = function() {
+		moveAmount = originalSpeed;
+	};
+
+	var getOriginalSpeed = function() {
+		return originalSpeed;
+	}
+
+	var getMoveAmount = function() {
+		return moveAmount;
+	};
+
+	var setMoveAmount = function(amount) {
+		moveAmount = amount;
+	};
+
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
 	};
 
 	var setLeader = function(newLeader) {
 		leader = newLeader;
-	}
+	};
 
 	var setPath = function(newPath) {
 		path = newPath;
@@ -148,12 +166,14 @@ var Chaser = function(game, startX, startY, level, player) {
 		//so only change the frame every rate times per draw called.
 		frame = frame + 1;
 		if(frame % rate === 0) {
-			drawX = facing[frame % facing.length].x;
-			drawY = facing[frame % facing.length].y;
+			drawX = facing[frameIndex % facing.length].x;
+			drawY = facing[frameIndex % facing.length].y;
+			frameIndex++;
 		}
 		// got too big. make it small.
 		if (frame > 7500) {
 			frame = 0;
+			frameIndex = 0;
 		}
 		ctx.drawImage(chaserImage, drawX, drawY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
 		//draw health bar if they have less than full
@@ -557,7 +577,7 @@ var Chaser = function(game, startX, startY, level, player) {
 		}
 		return false;
 	};
-	
+
   //get the neighbors (either normal cardinal or based on parent)
 	var getNeighbors = function(current) {
 		var neighbors = [];
@@ -763,6 +783,10 @@ var Chaser = function(game, startX, startY, level, player) {
 		getPath: getPath,
 		getLeader: getLeader,
 		getFullHealth: getFullHealth,
+		getMoveAmount: getMoveAmount,
+		getOriginalSpeed: getOriginalSpeed,
+		setMoveAmount: setMoveAmount,
+		resetSpeed: resetSpeed,
 		setFullHealth: setFullHealth,
 		setLeader: setLeader,
 		setX: setX,
