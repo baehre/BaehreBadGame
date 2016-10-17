@@ -141,7 +141,8 @@ var Projectile = function(game, entity, xP, yP, direction, can, level, enemies, 
         if (rectIntersection(x0, y0, left, right, top, bottom)) {
           enemy.setHealth(enemy.getHealth() - projectileDamage);
           if(enemy.getHealth() > 0) {
-            game.addEmitter(enemy.getX(), enemy.getY(), 5, 20, '#8A0707');
+            var ratio = enemy.getHeight() / 16;
+            game.addEmitter(enemy.getX(), enemy.getY(), 5 * ratio, 20, '#8A0707');
           }
           return true;
         }

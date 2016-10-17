@@ -16,6 +16,7 @@ var Shooter = function(game, startX, startY, level, player) {
 	var rate = 5;
 	//for the frames
 	var frame = 0;
+	var frameIndex = 0;
 	//the size of the sprite
 	var tileSize = 16;
 	//scale the person to 48 (16*3) pixels with this
@@ -30,6 +31,7 @@ var Shooter = function(game, startX, startY, level, player) {
 	var prevPlayerX = player.getX();
 	var prevPlayerY = player.getY();
 	//how much shooter moves
+	var originalSpeed = 1.25;
 	var moveAmount = 1.25;
 	var damage = 5.0;
 	var fullHealth = 50;
@@ -82,6 +84,22 @@ var Shooter = function(game, startX, startY, level, player) {
 	var getLeader = function() {
 		return leader;
 	};
+	
+	var resetSpeed = function() {
+		moveAmount = originalSpeed;
+	};
+
+	var getOriginalSpeed = function() {
+		return originalSpeed;
+	};
+
+	var getMoveAmount = function() {
+		return moveAmount;
+	};
+
+	var setMoveAmount = function(amount) {
+		moveAmount = amount;
+	};
 
 	var getFullHealth = function() {
 		return fullHealth;
@@ -89,7 +107,7 @@ var Shooter = function(game, startX, startY, level, player) {
 
 	var getType = function() {
 		return 'shooter';
-	}
+	};
 
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
@@ -165,12 +183,14 @@ var Shooter = function(game, startX, startY, level, player) {
 		//so only change the frame every rate times per draw called.
 		frame = frame + 1;
 		if(frame % rate === 0) {
-			drawX = facing[frame % facing.length].x;
-			drawY = facing[frame % facing.length].y;
+			drawX = facing[frameIndex % facing.length].x;
+			drawY = facing[frameIndex % facing.length].y;
+			frameIndex++;
 		}
 		// got too big. make it small.
 		if (frame > 7500) {
 			frame = 0;
+			frameIndex = 0;
 		}
 		ctx.drawImage(shooterImage, drawX, drawY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
 		if (health < fullHealth) {
@@ -806,6 +826,10 @@ var Shooter = function(game, startX, startY, level, player) {
 		getType: getType,
 		getProjectiles: getProjectiles,
 		getFullHealth: getFullHealth,
+		setMoveAmount: setMoveAmount,
+		getMoveAmount: getMoveAmount,
+		getOriginalSpeed: getOriginalSpeed,
+		resetSpeed: resetSpeed,
 		setFullHealth: setFullHealth,
 		setProjectiles: setProjectiles,
 		setLeader: setLeader,
