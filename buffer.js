@@ -2,7 +2,7 @@
 /**************************************************
 ** GAME buffer CLASS
 **************************************************/
-var Buffer = function(startX, startY, level, player) {
+var Buffer = function(game, startX, startY, level, player) {
 	var bufferImage = new Image();
 	bufferImage.src = "SpriteSheets/PlayerSprites/gentlemanSprite.png";
 	var bufferImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
@@ -16,6 +16,7 @@ var Buffer = function(startX, startY, level, player) {
 	var rate = 5;
 	//for the frames
 	var frame = 0;
+	var frameIndex = 0;
 	//the size of the sprite
 	var tileSize = 16;
 	//scale the person to 48 (16*3) pixels with this
@@ -30,13 +31,15 @@ var Buffer = function(startX, startY, level, player) {
 	var prevPlayerX = player.getX();
 	var prevPlayerY = player.getY();
 	//how much buffer moves
+	var originalSpeed = 1.5;
 	var moveAmount = 1.5;
-	var fullHealth = 75;
+	// the closest ally
+    var closest = null;
+	var buffRange = 150;
+	var fullHealth = 100;
 	var health = fullHealth;
 	//the previous behavior. used to reset path between behavior changes
 	var pastBehavior = '';
-	//used in path finding. if leader he is getting the path. everyone else steals from him
-	var leader = false;
 	//the path the buffer is taking
 	var path = null;
 
@@ -49,9 +52,13 @@ var Buffer = function(startX, startY, level, player) {
 		return y;
 	};
 
-	var getSize = function() {
+	var getWidth = function() {
 		return size;
 	};
+
+	var getHeight = function() {
+		return size;
+	}
 
 	var getHealth = function() {
 		return health;
@@ -71,6 +78,22 @@ var Buffer = function(startX, startY, level, player) {
 
 	var getType = function() {
 		return 'buffer';
+	};
+
+	var resetSpeed = function() {
+		moveAmount = originalSpeed;
+	};
+
+	var setMoveAmount = function(amount) {
+		moveAmount = amount;
+	};
+
+	var getMoveAmount = function() {
+		return moveAmount;
+	};
+
+	var getOriginalSpeed = function() {
+		return originalSpeed;
 	};
 
 	var setFullHealth = function(newHealth) {
@@ -93,15 +116,61 @@ var Buffer = function(startX, startY, level, player) {
 		y = newY;
 	};
 
-	var setSize = function(newSize) {
-		size = newSize;
-	};
-
 	// Update buffer position
 	var update = function(enemies) {
 		prevX = x;
 		prevY = y;
-		
+		// just a stupidly large number
+        var dist = 999999999;
+        //so if there is no one then the closest also gets set to null
+        closest = null;
+		for (var i = 0; i < enemies.length; i++) {
+            var enemy = enemies[i];
+            // not us
+            var enemyX = enemy.getX();
+            var enemyY = enemy.getY();
+            if (enemyX !== x && enemyY !== y && enemy.getType() !== 'buffer' && enemy.getType() !== 'shielder') {
+                var tempDist = manDistance(x, y, enemyX, enemyY);
+                if (tempDist < dist) {
+                    dist = tempDist;
+                    closest = enemy;
+                }
+            }
+        }
+        // get closer
+        if (closest !== null) {
+            var closestDist = distance(x, y, closest.getX(), closest.getY());
+            // means we are close enough to start a new behavior
+            if (closestDist < 100) {
+                if(pastBehavior !== 'hide') {
+                    path = null;
+                }
+                pastBehavior = 'hide';
+                hide();
+            } else {
+                // if not make sure our path is GUCCI
+                if(pastBehavior !== 'pathing') {
+                    path = null;
+                }
+                pastBehavior = 'pathing';
+                pathing();
+            }
+        } else {
+			// if there is no one to protect. then run the fuck away
+            if(pastBehavior !== 'avoid') {
+                path = null;
+            }
+            pastBehavior = 'avoid';
+            avoid();
+        }
+		if (pastBehavior !== 'avoid') {
+			buff(enemies);
+		}
+        if (pastBehavior !== 'hide') {
+            separate(enemies);
+        } else {
+			separateBuffers(enemies);
+		}
 		//get the path from above then follow it
 		followPath();
 	};
@@ -113,12 +182,14 @@ var Buffer = function(startX, startY, level, player) {
 		//so only change the frame every rate times per draw called.
 		frame = frame + 1;
 		if(frame % rate === 0) {
-			drawX = facing[frame % facing.length].x;
-			drawY = facing[frame % facing.length].y;
+			drawX = facing[frameIndex % facing.length].x;
+			drawY = facing[frameIndex % facing.length].y;
+			frameIndex++;
 		}
 		// got too big. make it small.
 		if (frame > 7500) {
 			frame = 0;
+			frameIndex = 0;
 		}
 		ctx.drawImage(bufferImage, drawX, drawY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
 		//draw health bar if they have less than full
@@ -242,8 +313,101 @@ var Buffer = function(startX, startY, level, player) {
 
 	// keeps the buffers separate and gets the path
 	var pathing = function(enemies, distance) {
-		
+		//now should have the closest enemy. unless he is the only one left. then RUN FOREST
+        if (closest === null) {
+            if(pastBehavior !== 'avoid') {
+                path = null;
+            }
+            pastBehavior = 'avoid';
+            avoid();
+        } else {
+            path = getSmoothPath(getTile(x, y), getTile(closest.getX(), closest.getY()));
+        }
 	};
+
+	var hide = function() {
+        if (closest !== null) {
+            var playerX = player.getX();
+            var playerY = player.getY();
+            var closestX = closest.getX();
+            var closestY = closest.getY();
+			// subtract to get behind the closest
+            var vecX = playerX - closestX;
+            var vecY = playerY - closestY;
+            var vecLength = Math.sqrt((vecX * vecX) + (vecY * vecY));
+            var uX = vecX / vecLength;
+            var uY = vecY / vecLength;
+
+            // the distance to go from the closest between the player
+            var hideDistance = 70;
+			// subtract so we are behind the closest
+            var hideX = closestX - (uX * hideDistance);
+            var hideY = closestY - (uY * hideDistance);
+            var tempTile = getTile(hideX, hideY);
+            if (!isBlocked(tempTile.x, tempTile.y)) {
+                path = getSmoothPath(getTile(x, y), tempTile);
+            }
+            return;
+        }
+        if(pastBehavior !== 'avoid') {
+            path = null;
+        }
+        pastBehavior = 'avoid';
+        avoid();
+    };
+
+	var buff = function(enemies) {
+		for (var i = 0; i < enemies.length; i++) {
+			var enemy = enemies[i];
+			if (manDistance(x, y, enemy.getX(), enemy.getY()) < buffRange) {
+				if (enemy.getOriginalSpeed() === enemy.getMoveAmount()) {
+					enemy.setMoveAmount(enemy.getMoveAmount() + 0.25);
+				}
+				// only heal if not full health and not us and not all the time 
+				if (frame % 20 === 0) {
+					if (enemy.getHealth() < enemy.getFullHealth() && enemy.getX() !== x && enemy.getY() !== y) {
+						enemy.setHealth(enemy.getHealth() + 2);
+					}
+				}
+			} else {
+				resetSpeed();
+			}
+		}
+	};
+
+	var avoid = function() {
+        var playerX = player.getX();
+        var playerY = player.getY();
+        var bufferVecX = x - playerX;
+        var bufferVecY = y - playerY;
+        var vecLength = Math.sqrt((bufferVecX * bufferVecX) + (bufferVecY * bufferVecY));
+        if (vecLength > 0) {
+            var uX = bufferVecX / vecLength;
+            var uY = bufferVecY / vecLength;
+            var xStuff = x + uX * moveAmount;
+            var yStuff = y + uY * moveAmount;
+            if (xStuff < x) {
+                var tileX1 = getTile(xStuff - 24, yStuff - 20);
+				var tileX2 = getTile(xStuff - 24, yStuff + 20);
+            } else {
+                var tileX1 = getTile(xStuff + 24, yStuff - 20);
+				var tileX2 = getTile(xStuff + 24, yStuff + 20);
+            }
+            if (yStuff < y) {
+                var tileY1 = getTile(xStuff - 20, yStuff - 24);
+				var tileY2 = getTile(xStuff + 20, yStuff - 24);
+            } else {
+                var tileY1 = getTile(xStuff + 20, yStuff + 24);
+				var tileY2 = getTile(xStuff - 20, yStuff + 24);
+            }
+			if (!isBlocked(tileY1.x, tileY1.y) && !isBlocked(tileY2.x, tileY2.y)) {
+				y = yStuff;
+			}
+			if (!isBlocked(tileX1.x, tileX1.y) && !isBlocked(tileX2.x, tileX2.y)) {
+				x = xStuff;
+			}
+        }
+    };
 
 	var separate = function(enemies) {
 		var velocity = {"x": 0, "y": 0};
@@ -252,8 +416,8 @@ var Buffer = function(startX, startY, level, player) {
 			var enemy = enemies[i];
 			// we are not the current enemy
 			if(enemy.getX() !== x && enemy.getY() !== y) {
-				// if the enemy is within 3 tiles and not a shielder
-				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144 && enemy.getType() !== 'shielder') {
+				// if the enemy is within 3 tiles and not a buffer
+				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144 && enemy.getType() !== 'buffer') {
 					velocity.x += x - enemy.getX();
 					velocity.y += y - enemy.getY();
 					neighbors += 1;
@@ -279,6 +443,44 @@ var Buffer = function(startX, startY, level, player) {
 			 getLevelTile(tempTile3.x, tempTile3.y) < 10 && getLevelTile(tempTile4.x, tempTile4.y) < 10) {
 				x -= uX;
 				y -= uY;
+			}
+		}
+	};
+
+	var separateBuffers = function(enemies) {
+		var velocity = {"x": 0, "y": 0};
+		var neighbors = 0;
+		for (var i = 0; i < enemies.length; i++) {
+			var enemy = enemies[i];
+			// we are not the current enemy
+			if(enemy.getX() !== x && enemy.getY() !== y) {
+				// if the enemy is within 3 tiles
+				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144 && enemy.getType() === 'buffer') {
+					velocity.x += x - enemy.getX();
+					velocity.y += y - enemy.getY();
+					neighbors += 1;
+				}
+			}
+		}
+		if (neighbors !== 0) {
+			// all dat sweet sweet velocity stuff
+			velocity.x /= neighbors;
+			velocity.y /= neighbors;
+			velocity.x *= -1;
+			velocity.y *= -1;
+			var velocityLength = Math.sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y));
+			var uX = velocity.x / velocityLength;
+			var uY = velocity.y / velocityLength;
+			//get the hypothetical bounds of the enemy
+			var tempTile1 = getTile(x + uX - 24, y + uY);
+			var tempTile2 = getTile(x + uX + 24, y + uY);
+			var tempTile3 = getTile(x + uX, y + uY - 24);
+			var tempTile4 = getTile(x + uX, y + uY + 24);
+			// shift the enemy along the vector. if it wouldn't shove it through a blocked tile
+			if(getLevelTile(tempTile1.x, tempTile1.y) < 10 && getLevelTile(tempTile2.x, tempTile2.y) < 10 &&
+			 getLevelTile(tempTile3.x, tempTile3.y) < 10 && getLevelTile(tempTile4.x, tempTile4.y) < 10) {
+				x -= (uX / 2);
+				y -= (uY / 2);
 			}
 		}
 	};
@@ -327,7 +529,7 @@ var Buffer = function(startX, startY, level, player) {
 
 	// based on tile coordinates return the tile's number
 	var getLevelTile = function(x0, y0){
-		if(x0 < 0 || x0 > level[0].length || y0 < 0 || y0 > level.length){
+		if(x0 < 0 || x0 > level[0].length - 1|| y0 < 0 || y0 > level.length - 1){
 			return null;
 		}
 		return level[y0][x0];
@@ -340,19 +542,6 @@ var Buffer = function(startX, startY, level, player) {
 		return {"x": tempX, "y": tempY};
 	};
 
-	//based on tile coordinates does a slightly better check. Used in jump point search.
-	var isBlocked = function(checkX, checkY) {
-		if(checkX < 0 || checkX > level[0].length || checkY < 0 || checkY > level.length){
-			return true;
-		}
-		if(level[checkY][checkX] > 10){
-			return true;
-		}
-		else{
-			return false;
-		}
-	};
-
   //PATHFINDING
 
   //if an array contains an object. The object is a tile.
@@ -363,31 +552,6 @@ var Buffer = function(startX, startY, level, player) {
 			}
 		}
 		return false;
-	};
-
-	// this is used to sort the open list. Get the best fcost
-	var compareFunc = function(first, second){
-		if(second.fCost < first.fCost){
-			return 1;
-		}
-		if(second.fCost > first.fCost){
-			return -1;
-		}
-		return 0;
-	};
-
-	//just returns a node object
-	var node = function(tileX, tileY, parent, gCost, hCost)
-	{
-		var temp = {
-			"x": tileX,
-			"y": tileY,
-			"parent": parent,
-			"gCost": gCost,
-			"hCost": hCost,
-			"fCost": gCost + hCost,
-		};
-		return temp;
 	};
 
   //get the neighbors (either normal cardinal or based on parent)
@@ -483,16 +647,6 @@ var Buffer = function(startX, startY, level, player) {
 		return jump(currentX + directionX, currentY + directionY, currentX, currentY, end);
 	};
 
-	//if an array contains an object. The object is a tile.
-	var contains = function(arr, obj){
-		for(var j = 0; j < arr.length; j++){
-			if(arr[j].x === obj.x && arr[j].y === obj.y){
-				return true;
-			}
-		}
-		return false;
-	};
-
 	// this is used to sort the open list. Get the best fcost
 	var compareFunc = function(first, second){
 		if(second.fCost < first.fCost){
@@ -516,24 +670,6 @@ var Buffer = function(startX, startY, level, player) {
 			"fCost": gCost + hCost,
 		};
 		return temp;
-	};
-
-	//return the tile given pixel coordinates
-	var getTile = function(x0, y0){
-		var tileX = Math.floor(x0 / 48.0);
-		var tileY = Math.floor(y0 / 48.0);
-		if(tileX < 0 || tileX > level[0].length || tileY < 0 || tileY > level.length){
-			return null;
-		}
-		return {"x": tileX, "y": tileY};
-	};
-
-	// based on tile coordinates return the tile's number
-	var getLevelTile = function(x0, y0){
-		if(x0 < 0 || x0 > level[0].length || y0 < 0 || y0 > level.length){
-			return null;
-		}
-		return level[y0][x0];
 	};
 
 	//smooth out the turns for the astar
@@ -563,59 +699,6 @@ var Buffer = function(startX, startY, level, player) {
 		return arr;
 	};
 
-	var walkable = function(point1, point2){
-		//get the middle of the tile
-		var start = getPixel(point1);
-		var end = getPixel(point2);
-		//doing vector stuff here
-		var vec = {"x": end.x - start.x, "y": end.y - start.y};
-		var vecLength = Math.sqrt((vec.x * vec.x) + (vec.y * vec.y));
-		var uX = vec.x / vecLength;
-		var uY = vec.y / vecLength;
-		var dist = 0;
-		while(dist < vecLength){
-			var checkPixelX = start.x + (dist * uX);
-			var checkPixelY = start.y + (dist * uY);
-			//get the corners
-			var topY = checkPixelY - (size / 2) + 1;
-			var bottomY = checkPixelY + (size / 2) - 1;
-			var leftX = checkPixelX - (size / 2) + 1;
-			var rightX = checkPixelX + (size / 2) - 1;
-			//get the tiles for the corners and the middle
-			var topLeft = getTile(leftX, topY);
-			var topRight = getTile(rightX, topY);
-			var bottomLeft = getTile(leftX, bottomY);
-			var bottomRight = getTile(rightX, bottomY);
-			var middle = getTile(checkPixelX, checkPixelY);
-			//if any of those intersect don't take the line
-			if(intersection(topLeft) || intersection(topRight) || intersection(bottomLeft) || intersection(bottomRight) ||
-			intersection(middle)){
-				return false;
-			}
-			//checking every 8 pixels along the line
-			dist = dist + 8;
-		}
-		//the whole line was tested. we gucci
-		return true;
-	};
-
-	//gets the center of the tile obj passed in.
-	var getPixel = function(tile){
-		var tempX = (tile.x * 48) + 24;
-		var tempY = (tile.y * 48) + 24;
-		return {"x": tempX, "y": tempY};
-	};
-
-	// returns if the tile is currently unpassable.
-	var intersection = function(checkTile){
-		if(level[checkTile.y][checkTile.x] > 10){
-			return true;
-		}
-		else{
-			return false;
-		}
-	};
-
 	//based on tile coordinates does a slightly better check. Used in jump point search.
 	var isBlocked = function(checkX, checkY) {
 		if(checkX < 0 || checkX > level[0].length - 1 || checkY < 0 || checkY > level.length - 1){
@@ -628,33 +711,6 @@ var Buffer = function(startX, startY, level, player) {
 			return false;
 		}
 	};
-
-	// Define which variables and methods can be accessed
-  //smooths the path.
-  var smooth = function(arr){
-    //initial check
-    var checkPoint = arr[0];
-    var i = 1;
-    //the point to see if can be removed
-    var currentPoint = arr[i];
-    //while we don't go past the array
-    while(arr[i + 1] !== null && arr[i + 1] !== undefined){
-      //checks the vector between the points
-      if(walkable(checkPoint, arr[i + 1])){
-        //keep checking along the line
-        currentPoint = arr[i + 1];
-        //get rid of the old point
-        arr.splice(i, 1);
-      }
-      else {
-        //otherwise that's the best we can smooth that section. next section now
-        checkPoint = currentPoint;
-        currentPoint = arr[i + 1];
-        i = i + 1;
-      }
-    }
-    return arr;
-  };
 
   //gets a vector between things. returns if you walk a straight line in between them
   var walkable = function(point1, point2){
@@ -697,16 +753,19 @@ var Buffer = function(startX, startY, level, player) {
 	return {
 		getX: getX,
 		getY: getY,
-		getSize: getSize,
+		getWidth: getWidth,
+		getHeight: getHeight,
 		getHealth: getHealth,
 		getPath: getPath,
 		getLeader: getLeader,
 		getFullHealth: getFullHealth,
+		setMoveAmount: setMoveAmount,
+		getMoveAmount: getMoveAmount,
+		getOriginalSpeed: getOriginalSpeed,
+		resetSpeed: resetSpeed,
 		setFullHealth: setFullHealth,
-		setLeader: setLeader,
 		setX: setX,
 		setY: setY,
-		setSize: setSize,
 		setHealth: setHealth,
 		setPath: setPath,
 		getType: getType,

@@ -14,6 +14,8 @@ var pause = false;
 var paused;
 // the list of projectiles currently in the game
 var projectiles;
+// the emitters in the game
+var emitters;
 // sprites used to draw the background
 var backgroundSprites;
 // how large a tile would be
@@ -59,18 +61,21 @@ function init(){
   canvas.height = 504;
 
   enemies = [];
+  projectiles = [];
+  emitters = [];
   //keys.js
   keys = new Keys();
   //player.js
-  localPlayer = new Player(canvas, 100, 300, levelData, enemies);
-  //made a function that adds a chaser and updates the enemies for the player
+  localPlayer = new Player(this, canvas, 100, 300, levelData, enemies);
+  //made a function that adds an enemy and updates the enemies for the player
+  //addBoss(300, 300);
+  addBuffer(300, 300);
   addChaser(200, 100);
   addShielder(300, 100);
   addShooter(400, 100);
   addChaser(200, 600);
   addShielder(300, 600);
   addShooter(400, 600);
-  projectiles = [];
   //sets all the event handlers
   setEventHandlers();
 }
@@ -108,6 +113,11 @@ function gameLoop(){
     update();
     draw();
   }
+  if (!document.hasFocus()) {
+    pause = true;
+    paused.classList.toggle('hidden', !pause);
+    draw();
+  }
   //the magic by Paul Irish.
   // chooses the time called based on browser info
   // (like 60 or 30 based on what the browser can handle)
@@ -118,6 +128,7 @@ function gameLoop(){
 function update(){
   updatePlayer();
   updateChasers();
+  updateEmitters();
   updateProjectiles();
 }
 
@@ -156,6 +167,14 @@ function updateChasers(){
   }
 }
 
+function updateEmitters() {
+  for (var i = 0; i < emitters.length; i++) {
+    var emitter = emitters[i];
+    //pass in enemies to check for inter-enemy collision
+    emitter.update();
+  }
+}
+
 //draws everything on the canvas
 function draw(){
   //wipe it
@@ -171,6 +190,7 @@ function draw(){
   drawBackground();
   drawEnemies();
   drawPlayer();
+  drawEmitters();
   drawProjectiles();
   // keep the context bueno
   context.restore();
@@ -234,6 +254,17 @@ function drawEnemies() {
   }
 }
 
+function drawEmitters() {
+  for (var i = 0; i < emitters.length; i++) {
+    var emitter = emitters[i];
+    if (emitter.getToRemove()) {
+      emitters.splice(i, 1);
+    } else {
+      emitter.draw(context);
+    }
+  }
+}
+
 function drawProjectiles(){
   //handle the player projectiles
   var temp = localPlayer.getProjectiles()
@@ -272,18 +303,33 @@ function drawProjectiles(){
 
 //adds a chaser to the game
 function addChaser(chaserX, chaserY){
-  enemies.push(new Chaser(chaserX, chaserY, levelData, localPlayer));
+  enemies.push(new Chaser(this, chaserX, chaserY, levelData, localPlayer));
   localPlayer.setEnemies(enemies);
 }
 
 //adds a shooter to the game
 function addShooter(shooterX, shooterY){
-  enemies.push(new Shooter(shooterX, shooterY, levelData, localPlayer));
+  enemies.push(new Shooter(this, shooterX, shooterY, levelData, localPlayer));
   localPlayer.setEnemies(enemies);
 }
 
 // adds a shielder to the game
 function addShielder(shielderX, shielderY) {
-  enemies.push(new Shielder(shielderX, shielderY, levelData, localPlayer));
+  enemies.push(new Shielder(this, shielderX, shielderY, levelData, localPlayer));
   localPlayer.setEnemies(enemies);
+}
+
+function addBoss(bossX, bossY) {
+  enemies.push(new Boss(this, bossX, bossY, levelData, localPlayer));
+  localPlayer.setEnemies(enemies);
+}
+
+function addBuffer(bufferX, bufferY) {
+  enemies.push(new Buffer(this, bufferX, bufferY, levelData, localPlayer));
+  localPlayer.setEnemies(enemies);
+}
+
+// this is almost always going to be called somewhere other than here
+function addEmitter(emitterX, emitterY, amount, life, color) {
+  emitters.push(new Emitter(this, levelData, emitterX, emitterY, amount, life, color));
 }

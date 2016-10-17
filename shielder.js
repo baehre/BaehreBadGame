@@ -2,7 +2,7 @@
 /**************************************************
 ** GAME shielder CLASS
 **************************************************/
-var Shielder = function(startX, startY, level, player) {
+var Shielder = function(game, startX, startY, level, player) {
 	var shielderImage = new Image();
 	shielderImage.src = "SpriteSheets/PlayerSprites/afroKidSprite.png";
 	var shielderImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
@@ -16,6 +16,7 @@ var Shielder = function(startX, startY, level, player) {
 	var rate = 5;
 	//for the frames
 	var frame = 0;
+	var frameIndex = 0;
 	//the size of the sprite
 	var tileSize = 16;
 	//scale the person to 48 (16*3) pixels with this
@@ -30,6 +31,7 @@ var Shielder = function(startX, startY, level, player) {
 	var prevPlayerX = player.getX();
 	var prevPlayerY = player.getY();
 	//how much shielder moves
+	var originalSpeed = 1.5;
 	var moveAmount = 1.5;
 	var fullHealth = 350;
 	var health = fullHealth;
@@ -49,10 +51,6 @@ var Shielder = function(startX, startY, level, player) {
 
 	var getY = function() {
 		return y;
-	};
-
-	var getSize = function() {
-		return size;
 	};
 
 	var getHealth = function() {
@@ -75,6 +73,30 @@ var Shielder = function(startX, startY, level, player) {
 		return 'shielder';
 	};
 
+	var getWidth = function() {
+		return size;
+	};
+
+	var getHeight = function() {
+		return size;
+	};
+
+	var resetSpeed = function() {
+		moveAmount = originalSpeed;
+	};
+
+	var setMoveAmount = function(amount) {
+		moveAmount = amount;
+	};
+
+	var getOriginalSpeed = function() {
+		return originalSpeed;
+	}
+
+	var getMoveAmount = function() {
+		return moveAmount;
+	};
+
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
 	};
@@ -93,10 +115,6 @@ var Shielder = function(startX, startY, level, player) {
 
 	var setY = function(newY) {
 		y = newY;
-	};
-
-	var setSize = function(newSize) {
-		size = newSize;
 	};
 
 	// Update shielder position
@@ -142,18 +160,21 @@ var Shielder = function(startX, startY, level, player) {
                 pathing();
             }
         } else {
+			// if there is no one to protect. then run the fuck away
             if(pastBehavior !== 'avoid') {
                 path = null;
             }
             pastBehavior = 'avoid';
             avoid();
         }
-				if (pastBehavior !== 'avoid') {
-						grabProjectile();
-				}
+		if (pastBehavior !== 'avoid') {
+				grabProjectile();
+		}
         if (pastBehavior !== 'protect') {
             separate(enemies);
-        }
+        } else {
+			separateShielders(enemies);
+		}
 		//get the path from above then follow it
 		followPath();
 	};
@@ -165,12 +186,14 @@ var Shielder = function(startX, startY, level, player) {
 		//so only change the frame every rate times per draw called.
 		frame = frame + 1;
 		if(frame % rate === 0) {
-			drawX = facing[frame % facing.length].x;
-			drawY = facing[frame % facing.length].y;
+			drawX = facing[frameIndex % facing.length].x;
+			drawY = facing[frameIndex % facing.length].y;
+			frameIndex++;
 		}
 		// got too big. make it small.
 		if (frame > 7500) {
 			frame = 0;
+			frameIndex = 0;
 		}
 		ctx.drawImage(shielderImage, drawX, drawY, tileSize, tileSize, Math.round(x - (size / 2)), Math.round(y - (size / 2)), size, size);
 		if (health < fullHealth) {
@@ -351,7 +374,7 @@ var Shielder = function(startX, startY, level, player) {
 				var closestProjX = closestProj.getX();
 				var closestProjY = closestProj.getY();
 				if(walkable(getTile(x, y), getTile(closestProjX, closestProjY))) {
-                	closestProj.setAngle(Math.atan2(y - closestProjY, x - closestProjX));
+					closestProj.setAngle(Math.atan2(y - closestProjY, x - closestProjX));
 				}
             }
             projectileGrabTime = startProjectileGrabTime;
@@ -370,28 +393,25 @@ var Shielder = function(startX, startY, level, player) {
             var xStuff = x + uX * moveAmount;
             var yStuff = y + uY * moveAmount;
             if (xStuff < x) {
-                var tileX = getTile(xStuff - 24, y);
+                var tileX1 = getTile(xStuff - 24, yStuff - 20);
+				var tileX2 = getTile(xStuff - 24, yStuff + 20);
             } else {
-                var tileX = getTile(xStuff + 24, y);
+                var tileX1 = getTile(xStuff + 24, yStuff - 20);
+				var tileX2 = getTile(xStuff + 24, yStuff + 20);
             }
             if (yStuff < y) {
-                var tileY = getTile(x, yStuff - 24);
+                var tileY1 = getTile(xStuff - 20, yStuff - 24);
+				var tileY2 = getTile(xStuff + 20, yStuff - 24);
             } else {
-                var tileY = getTile(x, yStuff + 24);
+                var tileY1 = getTile(xStuff + 20, yStuff + 24);
+				var tileY2 = getTile(xStuff - 20, yStuff + 24);
             }
-            var tileLeft = getTile(xStuff - 24, yStuff);
-            var tileRight = getTile(xStuff + 24, yStuff);
-            var tileUp = getTile(xStuff, yStuff - 24);
-            var tileDown = getTile(xStuff, yStuff + 24);
-            if(!isBlocked(tileLeft.x, tileLeft.y) && !isBlocked(tileRight.x, tileRight.y) &&
-             !isBlocked(tileDown.x, tileDown.y) && !isBlocked(tileUp.x, tileUp.y)) {
-                x = xStuff;
-                y = yStuff;
-            } else if (!isBlocked(tileX.x, tileX.y)) {
-                x = xStuff;
-            } else if (!isBlocked(tileY.x, tileY.y)) {
-                y = yStuff;
-            }
+			if (!isBlocked(tileY1.x, tileY1.y) && !isBlocked(tileY2.x, tileY2.y)) {
+				y = yStuff;
+			}
+			if (!isBlocked(tileX1.x, tileX1.y) && !isBlocked(tileX2.x, tileX2.y)) {
+				x = xStuff;
+			}
         }
     };
 
@@ -433,6 +453,44 @@ var Shielder = function(startX, startY, level, player) {
 		}
 	};
 
+	var separateShielders = function(enemies) {
+		var velocity = {"x": 0, "y": 0};
+		var neighbors = 0;
+		for (var i = 0; i < enemies.length; i++) {
+			var enemy = enemies[i];
+			// we are not the current enemy
+			if(enemy.getX() !== x && enemy.getY() !== y) {
+				// if the enemy is within 3 tiles
+				if (manDistance(enemy.getX(), enemy.getY(), x, y) < 144 && enemy.getType() === 'shielder') {
+					velocity.x += x - enemy.getX();
+					velocity.y += y - enemy.getY();
+					neighbors += 1;
+				}
+			}
+		}
+		if (neighbors !== 0) {
+			// all dat sweet sweet velocity stuff
+			velocity.x /= neighbors;
+			velocity.y /= neighbors;
+			velocity.x *= -1;
+			velocity.y *= -1;
+			var velocityLength = Math.sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y));
+			var uX = velocity.x / velocityLength;
+			var uY = velocity.y / velocityLength;
+			//get the hypothetical bounds of the enemy
+			var tempTile1 = getTile(x + uX - 24, y + uY);
+			var tempTile2 = getTile(x + uX + 24, y + uY);
+			var tempTile3 = getTile(x + uX, y + uY - 24);
+			var tempTile4 = getTile(x + uX, y + uY + 24);
+			// shift the enemy along the vector. if it wouldn't shove it through a blocked tile
+			if(getLevelTile(tempTile1.x, tempTile1.y) < 10 && getLevelTile(tempTile2.x, tempTile2.y) < 10 &&
+			 getLevelTile(tempTile3.x, tempTile3.y) < 10 && getLevelTile(tempTile4.x, tempTile4.y) < 10) {
+				x -= (uX / 2);
+				y -= (uY / 2);
+			}
+		}
+	};
+
   //DISTANCE
 
 	//used in checking if player is in range
@@ -464,44 +522,6 @@ var Shielder = function(startX, startY, level, player) {
 	};
 
   //TILE INFO
-
-  //return the tile given pixel coordinates
-	var getTile = function(x0, y0){
-		var tileX = Math.floor(x0 / 48.0);
-		var tileY = Math.floor(y0 / 48.0);
-		if(tileX < 0 || tileX > level[0].length || tileY < 0 || tileY > level.length){
-			return null;
-		}
-		return {"x": tileX, "y": tileY};
-	};
-
-	// based on tile coordinates return the tile's number
-	var getLevelTile = function(x0, y0){
-		if(x0 < 0 || x0 > level[0].length || y0 < 0 || y0 > level.length){
-			return null;
-		}
-		return level[y0][x0];
-	};
-
-	//gets the center of the tile obj passed in.
-	var getPixel = function(tile){
-		var tempX = (tile.x * 48) + 24;
-		var tempY = (tile.y * 48) + 24;
-		return {"x": tempX, "y": tempY};
-	};
-
-	//based on tile coordinates does a slightly better check. Used in jump point search.
-	var isBlocked = function(checkX, checkY) {
-		if(checkX < 0 || checkX > level[0].length || checkY < 0 || checkY > level.length){
-			return true;
-		}
-		if(level[checkY][checkX] > 10){
-			return true;
-		}
-		else{
-			return false;
-		}
-	};
 
   //PATHFINDING
 
@@ -637,7 +657,7 @@ var Shielder = function(startX, startY, level, player) {
 	var getTile = function(x0, y0){
 		var tileX = Math.floor(x0 / 48.0);
 		var tileY = Math.floor(y0 / 48.0);
-		if(tileX < 0 || tileX > level[0].length || tileY < 0 || tileY > level.length){
+		if(tileX < 0 || tileX > level[0].length - 1|| tileY < 0 || tileY > level.length - 1){
 			return null;
 		}
 		return {"x": tileX, "y": tileY};
@@ -645,7 +665,7 @@ var Shielder = function(startX, startY, level, player) {
 
 	// based on tile coordinates return the tile's number
 	var getLevelTile = function(x0, y0){
-		if(x0 < 0 || x0 > level[0].length || y0 < 0 || y0 > level.length){
+		if(x0 < 0 || x0 > level[0].length - 1|| y0 < 0 || y0 > level.length - 1){
 			return null;
 		}
 		return level[y0][x0];
@@ -678,42 +698,6 @@ var Shielder = function(startX, startY, level, player) {
 		return arr;
 	};
 
-	var walkable = function(point1, point2){
-		//get the middle of the tile
-		var start = getPixel(point1);
-		var end = getPixel(point2);
-		//doing vector stuff here
-		var vec = {"x": end.x - start.x, "y": end.y - start.y};
-		var vecLength = Math.sqrt((vec.x * vec.x) + (vec.y * vec.y));
-		var uX = vec.x / vecLength;
-		var uY = vec.y / vecLength;
-		var dist = 0;
-		while(dist < vecLength){
-			var checkPixelX = start.x + (dist * uX);
-			var checkPixelY = start.y + (dist * uY);
-			//get the corners
-			var topY = checkPixelY - (size / 2) + 1;
-			var bottomY = checkPixelY + (size / 2) - 1;
-			var leftX = checkPixelX - (size / 2) + 1;
-			var rightX = checkPixelX + (size / 2) - 1;
-			//get the tiles for the corners and the middle
-			var topLeft = getTile(leftX, topY);
-			var topRight = getTile(rightX, topY);
-			var bottomLeft = getTile(leftX, bottomY);
-			var bottomRight = getTile(rightX, bottomY);
-			var middle = getTile(checkPixelX, checkPixelY);
-			//if any of those intersect don't take the line
-			if(isBlocked(topLeft.x, topLeft.y) || isBlocked(topRight.x, topRight.y) || isBlocked(bottomLeft.x, bottomLeft.y) || isBlocked(bottomRight.x, bottomRight.y) ||
-			isBlocked(middle.x, middle.y)){
-				return false;
-			}
-			//checking every 8 pixels along the line
-			dist = dist + 8;
-		}
-		//the whole line was tested. we gucci
-		return true;
-	};
-
 	//gets the center of the tile obj passed in.
 	var getPixel = function(tile){
 		var tempX = (tile.x * 48) + 24;
@@ -733,33 +717,6 @@ var Shielder = function(startX, startY, level, player) {
 			return false;
 		}
 	};
-
-	// Define which variables and methods can be accessed
-  //smooths the path.
-  var smooth = function(arr){
-    //initial check
-    var checkPoint = arr[0];
-    var i = 1;
-    //the point to see if can be removed
-    var currentPoint = arr[i];
-    //while we don't go past the array
-    while(arr[i + 1] !== null && arr[i + 1] !== undefined){
-      //checks the vector between the points
-      if(walkable(checkPoint, arr[i + 1])){
-        //keep checking along the line
-        currentPoint = arr[i + 1];
-        //get rid of the old point
-        arr.splice(i, 1);
-      }
-      else {
-        //otherwise that's the best we can smooth that section. next section now
-        checkPoint = currentPoint;
-        currentPoint = arr[i + 1];
-        i = i + 1;
-      }
-    }
-    return arr;
-  };
 
   //gets a vector between things. returns if you walk a straight line in between them
   var walkable = function(point1, point2){
@@ -802,16 +759,20 @@ var Shielder = function(startX, startY, level, player) {
 	return {
 		getX: getX,
 		getY: getY,
-		getSize: getSize,
+		getWidth: getWidth,
+		getHeight: getHeight,
 		getHealth: getHealth,
 		getPath: getPath,
         getLeader: getLeader,
 		getType: getType,
+		getMoveAmount: getMoveAmount,
+		getOriginalSpeed: getOriginalSpeed,
 		getFullHealth: getFullHealth,
+		setMoveAmount: setMoveAmount,
+		resetSpeed: resetSpeed,
 		setFullHealth: setFullHealth,
 		setX: setX,
 		setY: setY,
-		setSize: setSize,
 		setHealth: setHealth,
 		setPath: setPath,
 		update: update,
