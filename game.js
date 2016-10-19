@@ -69,6 +69,7 @@ function init(){
   localPlayer = new Player(this, canvas, 100, 300, levelData, enemies);
   //made a function that adds an enemy and updates the enemies for the player
   //addBoss(300, 300);
+  addBuffer(300, 300);
   addChaser(200, 100);
   addShielder(300, 100);
   addShooter(400, 100);
@@ -110,6 +111,11 @@ function keyUp(e){
 function gameLoop(){
   if (!pause) {
     update();
+    draw();
+  }
+  if (!document.hasFocus()) {
+    pause = true;
+    paused.classList.toggle('hidden', !pause);
     draw();
   }
   //the magic by Paul Irish.
@@ -314,6 +320,11 @@ function addShielder(shielderX, shielderY) {
 
 function addBoss(bossX, bossY) {
   enemies.push(new Boss(this, bossX, bossY, levelData, localPlayer));
+  localPlayer.setEnemies(enemies);
+}
+
+function addBuffer(bufferX, bufferY) {
+  enemies.push(new Buffer(this, bufferX, bufferY, levelData, localPlayer));
   localPlayer.setEnemies(enemies);
 }
 
