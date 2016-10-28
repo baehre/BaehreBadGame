@@ -5,14 +5,15 @@
 var Boss = function(game, startX, startY, level, player) {
 	var bossImage = new Image();
 	//bossImage.src = "SpriteSheets/EnemySprites/bossSprite.png";
-	bossImage.src = "SpriteSheets/EnemySprites/bossSprite.png";
-	//var bossImageUp = [{"x":16,"y":1},{"x":16,"y":18},{"x":16,"y":1},{"x":16,"y":35}];
+	bossImage.src = "SpriteSheets/EnemySprites/bossTemp.png";
+	var bossImageUp = [{"x":59,"y":4},{"x":59,"y":53},{"x":59,"y":102},{"x":59,"y":151},{"x":59,"y":200},
+	{"x":59,"y":249},{"x":59,"y":298},{"x":59,"y":347},{"x":59,"y":396},{"x":59,"y":445}];
 	var bossImageDown = [{"x":10,"y":4},{"x":10,"y":53},{"x":10,"y":102},{"x":10,"y":151},{"x":10,"y":200},
 	{"x":10,"y":249},{"x":10,"y":298},{"x":10,"y":347},{"x":10,"y":396},{"x":10,"y":445}];
 	//var bossImageRight = [{"x":32,"y":1},{"x":32,"y":18},{"x":32,"y":1},{"x":32,"y":35}];
 	//var bossImageLeft = [{"x":48,"y":1},{"x":48,"y":18},{"x":48,"y":1},{"x":48,"y":35}];
 	//default to the boss looking down
- 	var facing = bossImageDown;
+ 	var facing = bossImageUp;
 	//separate time for update to go with rate
 	var time = 0;
 	var rate = 5;
@@ -26,7 +27,7 @@ var Boss = function(game, startX, startY, level, player) {
 	var scale = 3;
 	// how much to draw
 	var drawWidth = 25;
-	var drawHeight = 43;
+	var drawHeight = 42;
 	// for when we are checking hit boxes
 	var width = 25;
 	var height = 37;

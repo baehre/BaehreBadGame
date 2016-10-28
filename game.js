@@ -68,14 +68,13 @@ function init(){
   //player.js
   localPlayer = new Player(this, canvas, 100, 300, levelData, enemies);
   //made a function that adds an enemy and updates the enemies for the player
-  //addBoss(300, 300);
-  addBuffer(300, 300);
-  addChaser(200, 100);
-  addShielder(300, 100);
-  addShooter(400, 100);
-  addChaser(200, 600);
-  addShielder(300, 600);
-  addShooter(400, 600);
+  addBoss(300, 300);
+  //addChaser(200, 100);
+  //addShielder(300, 100);
+  //addShooter(400, 100);
+  //addChaser(200, 600);
+  //addShielder(300, 600);
+  //addShooter(400, 600);
   //sets all the event handlers
   setEventHandlers();
 }
@@ -109,15 +108,18 @@ function keyUp(e){
 
 // how the game actually runs
 function gameLoop(){
+  if (!document.hasFocus()) {
+    if(!pause) {
+      pause = true;
+      paused.classList.toggle('hidden', false);
+      draw();
+    }
+  }
   if (!pause) {
     update();
     draw();
   }
-  if (!document.hasFocus()) {
-    pause = true;
-    paused.classList.toggle('hidden', !pause);
-    draw();
-  }
+
   //the magic by Paul Irish.
   // chooses the time called based on browser info
   // (like 60 or 30 based on what the browser can handle)
