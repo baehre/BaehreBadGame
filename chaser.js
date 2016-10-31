@@ -243,7 +243,7 @@ var Chaser = function(game, startX, startY, level, player) {
 				player.setHealth(player.getHealth() - damage);
 			}
 		}
-	}
+	};
 
 	// returns the path. Uses Jump point to get the neighbors.
 	var getSmoothPath = function(start, end){
