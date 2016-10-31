@@ -10,10 +10,12 @@ var Boss = function(game, startX, startY, level, player) {
 	{"x":59,"y":249},{"x":59,"y":298},{"x":59,"y":347},{"x":59,"y":396},{"x":59,"y":445}];
 	var bossImageDown = [{"x":10,"y":4},{"x":10,"y":53},{"x":10,"y":102},{"x":10,"y":151},{"x":10,"y":200},
 	{"x":10,"y":249},{"x":10,"y":298},{"x":10,"y":347},{"x":10,"y":396},{"x":10,"y":445}];
-	//var bossImageRight = [{"x":32,"y":1},{"x":32,"y":18},{"x":32,"y":1},{"x":32,"y":35}];
-	//var bossImageLeft = [{"x":48,"y":1},{"x":48,"y":18},{"x":48,"y":1},{"x":48,"y":35}];
+	var bossImageRight =[{"x":147,"y":4},{"x":147,"y":53},{"x":147,"y":102},{"x":147,"y":151},{"x":147,"y":200},
+	{"x":147,"y":249},{"x":147,"y":298},{"x":147,"y":347},{"x":147,"y":396},{"x":147,"y":445}];
+	var bossImageLeft =[{"x":98,"y":4},{"x":98,"y":53},{"x":98,"y":102},{"x":98,"y":151},{"x":98,"y":200},
+	{"x":98,"y":249},{"x":98,"y":298},{"x":98,"y":347},{"x":98,"y":396},{"x":98,"y":445}];
 	//default to the boss looking down
- 	var facing = bossImageUp;
+ 	var facing = bossImageLeft;
 	//separate time for update to go with rate
 	var time = 0;
 	var rate = 5;
@@ -26,10 +28,16 @@ var Boss = function(game, startX, startY, level, player) {
 	//scale the person to 48 (16*3) pixels with this
 	var scale = 3;
 	// how much to draw
-	var drawWidth = 25;
+	// for up and down
+	//var drawWidth = 25;
+	// for right and left
+	var drawWidth = 48;
 	var drawHeight = 42;
-	// for when we are checking hit boxes
-	var width = 25;
+		// for when we are checking hit boxes
+	// for up and down
+	//var width = 25;
+	// for right and left
+	var width = 48;
 	var height = 37;
 	var x = startX;
 	var y = startY;
