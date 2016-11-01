@@ -142,6 +142,12 @@ var Boss = function(game, startX, startY, level, player) {
 			}
 			ctx.fillRect(healthX, healthY, pixelWidth, pixelHeight);
 		}
+		ctx.fillStyle = '#ff0000';
+		ctx.fillRect(x, y, 1, 1);
+		ctx.fillRect(x, y - (height * 3 / 2), 2, 2);
+		ctx.fillRect(x, y + (height * 3 / 2), 2, 2);
+		ctx.fillRect(x - (width * 3 / 2), y, 1, 1);
+		ctx.fillRect(x + (width * 3 / 2), y, 1, 1);
 	};
 
 	// returns the path. Uses Jump point to get the neighbors.
@@ -489,10 +495,10 @@ var Boss = function(game, startX, startY, level, player) {
 			var checkPixelX = start.x + (dist * uX);
 			var checkPixelY = start.y + (dist * uY);
 			//get the corners
-			var topY = checkPixelY - (height / 2) + 1;
-			var bottomY = checkPixelY + (height / 2) - 1;
-			var leftX = checkPixelX - (width / 2) + 1;
-			var rightX = checkPixelX + (width / 2) - 1;
+			var topY = checkPixelY - ((height * scale) / 2) + 1;
+			var bottomY = checkPixelY + ((height * scale) / 2) - 1;
+			var leftX = checkPixelX - ((48 * scale) / 2) + 1;
+			var rightX = checkPixelX + ((48 * scale) / 2) - 1;
 			//get the tiles for the corners and the middle
 			var topLeft = getTile(leftX, topY);
 			var topRight = getTile(rightX, topY);
