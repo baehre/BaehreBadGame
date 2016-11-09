@@ -50,9 +50,8 @@ var Boss = function(game, startX, startY, level, player) {
 	var prevPlayerY = player.getY();
 	// need to tinker with this
 	var damage = 3.0;
-	// ditto as above
-	var moveAmount = 5.0;
-	var smallMoveAmount = 1.0;
+	// damn he slow
+	var moveAmount = 1.0;
 	var fullHealth = 2000;
 	var health = fullHealth;
 
@@ -103,8 +102,17 @@ var Boss = function(game, startX, startY, level, player) {
 
 	// Update boss position
 	var update = function(enemies) {
-		path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
-		followPath();
+		if (health < (fullHealth / 2)) {
+			
+		} else {
+			var dist = distance(player.getX(), player.getY(), x, y);
+			if (dist < 300) {
+				charge();
+			} else {
+				path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
+			}
+			followPath();
+		}
 	};
 
 	// Draw boss
@@ -143,12 +151,16 @@ var Boss = function(game, startX, startY, level, player) {
 			}
 			ctx.fillRect(healthX, healthY, pixelWidth, pixelHeight);
 		}
-		/*ctx.fillStyle = '#ff0000';
-		ctx.fillRect(x, y, 1, 1);
-		ctx.fillRect(x, y - (height * 3 / 2), 2, 2);
-		ctx.fillRect(x, y + (height * 3 / 2), 2, 2);
-		ctx.fillRect(x - (width * 3 / 2), y, 1, 1);
-		ctx.fillRect(x + (width * 3 / 2), y, 1, 1);*/
+	};
+
+	var charge = function() {
+		var playerX = player.getX();
+		var playerY = player.getY();
+		var vecX = playerX - x;
+		var vecY = playerY - y;
+		var vecLength = Math.sqrt((vecX * vecX) + (vecY * vecY));
+		var uX = vecX / vecLength;
+		var uY = vecY / vecLength;
 	};
 
 	// returns the path. Uses Jump point to get the neighbors.
@@ -229,12 +241,12 @@ var Boss = function(game, startX, startY, level, player) {
 				// super small stuff won't affect the movement
 				var smallXCheck = Math.abs(x - tempTile.x) > 1;
 				if (x < tempTile.x && smallXCheck) {
-					x += moveAmount / (frameIndex % facing.length);
+					x += moveAmount;
 					facing = bossImageRight;
 					drawWidth = 48;
 					width = 48;
 				} else if (x > tempTile.x && smallXCheck) {
-					x -= moveAmount / (frameIndex % facing.length);
+					x -= moveAmount;
 					facing = bossImageLeft;
 					drawWidth = 48;
 					width = 48;
@@ -242,12 +254,12 @@ var Boss = function(game, startX, startY, level, player) {
 				var smallYCheck = Math.abs(y - tempTile.y) > 1;
 				// if elseif so it can't do both in the same update cycle
 				if (y < tempTile.y && smallYCheck) {
-					y += moveAmount / (frameIndex % facing.length);
+					y += moveAmount;
 					facing = bossImageDown;
 					drawWidth = 25;
 					width = 25;
 				} else if (y > tempTile.y && smallYCheck) {
-					y -= moveAmount / (frameIndex % facing.length);
+					y -= moveAmount;
 					facing = bossImageUp;
 					drawWidth = 25;
 					width = 25;
