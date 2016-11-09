@@ -50,6 +50,8 @@ var Boss = function(game, startX, startY, level, player) {
 	var prevPlayerY = player.getY();
 	// need to tinker with this
 	var damage = 3.0;
+	//the previous behavior. used to reset path between behavior changes
+	var pastBehavior = '';
 	// damn he slow
 	var moveAmount = 1.0;
 	var fullHealth = 2000;
@@ -102,13 +104,25 @@ var Boss = function(game, startX, startY, level, player) {
 
 	// Update boss position
 	var update = function(enemies) {
+		moveAmount = 1.0;
 		if (health < (fullHealth / 2)) {
 			
 		} else {
 			var dist = distance(player.getX(), player.getY(), x, y);
 			if (dist < 300) {
-				charge();
+				if (pastBehavior !== 'charge') {
+					path = null;
+				}
+				pastBehavior = 'charge';
+				// basically if we do not have a charge path then you can charge. otherwise. follow the charge path
+				if (path === null || path.length === 0) {
+					charge();
+				}
 			} else {
+				if (pastBehavior !== 'pathing') {
+					path = null;
+				}
+				pastBehavior = 'pathing';
 				path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
 			}
 			followPath();
@@ -154,13 +168,30 @@ var Boss = function(game, startX, startY, level, player) {
 	};
 
 	var charge = function() {
-		var playerX = player.getX();
-		var playerY = player.getY();
-		var vecX = playerX - x;
-		var vecY = playerY - y;
-		var vecLength = Math.sqrt((vecX * vecX) + (vecY * vecY));
-		var uX = vecX / vecLength;
-		var uY = vecY / vecLength;
+		if (prevPlayerX !== playerX || prevPlayerY !== playerX) {
+			//vector things
+			var playerVecX = playerX - prevPlayerX;
+			var playerVecY = playerY - prevPlayerY;
+			var vecLength = Math.sqrt((playerVecX * playerVecX) + (playerVecY * playerVecY));
+			if (vecLength > 0) {
+				var uX = playerVecX / vecLength;
+				var uY = playerVecY / vecLength;
+				// get a point along the vector past where they are (we assume they are going to follow that direction)
+				// 30 is arbitrary. probably need to tinker to get an ok number
+				var chargeX = playerX + uX * 15;
+				var chargeY = playerY + uY * 15;
+			} else {
+				var chargeX = playerX;
+				var chargeY = playerY;
+			}
+
+			//update player position
+			prevPlayerX = playerX
+			prevPlayerY = playerY;
+			//player is not moving
+		} else {
+			fireProjectile(playerX, playerY);
+		}
 	};
 
 	// returns the path. Uses Jump point to get the neighbors.
