@@ -16,7 +16,7 @@ var Boss = function(game, startX, startY, level, player) {
 	{"x":98,"y":249},{"x":98,"y":298},{"x":98,"y":347},{"x":98,"y":396},{"x":98,"y":445}];
 	//default to the boss looking down
  	var facing = bossImageDown;
-	//separate time for update to go with rate
+	//separate time for update to go with rate for charge
 	var time = 0;
 	var rate = 5;
 	//for the frames
@@ -52,9 +52,14 @@ var Boss = function(game, startX, startY, level, player) {
 	var damage = 3.0;
 	//the previous behavior. used to reset path between behavior changes
 	var pastBehavior = '';
+	// whether or not in teh middle of a charge
+	var charging = false;
+	// coordinates to charge to
+	var chargeX;
+	var chargeY;
 	// damn he slow
 	var moveAmount = 1.0;
-	var fullHealth = 2000;
+	var fullHealth = 1000;
 	var health = fullHealth;
 
 	// Getters and setters
@@ -104,26 +109,30 @@ var Boss = function(game, startX, startY, level, player) {
 
 	// Update boss position
 	var update = function(enemies) {
-		moveAmount = 1.0;
 		if (health < (fullHealth / 2)) {
 			
 		} else {
 			var dist = distance(player.getX(), player.getY(), x, y);
-			if (dist < 300) {
+			if (dist < 200) {
 				if (pastBehavior !== 'charge') {
 					path = null;
 				}
 				pastBehavior = 'charge';
-				// basically if we do not have a charge path then you can charge. otherwise. follow the charge path
-				if (path === null || path.length === 0) {
+				charge();
+			} else {
+				if (!charging) {
+					if (pastBehavior !== 'pathing') {
+						path = null;
+					}
+					pastBehavior = 'pathing';
+					path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
+				} else {
+					if (pastBehavior !== 'charge') {
+						path = null;
+					}
+					pastBehavior = 'charge';
 					charge();
 				}
-			} else {
-				if (pastBehavior !== 'pathing') {
-					path = null;
-				}
-				pastBehavior = 'pathing';
-				path = getSmoothPath(getTile(x, y), getTile(player.getX(), player.getY()));
 			}
 			followPath();
 		}
@@ -168,29 +177,86 @@ var Boss = function(game, startX, startY, level, player) {
 	};
 
 	var charge = function() {
-		if (prevPlayerX !== playerX || prevPlayerY !== playerX) {
-			//vector things
-			var playerVecX = playerX - prevPlayerX;
-			var playerVecY = playerY - prevPlayerY;
-			var vecLength = Math.sqrt((playerVecX * playerVecX) + (playerVecY * playerVecY));
-			if (vecLength > 0) {
-				var uX = playerVecX / vecLength;
-				var uY = playerVecY / vecLength;
-				// get a point along the vector past where they are (we assume they are going to follow that direction)
-				// 30 is arbitrary. probably need to tinker to get an ok number
-				var chargeX = playerX + uX * 15;
-				var chargeY = playerY + uY * 15;
+		var chargeMovement = 6.0;
+		if (!charging) {
+			var playerX = player.getX();
+			var playerY = player.getY();
+			var vecX;
+			var vecY;
+			if (prevPlayerX !== playerX || prevPlayerY !== playerY) {
+				//vector things
+				var playerVecX = playerX - prevPlayerX;
+				var playerVecY = playerY - prevPlayerY;
+				var vecLength = Math.sqrt((playerVecX * playerVecX) + (playerVecY * playerVecY));
+				if (vecLength > 0) {
+					var uX = playerVecX / vecLength;
+					var uY = playerVecY / vecLength;
+					// get a point along the vector past where they are (we assume they are going to follow that direction)
+					// 30 is arbitrary. probably need to tinker to get an ok number
+					vecX = playerX + uX * 15;
+					vecY = playerY + uY * 15;
+				} else {
+					vecX = playerX;
+					vecY = playerY;
+				}
+				//update player position
+				prevPlayerX = playerX
+				prevPlayerY = playerY;
+				//player is not moving
 			} else {
-				var chargeX = playerX;
-				var chargeY = playerY;
+				vecX = playerX;
+				vecY = playerY;
 			}
-
-			//update player position
-			prevPlayerX = playerX
-			prevPlayerY = playerY;
-			//player is not moving
+			//get a point to run through 
+			var tempX = vecX - x;
+			var tempY = vecY - y;
+			var vecLen = Math.sqrt((tempX * tempX) + (tempY * tempY));
+			if (vecLen > 0) {
+				chargeX = tempX / vecLen;
+				chargeY = tempY / vecLen;
+			} else {
+				// we already there no moving.
+				chargeX = 0;
+				chargeY = 0;
+			}
+			// set chargin to true so we dont recalculate during teh charge
+			charging = true;
+			// adjust the facing and width + height
+			if (y < vecY) {
+				facing = bossImageDown;
+				drawWidth = 25;
+				width = 25;
+			} else if (y > vecY) {
+				facing = bossImageUp;
+				drawWidth = 25;
+				width = 25;
+			}
+			if (x < vecX) {
+				facing = bossImageRight;
+				drawWidth = 48;
+				width = 48;
+			} else if (x > vecX) {
+				facing = bossImageLeft;
+				drawWidth = 48;
+				width = 48;
+			}
+		}
+		var middleTile = getTile(x + (chargeX * chargeMovement), y + (chargeY * chargeMovement));
+		var topTile = getTile(x + (chargeX * chargeMovement), y + (chargeY * chargeMovement) - (getHeight() / 2));
+		var bottomTile = getTile(x + (chargeX * chargeMovement), y + (chargeY * chargeMovement) + (getHeight() / 2));
+		var rightTile = getTile(x + (chargeX * chargeMovement) + (getWidth() / 2), y + (chargeY * chargeMovement));
+		var leftTile = getTile(x + (chargeX * chargeMovement) - (getWidth() / 2), y + (chargeY * chargeMovement));
+		if (!isBlocked(middleTile.x, middleTile.y) && !isBlocked(topTile.x, topTile.y) && !isBlocked(bottomTile.x, bottomTile.y)
+			&& !isBlocked(rightTile.x, rightTile.y) && !isBlocked(leftTile.x, leftTile.y)) {
+			x += chargeX * chargeMovement;
+			y += chargeY * chargeMovement;
 		} else {
-			fireProjectile(playerX, playerY);
+			time = time + 1;
+			if (time === 60) {
+				charging = false;
+				time = 0;
+			}
+			return;
 		}
 	};
 
@@ -264,7 +330,9 @@ var Boss = function(game, startX, startY, level, player) {
 			//check to see if the length is legit. and that some gobble-de-gook didn't get in the path
 			if(len > -1 && path[len] !== undefined) {
 				if(len < 2) {
+					console.log("maybe damage?")
 					if (manDistance(player.getX(), player.getY(), x, y) < 56) {
+						console.log('damage');
 						player.setHealth(player.getHealth() - damage);
 					}
 				}
@@ -296,7 +364,6 @@ var Boss = function(game, startX, startY, level, player) {
 					width = 25;
 				}
 				// if we hit the tile we are going to then remove it from the path
-				// used to be moveamount
 				if (Math.abs(x - tempTile.x) < 24 && Math.abs(y - tempTile.y) < 24) {
 					path.pop();
 				}
@@ -341,7 +408,7 @@ var Boss = function(game, startX, startY, level, player) {
 
 	// based on tile coordinates return the tile's number
 	var getLevelTile = function(x0, y0){
-		if(x0 < 0 || x0 > level[0].length || y0 < 0 || y0 > level.length){
+		if(x0 < 0 || x0 >= level[0].length || y0 < 0 || y0 >= level.length){
 			return null;
 		}
 		return level[y0][x0];
@@ -541,8 +608,8 @@ var Boss = function(game, startX, startY, level, player) {
 			//get the corners
 			var topY = checkPixelY - ((height * scale) / 2) + 1;
 			var bottomY = checkPixelY + ((height * scale) / 2) - 1;
-			var leftX = checkPixelX - ((48 * scale) / 2) + 1;
-			var rightX = checkPixelX + ((48 * scale) / 2) - 1;
+			var leftX = checkPixelX - ((width * scale) / 2) + 1;
+			var rightX = checkPixelX + ((width * scale) / 2) - 1;
 			//get the tiles for the corners and the middle
 			var topLeft = getTile(leftX, topY);
 			var topRight = getTile(rightX, topY);
