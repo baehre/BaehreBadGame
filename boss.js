@@ -330,9 +330,7 @@ var Boss = function(game, startX, startY, level, player) {
 			//check to see if the length is legit. and that some gobble-de-gook didn't get in the path
 			if(len > -1 && path[len] !== undefined) {
 				if(len < 2) {
-					console.log("maybe damage?")
-					if (manDistance(player.getX(), player.getY(), x, y) < 56) {
-						console.log('damage');
+					if (manDistance(player.getX(), player.getY(), x, y) < 60) {
 						player.setHealth(player.getHealth() - damage);
 					}
 				}
@@ -368,12 +366,12 @@ var Boss = function(game, startX, startY, level, player) {
 					path.pop();
 				}
 			} else {
-				if (manDistance(player.getX(), player.getY(), x, y) < 56) {
+				if (manDistance(player.getX(), player.getY(), x, y) < 60) {
 					player.setHealth(player.getHealth() - damage);
 				}
 			}
 		} else {
-			if (manDistance(player.getX(), player.getY(), x, y) < 56) {
+			if (manDistance(player.getX(), player.getY(), x, y) < 60) {
 				player.setHealth(player.getHealth() - damage);
 			}
 		}
