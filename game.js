@@ -46,6 +46,20 @@ var levelData = [
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11]];
 
 
+// to be used for boss fight?
+// var levelData = [
+// [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11],
+// [11,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
+// [11,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
+// [11,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
+// [11,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
+// [11,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
+// [11,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
+// [11,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
+// [11,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
+// [11,2,0,2,0,2,0,2,2,2,0,2,0,2,11],
+// [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11]];
+
 
 function init(){
   //set globals
@@ -69,8 +83,8 @@ function init(){
   localPlayer = new Player(this, canvas, 100, 300, levelData, enemies);
   //made a function that adds an enemy and updates the enemies for the player
   //addBoss(300, 300);
-  addBuffer(300, 300);
   addChaser(200, 100);
+  addBuffer(300, 300);
   addShielder(300, 100);
   addShooter(400, 100);
   addChaser(200, 600);
@@ -109,15 +123,18 @@ function keyUp(e){
 
 // how the game actually runs
 function gameLoop(){
+  if (!document.hasFocus()) {
+    if(!pause) {
+      pause = true;
+      paused.classList.toggle('hidden', false);
+      draw();
+    }
+  }
   if (!pause) {
     update();
     draw();
   }
-  if (!document.hasFocus()) {
-    pause = true;
-    paused.classList.toggle('hidden', !pause);
-    draw();
-  }
+
   //the magic by Paul Irish.
   // chooses the time called based on browser info
   // (like 60 or 30 based on what the browser can handle)
@@ -280,7 +297,6 @@ function drawProjectiles(){
   localPlayer.setProjectiles(temp);
   //set projectiles to the global
   projectiles = temp.slice();
-  //console.log("PROJECTILES: " + projectiles.length);
   // now handle enemies projectiles
   for(var j = 0; j < enemies.length; j++) {
     // if they can even shoot
