@@ -84,6 +84,7 @@ function init(){
   //made a function that adds an enemy and updates the enemies for the player
   //addBoss(300, 300);
   addChaser(200, 100);
+  addBuffer(300, 300);
   addShielder(300, 100);
   addShooter(400, 100);
   addChaser(200, 600);
