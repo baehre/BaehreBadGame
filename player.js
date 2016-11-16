@@ -89,6 +89,8 @@ var Player = function(game, can, startX, startY, level, enemies) {
 			percentUsage = 0.0;
 			storing = false;
 			activated = false;
+			// reset to normal speed
+			moveAmount = originalMoveAmount;
 		}
 		// space bar uses storedStat if has any
 		else if (e.keyCode === 32) {
@@ -191,40 +193,26 @@ var Player = function(game, can, startX, startY, level, enemies) {
 			updateTime = 0;
 		}
 
-		// // if the player is currently storing a stat
-		// var storing = false;
-		// // if the player is using the stored stat
-		// var activated = false;
-		// // percentage to add on usage
-		// var perStore = 10.0;
-		// // max amount you can be dropping a stat
-		// var capPercent = 50.0;
-		// // currently how much the player is storing
-		// var percentStoring = 0.0;
-		// // how much of that stat is stored
-		// var storedStat = 0.0;
-		// // how much percent you are currently using of the stored stat
-		// var percentUsage = 0.0;
-		// // per space hit how much to use
-		// var perUsage = 10.0;
-		// // max you can use
-		// var capUsagePercent = 50.0;
-		// // max amount a player can store
-		// var maxStorage = 5000.0;
-
-
 		// storing stuff
 		if (storing) {
 			if (storedStat < maxStorage) {
 				// adds between .1 and .5 every update frame
 				storedStat = storedStat + .01 * percentStoring;
+				moveAmount = originalMoveAmount - .02 * percentStoring;
 			}
 		}
 		// usage stuff
 		if (activated) {
 			if (storedStat > 0.0) {
-				// increase the movement speed for testing
+				// increase the movement speed (just for testing)
 				moveAmount = originalMoveAmount + .02 * percentUsage;
+				storedStat = storedStat - .1 * percentUsage;
+				if (storedStat < 0.0) {
+					storedStat = 0.0;
+				}
+			} else {
+				moveAmount = originalMoveAmount;
+				activated = false;
 			}
 		}
 
