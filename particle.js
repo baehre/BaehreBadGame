@@ -77,12 +77,12 @@ var Particle = function(startX, startY, level, l, col) {
         // change direction of particles
         xa = xa * 0.4;
         ya = ya * 0.4;
-				za = za * -0.55;
+		za = za * -0.55;
     }
 		if (collision(x + xa, y + ya + z + za)) {
 			xa = xa * -0.5;
-      ya = ya * -0.5;
-      za = za * -0.5;
+			ya = ya * -0.5;
+			za = za * -0.5;
 		}
 		x = x + xa;
 	 	y = y + ya;

@@ -33,15 +33,15 @@ var levelData = [
 [11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
 [11,2,0,2,0,2,0,2,0,11,11,11,11,11,11,2,0,2,0,2,0,2,0,2,11],
 [11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
-[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,0,2,0,2,0,11],
-[11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,0,2,0,2,11],
-[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,2,0,0,2,0,11],
-[11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,0,2,11],
-[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,0,0,0,2,0,11],
+[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
 [11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
-[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,0,0,2,0,0,11],
-[11,0,2,0,2,0,2,0,11,11,11,11,11,11,11,2,0,0,0,2,0,2,0,2,11],
-[11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,0,11],
+[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
+[11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
+[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
+[11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
+[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
+[11,0,2,0,2,0,2,0,11,11,11,11,11,11,11,0,2,0,2,0,2,0,2,0,11],
+[11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
 [11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11]];
 
@@ -83,13 +83,13 @@ function init(){
   localPlayer = new Player(this, canvas, 100, 300, levelData, enemies);
   //made a function that adds an enemy and updates the enemies for the player
   //addBoss(300, 300);
-  addChaser(200, 100);
-  addBuffer(300, 300);
-  addShielder(300, 100);
-  addShooter(400, 100);
-  addChaser(200, 600);
-  addShielder(300, 600);
-  addShooter(400, 600);
+  // addChaser(200, 100);
+  // addBuffer(300, 300);
+  // addShielder(300, 100);
+  // addShooter(400, 100);
+  // addChaser(200, 600);
+  // addShielder(300, 600);
+  // addShooter(400, 600);
   //sets all the event handlers
   setEventHandlers();
 }
@@ -144,7 +144,7 @@ function gameLoop(){
 // updates the data for player enemies and projectiles
 function update(){
   updatePlayer();
-  updateChasers();
+  updateEnemies();
   updateEmitters();
   updateProjectiles();
 }
@@ -176,7 +176,7 @@ function updateProjectiles(){
 }
 
 // upadte the chasers
-function updateChasers(){
+function updateEnemies(){
   for (var i = 0; i < enemies.length; i++) {
     var enemy = enemies[i];
     //pass in enemies to check for inter-enemy collision
@@ -187,7 +187,6 @@ function updateChasers(){
 function updateEmitters() {
   for (var i = 0; i < emitters.length; i++) {
     var emitter = emitters[i];
-    //pass in enemies to check for inter-enemy collision
     emitter.update();
   }
 }
@@ -245,7 +244,7 @@ function drawBackground(){
   }
 }
 
-// only draw the player if he has health. otherwise reset him or her
+// only draw the player if he has health. otherwise reset him (or her)
 function drawPlayer(){
   if(localPlayer.getHealth() <= 0) {
     localPlayer.setX(100);
