@@ -27,10 +27,19 @@ body { margin: 20px; background: #111; }
     padding-top: 10px;
     width: 150px;
     display: inline-block;
+    padding-right: 10px;
+}
+
+.usage-text {
+    font-size: 20px;
+    font-weight: normal;
+    padding-top: 5px;
+    display: inline-block;
 }
 
 .health-bar {
     height: 15px;
+    display: inline-block;
 }
 
 .health {

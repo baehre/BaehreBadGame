@@ -6,6 +6,9 @@ var Player = function(game, can, startX, startY, level, enemies) {
 	var canvas = can;
 	var moving = false;
 	var paused = document.getElementById('paused');
+	var storedBar = document.getElementById('storedBar');
+	var emptyBar = document.getElementById('emptyBar');
+	var usageText = document.getElementById('usageText');
 	var levelData = level;
 	var playerImage = new Image();
 	playerImage.src = "SpriteSheets/PlayerSprites/racerSprite.png";
@@ -197,7 +200,7 @@ var Player = function(game, can, startX, startY, level, enemies) {
 		if (storing) {
 			if (storedStat < maxStorage) {
 				// adds between .1 and .5 every update frame
-				storedStat = storedStat + .01 * percentStoring;
+				storedStat = storedStat + 0.04 * percentStoring;
 				moveAmount = originalMoveAmount - .02 * percentStoring;
 			}
 		}
@@ -206,7 +209,7 @@ var Player = function(game, can, startX, startY, level, enemies) {
 			if (storedStat > 0.0) {
 				// increase the movement speed (just for testing)
 				moveAmount = originalMoveAmount + .02 * percentUsage;
-				storedStat = storedStat - .1 * percentUsage;
+				storedStat = storedStat - 0.04 * percentUsage;
 				if (storedStat < 0.0) {
 					storedStat = 0.0;
 				}
@@ -291,6 +294,20 @@ var Player = function(game, can, startX, startY, level, enemies) {
 			//if the player is not moving then make sure it is in the stand still frame
 			//by setting it to facing[0]
 			ctx.drawImage(playerImage, facing[0].x, facing[0].y, tileSize, tileSize, Math.round(x-((size)/2)), Math.round(y-((size)/2)), size, size);
+		}
+		// show the percent meter
+		var storedPercent = (storedStat / maxStorage) * 100;
+		var emptyPercent = 100 - storedPercent;
+		storedBar.style.width = storedPercent.toString() + '%';
+		emptyBar.style.width = emptyPercent.toString() + '%';
+		if (storing) {
+			var temp = parseInt(percentStoring / 10) * -1;
+			usageText.innerHTML = temp.toString();
+		} else if (activated) {
+			var temp = parseInt(percentUsage / 10);
+			usageText.innerHTML = temp.toString();
+		} else {
+			usageText.innerHTML = '+0';
 		}
 	};
 
