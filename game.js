@@ -33,15 +33,15 @@ var levelData = [
 [11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
 [11,2,0,2,0,2,0,2,0,11,11,11,11,11,11,2,0,2,0,2,0,2,0,2,11],
 [11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
-[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,0,2,0,2,0,11],
-[11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,0,2,0,2,11],
-[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,2,0,0,2,0,11],
-[11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,0,2,11],
-[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,0,0,0,2,0,11],
+[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
 [11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
-[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,0,0,2,0,0,11],
-[11,0,2,0,2,0,2,0,11,11,11,11,11,11,11,2,0,0,0,2,0,2,0,2,11],
-[11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,0,11],
+[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
+[11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
+[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
+[11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
+[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
+[11,0,2,0,2,0,2,0,11,11,11,11,11,11,11,0,2,0,2,0,2,0,2,0,11],
+[11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
 [11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11]];
 
@@ -144,7 +144,7 @@ function gameLoop(){
 // updates the data for player enemies and projectiles
 function update(){
   updatePlayer();
-  updateChasers();
+  updateEnemies();
   updateEmitters();
   updateProjectiles();
 }
@@ -176,7 +176,7 @@ function updateProjectiles(){
 }
 
 // upadte the chasers
-function updateChasers(){
+function updateEnemies(){
   for (var i = 0; i < enemies.length; i++) {
     var enemy = enemies[i];
     //pass in enemies to check for inter-enemy collision
@@ -187,7 +187,6 @@ function updateChasers(){
 function updateEmitters() {
   for (var i = 0; i < emitters.length; i++) {
     var emitter = emitters[i];
-    //pass in enemies to check for inter-enemy collision
     emitter.update();
   }
 }
@@ -245,7 +244,7 @@ function drawBackground(){
   }
 }
 
-// only draw the player if he has health. otherwise reset him or her
+// only draw the player if he has health. otherwise reset him (or her)
 function drawPlayer(){
   if(localPlayer.getHealth() <= 0) {
     localPlayer.setX(100);

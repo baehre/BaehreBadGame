@@ -6,6 +6,9 @@ var Player = function(game, can, startX, startY, level, enemies) {
 	var canvas = can;
 	var moving = false;
 	var paused = document.getElementById('paused');
+	var storedBar = document.getElementById('storedBar');
+	var emptyBar = document.getElementById('emptyBar');
+	var usageText = document.getElementById('usageText');
 	var levelData = level;
 	var playerImage = new Image();
 	playerImage.src = "SpriteSheets/PlayerSprites/racerSprite.png";
@@ -40,9 +43,70 @@ var Player = function(game, can, startX, startY, level, enemies) {
 
 	var x = startX;
 	var y = startY;
+	var originalDamage = 20;
+	var originalMoveAmount = 2.5;
 	var moveAmount = 2.5;
 	var fullHealth = 100;
 	var health = fullHealth;
+	// all the ability variables go here will DEFINITELY need to tinker here
+	// if the player is currently storing a stat
+	var storing = false;
+	// if the player is using the stored stat
+	var activated = false;
+	// percentage to add on usage
+	var perStore = 10.0;
+	// max amount you can be dropping a stat
+	var capPercent = 50.0;
+	// currently how much the player is storing
+	var percentStoring = 0.0;
+	// how much of that stat is stored
+	var storedStat = 0.0;
+	// how much percent you are currently using of the stored stat
+	var percentUsage = 0.0;
+	// per space hit how much to use
+	var perUsage = 10.0;
+	// max you can use
+	var capUsagePercent = 50.0;
+	// max amount a player can store
+	var maxStorage = 5000.0;
+
+	// listen for the q e and space button
+	window.addEventListener("keydown", playerKeyDown, false);
+
+	// this format because the eventlistener is silly
+	function playerKeyDown(e) {
+		// i want teh comments so the code wont be as clean
+		// Q to add percentage to drain of 1 stat
+		if (e.keyCode === 81) {
+			percentUsage = 0.0;
+			if (percentStoring < capPercent) {
+				percentStoring = percentStoring + perStore;
+			}
+			storing = true;
+			activated = false;
+		}
+		// E stops all drainage or usage of stats
+		else if (e.keyCode === 69) {
+			// stops any storing that was going on 
+			percentStoring = 0.0;
+			percentUsage = 0.0;
+			storing = false;
+			activated = false;
+			// reset to normal speed
+			moveAmount = originalMoveAmount;
+		}
+		// space bar uses storedStat if has any
+		else if (e.keyCode === 32) {
+			// stops any storing that is going on if they skip hitting e
+			percentStoring = 0.0;
+			// will stop or start the activation
+			if (percentUsage < capUsagePercent) {
+				percentUsage = percentUsage + perUsage;
+			}
+			activated = true;
+			storing = false;
+		}
+	};
 
 	canvas.addEventListener("mousedown", mouseDown);
 
@@ -57,7 +121,7 @@ var Player = function(game, can, startX, startY, level, enemies) {
 				var dx = (tempX - canvas.width/2) + 20;
 				var dy = (tempY - canvas.height/2) + 20;
 				var direction = Math.atan2(dy,dx);
-				var tempProjectile = new Projectile(game, "player", x, y, direction, canvas, levelData, enemies, 20, 6, 250);
+				var tempProjectile = new Projectile(game, "player", x, y, direction, canvas, levelData, enemies, originalDamage, 6, 250);
 				projectiles.push(tempProjectile);
 				projectileFireRate = startingProjectileFireRate;
 			}
@@ -131,6 +195,30 @@ var Player = function(game, can, startX, startY, level, enemies) {
 		if(updateTime > 7500) {
 			updateTime = 0;
 		}
+
+		// storing stuff
+		if (storing) {
+			if (storedStat < maxStorage) {
+				// adds between .1 and .5 every update frame
+				storedStat = storedStat + 0.04 * percentStoring;
+				moveAmount = originalMoveAmount - .02 * percentStoring;
+			}
+		}
+		// usage stuff
+		if (activated) {
+			if (storedStat > 0.0) {
+				// increase the movement speed (just for testing)
+				moveAmount = originalMoveAmount + .02 * percentUsage;
+				storedStat = storedStat - 0.04 * percentUsage;
+				if (storedStat < 0.0) {
+					storedStat = 0.0;
+				}
+			} else {
+				moveAmount = originalMoveAmount;
+				activated = false;
+			}
+		}
+
 		// Previous position
 		var prevX = x;
 		var	prevY = y;
@@ -206,6 +294,20 @@ var Player = function(game, can, startX, startY, level, enemies) {
 			//if the player is not moving then make sure it is in the stand still frame
 			//by setting it to facing[0]
 			ctx.drawImage(playerImage, facing[0].x, facing[0].y, tileSize, tileSize, Math.round(x-((size)/2)), Math.round(y-((size)/2)), size, size);
+		}
+		// show the percent meter
+		var storedPercent = (storedStat / maxStorage) * 100;
+		var emptyPercent = 100 - storedPercent;
+		storedBar.style.width = storedPercent.toString() + '%';
+		emptyBar.style.width = emptyPercent.toString() + '%';
+		if (storing) {
+			var temp = parseInt(percentStoring / 10) * -1;
+			usageText.innerHTML = temp.toString();
+		} else if (activated) {
+			var temp = parseInt(percentUsage / 10);
+			usageText.innerHTML = temp.toString();
+		} else {
+			usageText.innerHTML = '+0';
 		}
 	};
 
