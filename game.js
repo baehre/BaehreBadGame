@@ -26,16 +26,25 @@ var scale = 3;
 var enemies;
 // basically what I said above
 var backgroundTileSize = tileSize * scale;
+// the current screen the player is on
+var currentScreen = null;
+// the coordinates for the levelArray to be used
+var currentScreenX = 0;
+var currentScreenY = 0;
+// used for fade in and out
+var alpha = 0;
+var delta = 0.05;
+var levelData;
 //level data. saying which tiles to use.
-var levelData = [
+var startLevelData = [
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11],
 [11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
 [11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
 [11,2,0,2,0,2,0,2,0,11,11,11,11,11,11,2,0,2,0,2,0,2,0,2,11],
 [11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
 [11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
-[11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
-[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
+[11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,312],
+[11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,310],
 [11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
 [11,2,0,2,0,2,0,2,11,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
 [11,0,2,0,2,0,2,0,11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
@@ -45,21 +54,22 @@ var levelData = [
 [11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11]];
 
-
 // to be used for boss fight?
-// var levelData = [
-// [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11],
-// [11,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
-// [11,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
-// [11,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
-// [11,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
-// [11,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
-// [11,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
-// [11,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
-// [11,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
-// [11,2,0,2,0,2,0,2,2,2,0,2,0,2,11],
-// [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11]];
+var bossLevelData = [
+[11,11,11,11,11,11,11,11,11,11,11,11,11,11,11],
+[11,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
+[11,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
+[11,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
+[11,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
+[11,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
+[11,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
+[11,2,0,2,0,2,0,2,0,2,0,2,0,2,11],
+[11,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
+[11,2,0,2,0,2,0,2,2,2,0,2,0,2,11],
+[11,11,11,11,11,11,11,11,11,11,11,11,11,11,11]];
 
+
+var levelArray = [[{"level": startLevelData, "spawn": {"x": 100, "y": 300}}, {"level": bossLevelData, "spawn": {"x": 100, "y": 300}}]];
 
 function init(){
   //set globals
@@ -74,13 +84,16 @@ function init(){
   canvas.width = 900;
   canvas.height = 504;
 
+  currentScreen = levelArray[currentScreenX][currentScreenY]; 
+  levelData = currentScreen.level;
   enemies = [];
   projectiles = [];
   emitters = [];
   //keys.js
   keys = new Keys();
   //player.js
-  localPlayer = new Player(this, canvas, 100, 300, levelData, enemies);
+  //localPlayer = new Player(this, canvas, 100, 300, levelData, enemies);
+  localPlayer = new Player(this, canvas, currentScreen.spawn.x, currentScreen.spawn.y, levelData, enemies);
   //made a function that adds an enemy and updates the enemies for the player
   //addBoss(300, 300);
   addChaser(200, 100);
@@ -127,6 +140,7 @@ function gameLoop(){
     if(!pause) {
       pause = true;
       paused.classList.toggle('hidden', false);
+      // call draw one more time for the fixed image with the global alpha
       draw();
     }
   }
@@ -165,29 +179,88 @@ function updatePlayer(){
     healthBar.style.width = percent.toString() + '%';
   }
   localPlayer.update(keys);
+  checkNewScreen();
+}
+
+function checkNewScreen() {
+  var tempX = Math.floor(localPlayer.getX() / 48.0);
+  var tempY = Math.floor(localPlayer.getY() / 48.0);
+  if (tempX > -1 && tempX < currentScreen.level[0].length && tempY > -1 && tempY < currentScreen.level.length) {
+    if (currentScreen.level[tempY][tempX] > 100) {
+      pause = true;
+      var direction = Math.floor(currentScreen.level[tempY][tempX] / 100);
+      if (direction === 1) {
+        currentScreenX = currentScreenX - 1;
+      } else if (direction === 2) {
+        currentScreenY = currentScreenY - 1;
+      } else if (direction === 3) {
+        currentScreenX = currentScreenX + 1;
+      } else if (direction === 4) {
+        currentScreenY = currentScreenY + 1;
+      }
+      // do stuff here
+      fadeNewLevel();
+    }
+  }
+}
+
+function fadeNewLevel() {
+  /// increase alpha with delta value
+  alpha += delta;
+  //// if delta <=0 or >=1 then reverse
+  if (alpha <= 0 || alpha >= 1) delta = -delta;
+  /// set global alpha
+  //wipe it
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.save();
+  //shifts the canvas based around where the player is
+  context.translate(Math.round(canvas.width/2 - localPlayer.getX()), Math.round(canvas.height/2 - localPlayer.getY()));
+  context.globalAlpha = alpha;
+  // draw the layers. background first. otherwise doesn't really matter
+  drawBackground();
+  drawEnemies();
+  drawPlayer();
+  drawEmitters();
+  drawProjectiles();
+  // keep the context bueno
+  context.restore();
+  // basically can't see anything
+  if (alpha > .9) {
+    currentScreen = levelArray[currentScreenY][currentScreenX];
+    localPlayer.setX(currentScreen.spawn.x);
+    localPlayer.setY(currentScreen.spawn.y);
+    updateLevels(currentScreen.level);
+    levelData = currentScreen.level;
+  }
+  /// loop using rAF
+  if (alpha > 0.0) {
+    window.requestAnimFrame(fadeNewLevel);
+  } else {
+    pause = false;
+  }
 }
 
 //update all the projectiles
 function updateProjectiles(){
   for(var i = 0; i < projectiles.length; i++){
-    var tempProjectile = projectiles[i];
-    tempProjectile.update();
+    //var tempProjectile = projectiles[i];
+    projectiles[i].update();
   }
 }
 
 // upadte the chasers
 function updateEnemies(){
   for (var i = 0; i < enemies.length; i++) {
-    var enemy = enemies[i];
+    //var enemy = enemies[i];
     //pass in enemies to check for inter-enemy collision
-    enemy.update(enemies);
+    enemies[i].update(enemies);
   }
 }
 
 function updateEmitters() {
   for (var i = 0; i < emitters.length; i++) {
-    var emitter = emitters[i];
-    emitter.update();
+    //var emitter = emitters[i];
+    emitters[i].update();
   }
 }
 
@@ -347,4 +420,13 @@ function addBuffer(bufferX, bufferY) {
 // this is almost always going to be called somewhere other than here
 function addEmitter(emitterX, emitterY, amount, life, color) {
   emitters.push(new Emitter(this, levelData, emitterX, emitterY, amount, life, color));
+}
+
+function updateLevels(newLevel) {
+  // update the players level
+  localPlayer.setLevel(newLevel);
+  // reset all the arrays since we are starting from scratch
+  enemies = [];
+  projectiles = [];
+  emitters = [];
 }

@@ -99,7 +99,7 @@ var Particle = function(startX, startY, level, l, col) {
 
 	var collision = function(x0, y0) {
 		var tile = getTile(x0, y0);
-		if(level[tile.y][tile.x] > 10){
+		if(level[tile.y][tile.x] > 10 && level[tile.y][tile.x] < 100){
 			return true;
 		}
 		else{

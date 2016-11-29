@@ -424,7 +424,7 @@ var Boss = function(game, startX, startY, level, player) {
 		if(checkX < 0 || checkX > level[0].length || checkY < 0 || checkY > level.length){
 			return true;
 		}
-		if(level[checkY][checkX] > 10){
+		if(level[checkY][checkX] > 10 && level[checkY][checkX] < 100){
 			return true;
 		}
 		else{

@@ -193,6 +193,10 @@ var Player = function(game, can, startX, startY, level, enemies) {
 		updateTime = newTime;
 	};
 
+	var setLevel = function(newLevel) {
+		levelData = newLevel;
+	};
+
 	// Update player position
 	var update = function(keys) {
 		updateTime = updateTime + 1;
@@ -356,7 +360,10 @@ var Player = function(game, can, startX, startY, level, enemies) {
 	}
 
 	var intersection = function(checkTile){
-		if(levelData[checkTile.y][checkTile.x] > 10){
+		if (checkTile.y < 0 || checkTile.x < 0 || checkTile.y > levelData.length || checkTile.x > levelData[0].length) {
+			return false;
+		}
+		if(levelData[checkTile.y][checkTile.x] > 10 && levelData[checkTile.y][checkTile.x] < 100){
 			return true;
 		}
 		else{
