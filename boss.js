@@ -91,6 +91,10 @@ var Boss = function(game, startX, startY, level, player) {
         return false;
     };
 
+	var getType = function() {
+		return 'boss';
+	};
+
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
 	};
@@ -634,6 +638,7 @@ var Boss = function(game, startX, startY, level, player) {
 		getHeight: getHeight,
 		getHealth: getHealth,
         getLeader: getLeader,
+		getType: getType,
 		getFullHealth: getFullHealth,
 		setFullHealth: setFullHealth,
 		setX: setX,

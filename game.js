@@ -55,10 +55,10 @@ var startLevelData = [
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11]];
 
 var startLevelSpawn = [
-  function() { addChaser(200, 100); },
-  function() { addBuffer(300, 300); },
-  function() { addShielder(300, 100); },
-  function() { addShooter(400, 100); },
+  //function() { addChaser(200, 100); },
+  //function() { addBuffer(300, 300); },
+  //function() { addShielder(300, 100); },
+  //function() { addShooter(400, 100); },
   function() { addChaser(200, 600); },
   function() { addShielder(300, 600); },
   function() { addShooter(400, 600); }
@@ -336,11 +336,17 @@ function drawBackground(){
 // only draw the player if he has health. otherwise reset him (or her)
 function drawPlayer(){
   if(localPlayer.getHealth() <= 0) {
-    localPlayer.setX(100);
-    localPlayer.setY(300);
+    currentScreenX = 0;
+    currentScreenY = 0;
+    currentScreen = levelArray[currentScreenX][currentScreenY]; 
+    levelData = currentScreen.level;
+    updateLevels(levelData);
     localPlayer.setHealth(100);
     healthBar.style.width = '100%';
     healthBar.style.backgroundColor = '#00ff00';
+    for (var i = 0; i < currentScreen.enemies.length; i++) {
+      currentScreen.enemies[i]();
+    }
   } else {
     localPlayer.draw(context);
   }
