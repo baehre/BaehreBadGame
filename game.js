@@ -54,6 +54,20 @@ var startLevelData = [
 [11,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,11],
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11]];
 
+var startLevelSpawn = [
+  function() { addChaser(200, 100); },
+  function() { addBuffer(300, 300); },
+  function() { addShielder(300, 100); },
+  function() { addShooter(400, 100); },
+  function() { addChaser(200, 600); },
+  function() { addShielder(300, 600); },
+  function() { addShooter(400, 600); }
+];
+
+var bossLevelSpawn = [
+  function() { addBoss(300, 300); }
+];
+
 // to be used for boss fight?
 var bossLevelData = [
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11],
@@ -69,7 +83,7 @@ var bossLevelData = [
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11]];
 
 
-var levelArray = [[{"level": startLevelData, "spawn": {"x": 100, "y": 300}}, {"level": bossLevelData, "spawn": {"x": 100, "y": 300}}]];
+var levelArray = [[{"level": startLevelData, "spawn": {"x": 100, "y": 300}, "enemies": startLevelSpawn}, {"level": bossLevelData, "spawn": {"x": 100, "y": 300}, "enemies": bossLevelSpawn}]];
 
 function init(){
   //set globals
@@ -84,27 +98,26 @@ function init(){
   canvas.width = 900;
   canvas.height = 504;
 
-  currentScreen = levelArray[currentScreenX][currentScreenY]; 
-  levelData = currentScreen.level;
   enemies = [];
   projectiles = [];
   emitters = [];
+
   //keys.js
   keys = new Keys();
-  //player.js
-  //localPlayer = new Player(this, canvas, 100, 300, levelData, enemies);
-  localPlayer = new Player(this, canvas, currentScreen.spawn.x, currentScreen.spawn.y, levelData, enemies);
-  //made a function that adds an enemy and updates the enemies for the player
-  //addBoss(300, 300);
-  addChaser(200, 100);
-  addBuffer(300, 300);
-  addShielder(300, 100);
-  addShooter(400, 100);
-  addChaser(200, 600);
-  addShielder(300, 600);
-  addShooter(400, 600);
+
+  setCurrentScreen();
+
   //sets all the event handlers
   setEventHandlers();
+}
+
+function setCurrentScreen() {
+  currentScreen = levelArray[currentScreenX][currentScreenY]; 
+  levelData = currentScreen.level;
+  localPlayer = new Player(this, canvas, currentScreen.spawn.x, currentScreen.spawn.y, levelData, enemies);
+  for (var i = 0; i < currentScreen.enemies.length; i++) {
+    currentScreen.enemies[i]();
+  }
 }
 
 function setEventHandlers(){
@@ -225,18 +238,21 @@ function fadeNewLevel() {
   // keep the context bueno
   context.restore();
   // basically can't see anything
-  if (alpha > .9) {
+  if (alpha > 0.96) {
     currentScreen = levelArray[currentScreenY][currentScreenX];
     localPlayer.setX(currentScreen.spawn.x);
     localPlayer.setY(currentScreen.spawn.y);
     updateLevels(currentScreen.level);
     levelData = currentScreen.level;
+    for (var i = 0; i < currentScreen.enemies.length; i++) {
+      currentScreen.enemies[i]();
+    }
   }
-  /// loop using rAF
   if (alpha > 0.0) {
     window.requestAnimFrame(fadeNewLevel);
   } else {
     pause = false;
+    alpha = 0;
   }
 }
 

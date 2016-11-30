@@ -252,7 +252,7 @@ var Boss = function(game, startX, startY, level, player) {
 			y += chargeY * chargeMovement;
 		} else {
 			time = time + 1;
-			if (time === 60) {
+			if (time === 40) {
 				charging = false;
 				time = 0;
 			}
