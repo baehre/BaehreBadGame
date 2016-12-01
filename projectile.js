@@ -118,7 +118,7 @@ var Projectile = function(game, entity, xP, yP, direction, can, level, enemies, 
 	  };
 
     var checkTile = function(tile){
-      if (level[tile.y][tile.x] > 10) {
+      if(level[tile.y][tile.x] > 10 && level[tile.y][tile.x] < 100){
         game.addEmitter(x, y, 5, 20, '#939393');
         return true;
       } else {

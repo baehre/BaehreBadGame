@@ -161,6 +161,10 @@ var Player = function(game, can, startX, startY, level, enemies) {
 		return updateTime;
 	};
 
+	var setLevel = function(newLevel) {
+		levelData = newLevel;
+	};
+
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
 	};
@@ -187,6 +191,10 @@ var Player = function(game, can, startX, startY, level, enemies) {
 
 	var setUpdateTime = function(newTime) {
 		updateTime = newTime;
+	};
+
+	var setLevel = function(newLevel) {
+		levelData = newLevel;
 	};
 
 	// Update player position
@@ -352,7 +360,10 @@ var Player = function(game, can, startX, startY, level, enemies) {
 	}
 
 	var intersection = function(checkTile){
-		if(levelData[checkTile.y][checkTile.x] > 10){
+		if (checkTile.y < 0 || checkTile.x < 0 || checkTile.y > levelData.length || checkTile.x > levelData[0].length) {
+			return false;
+		}
+		if(levelData[checkTile.y][checkTile.x] > 10 && levelData[checkTile.y][checkTile.x] < 100){
 			return true;
 		}
 		else{
@@ -372,6 +383,7 @@ var Player = function(game, can, startX, startY, level, enemies) {
 		setProjectiles: setProjectiles,
 		getUpdateTime: getUpdateTime,
 		setUpdateTime: setUpdateTime,
+		setLevel: setLevel,
 		getEnemies: getEnemies,
 		setEnemies: setEnemies,
 		getHealth: getHealth,

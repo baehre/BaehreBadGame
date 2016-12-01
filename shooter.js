@@ -769,7 +769,7 @@ var Shooter = function(game, startX, startY, level, player) {
 		if(checkX < 0 || checkX > level[0].length - 1 || checkY < 0 || checkY > level.length - 1){
 			return true;
 		}
-		if(level[checkY][checkX] > 10){
+		if(level[checkY][checkX] > 10 && level[checkY][checkX] < 100){
 			return true;
 		}
 		else{

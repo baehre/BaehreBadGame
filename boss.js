@@ -91,6 +91,10 @@ var Boss = function(game, startX, startY, level, player) {
         return false;
     };
 
+	var getType = function() {
+		return 'boss';
+	};
+
 	var setFullHealth = function(newHealth) {
 		fullHealth = newHealth;
 	};
@@ -252,7 +256,7 @@ var Boss = function(game, startX, startY, level, player) {
 			y += chargeY * chargeMovement;
 		} else {
 			time = time + 1;
-			if (time === 60) {
+			if (time === 40) {
 				charging = false;
 				time = 0;
 			}
@@ -424,7 +428,7 @@ var Boss = function(game, startX, startY, level, player) {
 		if(checkX < 0 || checkX > level[0].length || checkY < 0 || checkY > level.length){
 			return true;
 		}
-		if(level[checkY][checkX] > 10){
+		if(level[checkY][checkX] > 10 && level[checkY][checkX] < 100){
 			return true;
 		}
 		else{
@@ -634,6 +638,7 @@ var Boss = function(game, startX, startY, level, player) {
 		getHeight: getHeight,
 		getHealth: getHealth,
         getLeader: getLeader,
+		getType: getType,
 		getFullHealth: getFullHealth,
 		setFullHealth: setFullHealth,
 		setX: setX,
