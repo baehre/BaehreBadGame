@@ -250,10 +250,19 @@ var Boss = function(game, startX, startY, level, player) {
 		var bottomTile = getTile(x + (chargeX * chargeMovement), y + (chargeY * chargeMovement) + (getHeight() / 2));
 		var rightTile = getTile(x + (chargeX * chargeMovement) + (getWidth() / 2), y + (chargeY * chargeMovement));
 		var leftTile = getTile(x + (chargeX * chargeMovement) - (getWidth() / 2), y + (chargeY * chargeMovement));
-		if (!isBlocked(middleTile.x, middleTile.y) && !isBlocked(topTile.x, topTile.y) && !isBlocked(bottomTile.x, bottomTile.y)
+		if (middleTile && topTile && bottomTile && rightTile && leftTile) {
+			if (!isBlocked(middleTile.x, middleTile.y) && !isBlocked(topTile.x, topTile.y) && !isBlocked(bottomTile.x, bottomTile.y)
 			&& !isBlocked(rightTile.x, rightTile.y) && !isBlocked(leftTile.x, leftTile.y)) {
-			x += chargeX * chargeMovement;
-			y += chargeY * chargeMovement;
+				x += chargeX * chargeMovement;
+				y += chargeY * chargeMovement;
+			} else {
+				time = time + 1;
+				if (time === 40) {
+					charging = false;
+					time = 0;
+				}
+				return;
+			}
 		} else {
 			time = time + 1;
 			if (time === 40) {

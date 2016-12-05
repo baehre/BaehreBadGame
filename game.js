@@ -56,7 +56,7 @@ var startLevelData = [
 
 var startLevelSpawn = [
   //function() { addChaser(200, 100); },
-  //function() { addBuffer(300, 300); },
+  function() { addBuffer(300, 300); },
   //function() { addShielder(300, 100); },
   //function() { addShooter(400, 100); },
   function() { addChaser(200, 600); },
@@ -65,7 +65,7 @@ var startLevelSpawn = [
 ];
 
 var bossLevelSpawn = [
-  //function() { addBoss(300, 300); }
+  function() { addBoss(300, 300); }
 ];
 
 // to be used for boss fight?
@@ -105,13 +105,13 @@ function init(){
   //keys.js
   keys = new Keys();
 
-  setCurrentScreen();
+  initScreen();
 
   //sets all the event handlers
   setEventHandlers();
 }
 
-function setCurrentScreen() {
+function initScreen() {
   currentScreen = levelArray[currentScreenX][currentScreenY]; 
   levelData = currentScreen.level;
   localPlayer = new Player(this, canvas, currentScreen.spawn.x, currentScreen.spawn.y, levelData, enemies);
@@ -196,11 +196,14 @@ function updatePlayer(){
 }
 
 function checkNewScreen() {
+  // get the players x and y 
   var tempX = Math.floor(localPlayer.getX() / 48.0);
   var tempY = Math.floor(localPlayer.getY() / 48.0);
   if (tempX > -1 && tempX < currentScreen.level[0].length && tempY > -1 && tempY < currentScreen.level.length) {
     if (currentScreen.level[tempY][tempX] > 100) {
+      // dont update stuff. we be moving
       pause = true;
+      // get the new screen
       var direction = Math.floor(currentScreen.level[tempY][tempX] / 100);
       if (direction === 1) {
         currentScreenX = currentScreenX - 1;
@@ -211,7 +214,7 @@ function checkNewScreen() {
       } else if (direction === 4) {
         currentScreenY = currentScreenY + 1;
       }
-      // do stuff here
+      // fade out and in and draw stuff.
       fadeNewLevel();
     }
   }
@@ -248,9 +251,11 @@ function fadeNewLevel() {
       currentScreen.enemies[i]();
     }
   }
+  // while the alpha isnt back to normal keep updating
   if (alpha > 0.0) {
     window.requestAnimFrame(fadeNewLevel);
   } else {
+    // good to go. let everythign remove and reset alpha
     pause = false;
     alpha = 0;
   }
@@ -336,14 +341,18 @@ function drawBackground(){
 // only draw the player if he has health. otherwise reset him (or her)
 function drawPlayer(){
   if(localPlayer.getHealth() <= 0) {
+    // reset to initial screen
     currentScreenX = 0;
     currentScreenY = 0;
-    currentScreen = levelArray[currentScreenX][currentScreenY]; 
+    currentScreen = levelArray[currentScreenX][currentScreenY];
+    // update the global level 
     levelData = currentScreen.level;
+    // empty arrays and update player level
     updateLevels(levelData);
     localPlayer.setHealth(100);
     healthBar.style.width = '100%';
     healthBar.style.backgroundColor = '#00ff00';
+    // repopulate the level
     for (var i = 0; i < currentScreen.enemies.length; i++) {
       currentScreen.enemies[i]();
     }
