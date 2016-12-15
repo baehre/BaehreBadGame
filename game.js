@@ -34,6 +34,8 @@ var currentScreenY = 0;
 // used for fade in and out
 var alpha = 0;
 var delta = 0.05;
+// had to make this global because requestAnimFrame is a dick
+var levelDirection = 0;
 var levelData;
 //level data. saying which tiles to use.
 var startLevelData = [
@@ -82,8 +84,9 @@ var bossLevelData = [
 [11,2,0,2,0,2,0,2,2,2,0,2,0,2,11],
 [11,11,11,11,11,11,11,11,11,11,11,11,11,11,11]];
 
-
-var levelArray = [[{"level": startLevelData, "spawn": {"x": 100, "y": 300}, "enemies": startLevelSpawn}, {"level": bossLevelData, "spawn": {"x": 100, "y": 300}, "enemies": bossLevelSpawn}]];
+// all spawns should have length of 5. Default is 0 rest correspond to direction coming from
+// 1 is left 2 is up 3 is right 4 is down
+var levelArray = [[{"level": startLevelData, "spawns": [{"x": 100, "y": 300},{"x": 1117, "y": 335},{},{},{}], "enemies": startLevelSpawn}, {"level": bossLevelData, "spawns": [{"x": 100, "y": 300},{},{},{"x": 100, "y": 300},{}], "enemies": bossLevelSpawn}]];
 
 function init(){
   //set globals
@@ -114,7 +117,7 @@ function init(){
 function initScreen() {
   currentScreen = levelArray[currentScreenX][currentScreenY]; 
   levelData = currentScreen.level;
-  localPlayer = new Player(this, canvas, currentScreen.spawn.x, currentScreen.spawn.y, levelData, enemies);
+  localPlayer = new Player(this, canvas, currentScreen.spawns[0].x, currentScreen.spawns[0].y, levelData, enemies);
   for (var i = 0; i < currentScreen.enemies.length; i++) {
     currentScreen.enemies[i]();
   }
@@ -205,6 +208,8 @@ function checkNewScreen() {
       pause = true;
       // get the new screen
       var direction = Math.floor(currentScreen.level[tempY][tempX] / 100);
+      // stupid global makes me sad
+      levelDirection = direction;
       if (direction === 1) {
         currentScreenX = currentScreenX - 1;
       } else if (direction === 2) {
@@ -243,8 +248,8 @@ function fadeNewLevel() {
   // basically can't see anything
   if (alpha > 0.96) {
     currentScreen = levelArray[currentScreenY][currentScreenX];
-    localPlayer.setX(currentScreen.spawn.x);
-    localPlayer.setY(currentScreen.spawn.y);
+    localPlayer.setX(currentScreen.spawns[levelDirection].x);
+    localPlayer.setY(currentScreen.spawns[levelDirection].y);
     updateLevels(currentScreen.level);
     levelData = currentScreen.level;
     for (var i = 0; i < currentScreen.enemies.length; i++) {
@@ -342,13 +347,15 @@ function drawBackground(){
 function drawPlayer(){
   if(localPlayer.getHealth() <= 0) {
     // reset to initial screen
-    currentScreenX = 0;
+    /*currentScreenX = 0;
     currentScreenY = 0;
     currentScreen = levelArray[currentScreenX][currentScreenY];
     // update the global level 
     levelData = currentScreen.level;
-    // empty arrays and update player level
+    // empty arrays and update player level*/
     updateLevels(levelData);
+    localPlayer.setX(currentScreen.spawns[0].x);
+    localPlayer.setY(currentScreen.spawns[0].y);
     localPlayer.setHealth(100);
     healthBar.style.width = '100%';
     healthBar.style.backgroundColor = '#00ff00';
